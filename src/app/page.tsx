@@ -24,7 +24,10 @@ import { ThemeCustomization } from '@/components/dashboard/themes'
 import { ReviewsManagement } from '@/components/dashboard/reviews'
 import { DataImport } from '@/components/dashboard/data-import'
 import { GiftCardsManagement } from '@/components/dashboard/gift-cards'
+import { LoyaltyProgram } from '@/components/dashboard/loyalty'
 import { EmailTemplates } from '@/components/dashboard/email-templates'
+import { AbandonedCartRecovery } from '@/components/dashboard/abandoned-carts'
+import { ShippingSettings } from '@/components/dashboard/shipping-settings'
 import { CustomerDetail } from '@/components/dashboard/customer-detail'
 import { NotificationsPanel } from '@/components/dashboard/notifications-panel'
 import { OnboardingWizard } from '@/components/dashboard/onboarding-wizard'
@@ -93,6 +96,8 @@ import {
   Gift,
   Import,
   Mail,
+  Truck,
+  Trophy,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -117,6 +122,8 @@ const dashboardNavItems: Array<{ page: DashboardPage; label: string; icon: React
   { page: 'inventory', label: 'Inventory', icon: <Warehouse className="h-4 w-4" />, group: 'Insights' },
   { page: 'marketing', label: 'Marketing', icon: <Megaphone className="h-4 w-4" />, group: 'Insights' },
   { page: 'reviews', label: 'Reviews', icon: <Star className="h-4 w-4" />, group: 'Insights' },
+  { page: 'loyalty', label: 'Loyalty', icon: <Trophy className="h-4 w-4" />, group: 'Insights' },
+  { page: 'abandoned-carts', label: 'Abandoned Carts', icon: <ShoppingCart className="h-4 w-4" />, group: 'Insights' },
   { page: 'themes', label: 'Themes', icon: <Palette className="h-4 w-4" />, group: 'Customize' },
   { page: 'ai-assistant', label: 'AI Assistant', icon: <Bot className="h-4 w-4" />, group: 'Tools' },
   { page: 'workflows', label: 'Workflows', icon: <GitBranch className="h-4 w-4" />, group: 'Tools' },
@@ -124,6 +131,7 @@ const dashboardNavItems: Array<{ page: DashboardPage; label: string; icon: React
   { page: 'gift-cards', label: 'Gift Cards', icon: <Gift className="h-4 w-4" />, group: 'Tools' },
   { page: 'email-templates', label: 'Email Templates', icon: <Mail className="h-4 w-4" />, group: 'Tools' },
   { page: 'data-import', label: 'Data Import', icon: <Import className="h-4 w-4" />, group: 'Settings' },
+  { page: 'shipping-settings', label: 'Shipping', icon: <Truck className="h-4 w-4" />, group: 'Settings' },
   { page: 'staff', label: 'Staff', icon: <UsersRound className="h-4 w-4" />, group: 'Settings' },
   { page: 'billing', label: 'Billing', icon: <CreditCard className="h-4 w-4" />, group: 'Settings' },
   { page: 'store-settings', label: 'Store Settings', icon: <Settings className="h-4 w-4" />, group: 'Settings' },
@@ -554,9 +562,12 @@ function DashboardContent() {
         {dashboardPage === 'billing' && <BillingSubscription />}
         {dashboardPage === 'store-settings' && <StoreSettings />}
         {dashboardPage === 'reviews' && <ReviewsManagement />}
+        {dashboardPage === 'loyalty' && <LoyaltyProgram />}
         {dashboardPage === 'data-import' && <DataImport />}
         {dashboardPage === 'gift-cards' && <GiftCardsManagement />}
         {dashboardPage === 'email-templates' && <EmailTemplates />}
+        {dashboardPage === 'abandoned-carts' && <AbandonedCartRecovery />}
+        {dashboardPage === 'shipping-settings' && <ShippingSettings />}
       </motion.div>
     </AnimatePresence>
   )

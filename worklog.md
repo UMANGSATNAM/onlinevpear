@@ -2967,3 +2967,293 @@ Task: QA testing, add 4 new features (Gift Cards, Email Templates, Data Import, 
 8. Add more admin dashboard data (subscriptions seed data)
 9. Add product comparison feature
 10. Add customer loyalty/rewards program page
+
+---
+
+Task ID: 9-b
+Agent: Main Agent
+Task: Create Abandoned Cart Recovery Page + Shipping Settings Page
+
+### Work Completed:
+
+1. **Abandoned Cart Recovery Component** (`/src/components/dashboard/abandoned-carts.tsx`):
+   - Header with ShoppingCart icon and prominent Recovery Rate stat card (gradient emerald/teal)
+   - 4 Stats Row cards with gradient accents:
+     - Abandoned Carts (rose gradient)
+     - Recovery Rate (emerald gradient)
+     - Revenue at Risk (amber gradient)
+     - Revenue Recovered (violet gradient)
+   - Recovery Email Sequence section with 3-step cards:
+     - Step 1: Friendly Reminder (1 hour) — rose accent, heart icon
+     - Step 2: Special Offer (24 hours) — amber accent, flame icon
+     - Step 3: Last Chance (72 hours) — violet accent, timer icon
+     - Each card has: template preview, open/click rate stats, enable/disable toggle, edit button
+   - Abandoned Carts Table (sorted by value, highest first):
+     - Columns: Customer, Items, Cart Value, Abandoned At, Status, Action
+     - Status badges: New (rose), Email Sent (amber), Offer Sent (blue), Recovered (emerald), Lost (gray)
+     - Action buttons: Send Recovery Email with contextual labeling
+   - Recovery Timeline Bar Chart using Recharts (7-day data, recovered vs lost)
+   - Edit Email Template dialog with subject line and body editor
+   - Mock data: 12 abandoned carts, 3 email templates
+
+2. **Shipping Settings Component** (`/src/components/dashboard/shipping-settings.tsx`):
+   - Header with Truck icon and Add Method button
+   - Shipping Methods section with 4 pre-populated cards:
+     - Free Shipping ($0, 5-7 days, domestic + EU)
+     - Standard ($5.99, free above $50, 5-7 days, domestic)
+     - Express ($14.99, free above $150, 2-3 days, domestic + EU)
+     - Overnight ($24.99, 1 day, domestic, weight-based)
+   - Each method card: name, price, free above, est. days, zones, weight-based badge, active toggle, edit/delete
+   - Add/Edit Method Dialog with:
+     - Name, price, free above amount, estimated days
+     - Zone selection (Domestic, EU, International, Asia Pacific) with checkbox grid
+     - Weight-based pricing toggle
+   - Shipping Zones card with:
+     - Visual map placeholder with animated pulse dots
+     - Zone list: Domestic, EU, Asia Pacific — each with countries and active method count
+   - Delivery Settings card with toggle switches:
+     - Same-day delivery with cutoff time picker
+     - Saturday delivery toggle
+     - Signature required default toggle
+     - Shipping insurance with threshold value input
+
+3. **Store Updates** (`/src/lib/store.ts`):
+   - Added `'abandoned-carts'` and `'shipping-settings'` to DashboardPage union type
+
+4. **Page Integration** (`/src/app/page.tsx`):
+   - Imported AbandonedCartRecovery and ShippingSettings components
+   - Added Truck icon import from lucide-react
+   - Nav items: Abandoned Carts (Insights group, after Reviews), Shipping (Settings group, after Data Import)
+   - Route handlers for both new pages in DashboardContent
+
+### Technical Details:
+- Both components use `'use client'` directive
+- Use `useAppStore` from `@/lib/store` and `toast` from `sonner`
+- shadcn/ui components: Card, Button, Badge, Switch, Table, Dialog, Input, Label, Textarea, Checkbox, Select, Separator, AlertDialog
+- Framer Motion animations: containerVariants, itemVariants, AnimatePresence for table rows
+- Recharts BarChart with ChartContainer for Recovery Timeline
+- Mock data fully self-contained (no API dependencies)
+- ESLint passes with zero errors
+- Dev server running without issues
+
+---
+
+Task ID: 9-a
+Agent: Main Agent
+Task: Create Customer Loyalty & Rewards Program Page
+
+### Work Completed:
+1. **LoyaltyProgram Component** (`/src/components/dashboard/loyalty.tsx`) - Full loyalty & rewards management page with:
+
+   - **Dark Gradient Header**: Trophy icon with "Loyalty & Rewards" title, description, "Active" badge with pulsing dot, toggle switch to enable/disable program
+   - **Stats Row (4 cards)**: Total Members (emerald gradient), Points Issued (violet gradient), Points Redeemed (amber gradient), Reward Value (rose gradient) — each with gradient accent bar and hover effects
+   - **Program Configuration Card**: Points per dollar (configurable +/-), welcome bonus, min redemption threshold, expiration days, VIP tier thresholds (Bronze 0-499, Silver 500-1499, Gold 1500-4999, Platinum 5000+) with colored badges and benefits preview, Save Configuration button with gradient shimmer
+   - **Member Tier Ladder**: Visual bar chart showing Bronze → Silver → Gold → Platinum with animated heights, member counts, point ranges, and full benefits listing
+   - **Recent Activity Feed**: 10 loyalty events (earned, redeemed, tier upgrade, bonus) with gradient initial avatars, color-coded type badges, points +/- indicators, timestamps
+   - **Top Members Table**: Top 10 members by points with rank medals (gold/silver/bronze for top 3), member avatars, points, tier badges (gradient backgrounds), total spend
+   - **Reward Catalog**: 6 reward cards in grid layout (name, points cost, description, redemption count), Create Reward button, Edit/Delete dropdown actions per reward
+   - **Reward Dialog**: Create/Edit reward with name, points cost, description fields, live preview card
+   - **Delete Confirmation Dialog**: Alert dialog for reward deletion
+
+2. **API Route** (`/src/app/api/loyalty/route.ts`):
+   - GET: Returns loyalty program data (stats, config, tiers, members, activities, rewards)
+   - POST: Updates program configuration (pointsPerDollar, welcomeBonus, minRedemption, expirationDays)
+   - All mock data with realistic values
+
+3. **Store Type Update** (`/src/lib/store.ts`):
+   - Added `'loyalty'` to `DashboardPage` type union
+
+4. **Page Integration** (`/src/app/page.tsx`):
+   - Added `Trophy` icon import from lucide-react
+   - Added `LoyaltyProgram` component import
+   - Added nav item: `{ page: 'loyalty', label: 'Loyalty', icon: <Trophy />, group: 'Insights' }` after Reviews
+   - Added route: `{dashboardPage === 'loyalty' && <LoyaltyProgram />}`
+
+### Mock Data:
+- 15 loyalty members across all 4 tiers
+- 10 activity events (4 types: earned, redeemed, tier_upgrade, bonus)
+- 4 tier definitions with benefits
+- 6 reward items
+
+### Technical Details:
+- Uses `'use client'` directive
+- Uses `useAppStore` from `@/lib/store`, `api` from `@/lib/api-client`, `toast` from `sonner`
+- shadcn/ui components: Card, Button, Badge, Input, Label, Dialog, Table, DropdownMenu, Separator, Progress, Tooltip
+- Framer Motion: containerVariants/itemVariants for staggered animations, AnimatePresence, spring transitions on toggle switch
+- ESLint passes on changed files (pre-existing error in store-settings.tsx unrelated)
+- Dev server running without issues
+
+---
+
+Task ID: 9-c
+Agent: Polish Agent
+Task: Deep Polish Store Settings Page + Billing Page + Storefront Wishlist Page
+
+### Work Completed:
+
+#### 1. Store Settings Page (`/src/components/dashboard/store-settings.tsx`)
+**Major visual overhaul with new tabs and enhanced design:**
+
+- **Gradient Header Card**: Replaced plain header with a gradient hero card (rose→pink→fuchsia) featuring Store icon, store name, and "Published" badge with backdrop blur
+- **General Tab**: Added icon prefixes to all form fields (Store for name, Mail for email, Smartphone for phone, Clock for timezone, Globe for domain). Left-side gradient accent bars per section. Gradient save button with hover scale animation
+- **Payments Tab (NEW)**: Three payment provider cards (Stripe, PayPal, Square) with gradient circle icons, toggle switches with colored active states, "Configure"/"Connect" buttons, transaction fee info badges, fee comparison table for $50/$100/$500 orders
+- **Notifications Tab**: Redesigned as table layout with Email and Push toggle columns. Added channel cards for Email/SMS/Push with gradient icons. Colored section badges (4 alerts, 2 alerts). Group-specific switch colors (emerald for Orders, amber for Customer, rose for Marketing)
+- **SEO Tab**: Added SEO circular progress score indicator (SVG-based animated circle), live Google search preview card showing how store appears in search results, animated character counter bars with color transitions (red/amber/emerald), Open Graph social media preview
+- **Advanced Tab (NEW)**: API key management with show/hide toggle and copy button. "Regenerate API Key" with confirmation Dialog. Feature toggles (Analytics Tracking, Cookie Consent, Auto Backup). Data export/import quick action cards. Danger zone with maintenance mode toggle and delete store button, red-themed styling
+- **AnimatePresence**: Tab transitions with slide animation (opacity + x transform)
+- **7 total tabs**: General, Appearance, Payments, Notifications, SEO, Advanced, Legal
+- **All save buttons**: Gradient backgrounds matching tab themes, with whileHover/whileTap scale animations
+
+#### 2. Billing Page (`/src/components/dashboard/billing.tsx`)
+**Deep visual polish with premium design:**
+
+- **Dark Gradient Hero Card**: Enhanced with stripe pattern overlay, triple radial gradient decorations, animated Crown icon with spring animation, "Active" badge with pulsing dot, billing date and auto-renewal info, 4 summary cards with staggered entrance animations
+- **Usage Meters**: Gradient icon backgrounds per meter type, colored warning dot indicator at 80%+, improved warning/critical messages, staggered entrance animations
+- **Payment Method Card**: Enhanced credit card design with chip element, improved decorative circles, deeper shadows, gradient left accent bar
+- **Plan Comparison Cards**: "Most Popular" badge with gradient background and Star icon, gradient accent bar at top of popular card, better feature checklists, improved hover animations (whileHover y:-6)
+- **Upgrade CTA**: Added feature preview icons (Unlimited Products, Advanced Analytics, Priority Support)
+- **Invoice History**: Added gradient left accent bar, rounded border container, download button with Tooltip, staggered row entrance animations
+- **Tooltip import**: Added missing Tooltip/TooltipContent/TooltipTrigger imports
+
+#### 3. Wishlist Page (`/src/components/storefront/wishlist.tsx`)
+**Complete visual redesign:**
+
+- **Gradient Hero Header**: Full-width rose→pink→fuchsia gradient banner with Heart icon, item count badge, radial gradient overlays
+- **Share Menu**: Dropdown with social icons (Twitter, Facebook, Email, Copy Link) with AnimatePresence animation
+- **Sort Control**: Added SlidersHorizontal icon prefix
+- **Move All to Cart Button**: New bulk action button in hero header
+- **Product Cards**: 
+  - Gradient accent bars at top of each card
+  - hover:scale-[1.02] effect
+  - Remove button with confirmation (Trash2 button + Cancel button, animated)
+  - Star rating display with half-star support
+  - Price with compare-at strikethrough
+  - Stock status indicator
+  - Gradient Add to Cart button with Loader2 animation
+- **Empty State**: Animated Heart icon (scale + rotate keyframe animation), floating decorative dots with staggered y animations, "Continue Shopping" CTA with hover scale
+- **"You Might Also Like"**: Added gradient accent bars on suggestion cards
+- **Loader2 icon**: Used for cart loading states instead of custom spinner
+- **Tooltip import**: Added for product card tooltips
+
+### Technical Details:
+- All files pass ESLint with no errors
+- Dev server compiles and runs without issues
+- All existing functionality preserved (API calls, state management, localStorage persistence)
+- Framer Motion AnimatePresence for tab/page transitions
+- Dialog component from shadcn/ui used for API key regeneration confirmation
+- Consistent gradient color themes per section/tab
+- New icons imported: CreditCard, Shield, Database, Download, KeyRound, Trash2, Smartphone, Zap, DollarSign, CheckCircle2, Copy, Eye, EyeOff, ArrowDownToLine, ArrowUpFromLine, Settings2, Share2, MoveRight, SlidersHorizontal, Loader2, Twitter, Facebook, Mail
+
+---
+
+## Phase 9: Loyalty Program, Abandoned Cart Recovery, Shipping Settings & Deep Polish (Completed)
+
+Task ID: phase-9-main
+Agent: Main Agent
+Task: QA testing, add 3 new features (Loyalty, Abandoned Carts, Shipping Settings), deep polish Store Settings/Billing/Wishlist pages
+
+### QA Testing Results:
+- ✅ Login works correctly via quick access buttons
+- ✅ All 40 API routes responding (verified new loyalty API)
+- ✅ Analytics API returns correct data ($33,339.83, 100% growth)
+- ✅ Gift Cards and Email Templates APIs returning 200
+- ✅ Chat service running on port 3003
+- ✅ ESLint passes with zero errors
+- ✅ Dev server compiles cleanly
+
+### New Features Added:
+
+#### 1. Loyalty & Rewards Program Page (NEW)
+- Created `/src/components/dashboard/loyalty.tsx` (~1,067 lines)
+- Dark gradient header with Trophy icon, "Active" pulsing badge, enable/disable toggle
+- 4 stats cards: Total Members (emerald), Points Issued (violet), Points Redeemed (amber), Reward Value (rose)
+- Program configuration: Points per $1, welcome bonus, min redemption, expiration days with +/- controls
+- VIP Tier Thresholds: Bronze (0-499), Silver (500-1499), Gold (1500-4999), Platinum (5000+) with colored badges
+- Visual tier ladder with animated bar chart showing 4 tiers, member counts, benefits
+- Recent activity feed: 10 events color-coded by type (earned/redeemed/tier_upgrade/bonus)
+- Top members table: Top 10 with medal icons, tier gradient badges, points & spend data
+- Reward catalog: 6 reward cards with Create/Edit/Delete actions and dialog
+- API route: `/src/app/api/loyalty/route.ts` (GET, POST)
+
+#### 2. Abandoned Cart Recovery Page (NEW)
+- Created `/src/components/dashboard/abandoned-carts.tsx` (~632 lines)
+- 4 stats cards: Abandoned Carts (rose), Recovery Rate (emerald), Revenue at Risk (amber), Revenue Recovered (violet)
+- 3-step recovery email sequence: Friendly Reminder (1hr), Special Offer (24hr), Last Chance (72hr)
+- Each step with template preview, open/click rates, enable/disable toggle
+- Abandoned carts table: 12 entries sorted by value, status badges, Send Recovery Email action
+- Recovery timeline bar chart (Recharts) showing recovered vs lost over 7 days
+- Edit template dialog for email subject/body
+
+#### 3. Shipping Settings Page (NEW)
+- Created `/src/components/dashboard/shipping-settings.tsx` (~755 lines)
+- 4 shipping method cards: Free Shipping, Standard ($5.99), Express ($14.99), Overnight ($24.99)
+- Each with price, free-above threshold, estimated days, zones, active toggle
+- Add/Edit method dialog with zone checkbox grid, weight-based pricing toggle
+- Shipping zones card with map placeholder and zone list (Domestic, EU, Asia Pacific)
+- Delivery settings: Same-day delivery, Saturday delivery, signature required, insurance
+
+### Deep Styling Polish:
+
+#### 4. Store Settings Page Enhancement
+- Gradient header card with Store icon and "Published" badge
+- General tab: Icon prefixes (Globe, Mail, Phone, Clock) per field, section dividers
+- Payments tab (NEW): Stripe/PayPal/Square provider cards with gradient icons, toggle switches, fee comparison
+- Notifications tab: Email/Push column layout, group-specific colored switches
+- SEO tab: Circular SVG progress score, live Google search preview, character counters
+- Advanced tab (NEW): API key management with show/hide/copy/regenerate, feature toggles, data export/import, danger zone
+- AnimatePresence tab transitions with slide animation
+
+#### 5. Billing Page Enhancement
+- Dark gradient hero card with stripe pattern overlay, animated Crown icon, pulsing Active badge
+- Usage meters with gradient icon backgrounds, warning dots at 80%+
+- Enhanced credit card design with chip element
+- Plan cards with "Most Popular" gradient badge, accent bars, hover lift
+- Invoice table with download buttons and staggered animations
+
+#### 6. Wishlist Page Enhancement
+- Gradient hero banner with Heart icon and item count badge
+- Share menu dropdown (Twitter, Facebook, Email, Copy Link)
+- Product cards with hover:scale-[1.02], gradient accent bars, remove confirmation
+- Star rating display, stock status indicator, gradient Add to Cart button
+- Empty state with animated Heart and floating dots
+- "Move All to Cart" bulk action button
+
+### Current Project Stats:
+- **Total Lines of Code**: 43,315+
+- **Merchant Dashboard**: 25 pages (overview, products, orders, customers, categories, analytics, discounts, inventory, marketing, reviews, loyalty, abandoned carts, themes, AI assistant, workflows, apps, gift cards, email templates, data import, shipping settings, staff, billing, store-settings, onboarding wizard, notifications)
+- **Super Admin**: 9 pages
+- **Storefront**: 13+ components
+- **API Routes**: 40 route files
+- **Mini-Services**: 1 (Chat Service on port 3003)
+- **AI Features**: 4 endpoints
+- **Product Images**: All 12 have real AI-generated photos
+
+### Verification Results:
+- ✅ ESLint passes with zero errors
+- ✅ Dev server compiles and runs
+- ✅ All new pages accessible via sidebar navigation
+- ✅ Loyalty page renders with stats, tiers, activity, rewards
+- ✅ Abandoned Carts page renders with stats, email sequence, table, chart
+- ✅ Shipping Settings page renders with 4 methods, zones, delivery settings
+- ✅ Store Settings enhanced with 7 tabs (Payments, Advanced new)
+- ✅ Billing enhanced with gradient hero, usage meters
+- ✅ Wishlist enhanced with hero, share, bulk actions
+- ✅ All APIs returning 200
+
+### Unresolved Issues:
+1. Agent-browser Tooltip click interception (doesn't affect real users)
+2. No email delivery integration (templates are visual only)
+3. No real payment processing (Stripe)
+4. Performance optimization needed for 43K+ LOC
+
+### Priority Recommendations for Next Phase:
+1. Add product image upload from UI
+2. Performance optimization (lazy loading, code splitting)
+3. Add real payment processing (Stripe)
+4. Mobile responsive testing and fixes
+5. Add customer comparison feature
+6. Add more admin analytics data
+7. Multi-currency support
+8. Add SEO dashboard with keyword tracking
+9. Add product bundle/kit builder
+10. Add social media integration page

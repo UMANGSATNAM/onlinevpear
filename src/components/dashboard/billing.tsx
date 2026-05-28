@@ -19,6 +19,12 @@ import {
   Download,
   Calendar,
   Crown,
+  TrendingUp,
+  BarChart3,
+  Globe,
+  Headphones,
+  Package,
+  Lock,
 } from 'lucide-react'
 import {
   Card,
@@ -40,6 +46,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { useAppStore } from '@/lib/store'
 import { api } from '@/lib/api-client'
 import { toast } from 'sonner'
@@ -94,12 +105,12 @@ const invoiceStatusColors: Record<string, string> = {
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.06 } },
+  show: { opacity: 1, transition: { staggerChildren: 0.08 } },
 }
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 15 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } },
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
 }
 
 export function BillingSubscription() {
@@ -161,22 +172,33 @@ export function BillingSubscription() {
   const usageMeters = useMemo(() => {
     const limits = currentPlan ? parseLimits(currentPlan.limits) : {}
     return [
-      { label: 'Products', used: 12, limit: typeof limits.maxProducts === 'number' ? limits.maxProducts : 50, icon: HardDrive, color: 'text-emerald-600', barColor: '[&>div]:bg-emerald-500' },
-      { label: 'Staff Accounts', used: 3, limit: typeof limits.maxStaff === 'number' ? limits.maxStaff : 5, icon: Users, color: 'text-violet-600', barColor: '[&>div]:bg-violet-500' },
-      { label: 'Storage', used: 2.4, limit: typeof limits.maxStorage === 'number' ? limits.maxStorage : 5, unit: 'GB', icon: HardDrive, color: 'text-sky-600', barColor: '[&>div]:bg-sky-500' },
-      { label: 'Bandwidth', used: 15, limit: typeof limits.maxBandwidth === 'number' ? limits.maxBandwidth : 50, unit: 'GB', icon: Wifi, color: 'text-amber-600', barColor: '[&>div]:bg-amber-500' },
+      { label: 'Products', used: 12, limit: typeof limits.maxProducts === 'number' ? limits.maxProducts : 50, icon: Package, color: 'text-emerald-600', barColor: '[&>div]:bg-emerald-500', gradient: 'from-emerald-500 to-teal-500' },
+      { label: 'Staff Accounts', used: 3, limit: typeof limits.maxStaff === 'number' ? limits.maxStaff : 5, icon: Users, color: 'text-violet-600', barColor: '[&>div]:bg-violet-500', gradient: 'from-violet-500 to-purple-500' },
+      { label: 'Storage', used: 2.4, limit: typeof limits.maxStorage === 'number' ? limits.maxStorage : 5, unit: 'GB', icon: HardDrive, color: 'text-sky-600', barColor: '[&>div]:bg-sky-500', gradient: 'from-sky-500 to-blue-500' },
+      { label: 'Bandwidth', used: 15, limit: typeof limits.maxBandwidth === 'number' ? limits.maxBandwidth : 50, unit: 'GB', icon: Wifi, color: 'text-amber-600', barColor: '[&>div]:bg-amber-500', gradient: 'from-amber-500 to-orange-500' },
     ]
   }, [currentPlan])
+
+  const handleDownloadInvoice = (invoiceId: string) => {
+    toast.success('Invoice download started')
+  }
 
   if (loading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-10 w-48" />
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-14 w-14 rounded-2xl" />
+          <div>
+            <Skeleton className="h-7 w-48 mb-2" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+        </div>
         <div className="grid gap-6 sm:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <Card key={i}><CardContent className="p-6"><Skeleton className="h-40 w-full" /></CardContent></Card>
           ))}
         </div>
+        <Skeleton className="h-60 w-full rounded-xl" />
       </div>
     )
   }
@@ -188,57 +210,77 @@ export function BillingSubscription() {
       className="space-y-6"
       variants={containerVariants}
     >
+      {/* Dark Gradient Hero Card - Current Plan */}
       <motion.div variants={itemVariants}>
-        <h2 className="text-2xl font-bold">Billing & Subscription</h2>
-        <p className="text-sm text-muted-foreground">Manage your subscription and invoices</p>
-      </motion.div>
-
-      {/* Current Plan Card */}
-      <motion.div variants={itemVariants}>
-        <Card className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900" />
-          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)' }} />
+        <Card className="relative overflow-hidden border-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
+          <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.05) 20px, rgba(255,255,255,0.05) 21px)' }} />
+          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 15% 50%, rgba(251,191,36,0.25) 0%, transparent 50%), radial-gradient(circle at 85% 30%, rgba(168,85,247,0.2) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(16,185,129,0.15) 0%, transparent 50%)' }} />
           <CardContent className="relative p-6 sm:p-8">
             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
               <div className="flex items-start gap-4">
-                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-amber-400 via-yellow-500 to-orange-500 flex items-center justify-center shadow-lg shrink-0">
-                  <Crown className="h-7 w-7 text-white" />
-                </div>
+                <motion.div
+                  initial={{ rotate: -10, scale: 0.9 }}
+                  animate={{ rotate: 0, scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 200, damping: 10 }}
+                  className="h-16 w-16 rounded-2xl bg-gradient-to-br from-amber-400 via-yellow-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/25 shrink-0"
+                >
+                  <Crown className="h-8 w-8 text-white" />
+                </motion.div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-xl font-bold text-white">{currentPlan?.displayName || 'Free Trial'}</h3>
+                  <div className="flex items-center gap-3">
+                    <h3 className="text-2xl font-bold text-white">{currentPlan?.displayName || 'Free Trial'}</h3>
                     {currentPlan && (
-                      <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30">Active</Badge>
+                      <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 backdrop-blur-sm">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse" />
+                        Active
+                      </Badge>
                     )}
                   </div>
-                  <p className="text-slate-300 mt-1">
-                    {currentPlan ? `$${currentPlan.price}/${currentPlan.interval === 'monthly' ? 'mo' : 'yr'}` : 'No active subscription'}
+                  <p className="text-slate-300 mt-1 text-lg">
+                    {currentPlan ? (
+                      <>
+                        <span className="font-bold text-white">${currentPlan.price}</span>
+                        <span className="text-slate-400">/{currentPlan.interval === 'monthly' ? 'mo' : 'yr'}</span>
+                      </>
+                    ) : 'No active subscription'}
                   </p>
                   {currentPlan?.description && (
                     <p className="text-slate-400 text-sm mt-1">{currentPlan.description}</p>
                   )}
+                  <div className="flex items-center gap-4 mt-3">
+                    <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                      <Calendar className="h-3.5 w-3.5" />
+                      Next billing: Mar 15, 2026
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                      <Clock className="h-3.5 w-3.5" />
+                      Auto-renewal on
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Billing Summary */}
+              {/* Billing Summary Cards */}
               {billingData && (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div className="text-center bg-white/5 rounded-xl p-3">
-                    <p className="text-xs text-slate-400">Total Billed</p>
-                    <p className="font-semibold text-white">${billingData.summary.totalBilled.toFixed(2)}</p>
-                  </div>
-                  <div className="text-center bg-white/5 rounded-xl p-3">
-                    <p className="text-xs text-slate-400">Paid</p>
-                    <p className="font-semibold text-emerald-400">${billingData.summary.totalPaid.toFixed(2)}</p>
-                  </div>
-                  <div className="text-center bg-white/5 rounded-xl p-3">
-                    <p className="text-xs text-slate-400">Pending</p>
-                    <p className="font-semibold text-amber-400">${billingData.summary.totalPending.toFixed(2)}</p>
-                  </div>
-                  <div className="text-center bg-white/5 rounded-xl p-3">
-                    <p className="text-xs text-slate-400">Overdue</p>
-                    <p className="font-semibold text-red-400">${billingData.summary.totalOverdue.toFixed(2)}</p>
-                  </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full lg:w-auto">
+                  {[
+                    { label: 'Total Billed', value: `$${billingData.summary.totalBilled.toFixed(2)}`, color: 'text-white' },
+                    { label: 'Paid', value: `$${billingData.summary.totalPaid.toFixed(2)}`, color: 'text-emerald-400' },
+                    { label: 'Pending', value: `$${billingData.summary.totalPending.toFixed(2)}`, color: 'text-amber-400' },
+                    { label: 'Overdue', value: `$${billingData.summary.totalOverdue.toFixed(2)}`, color: 'text-red-400' },
+                  ].map((item, i) => (
+                    <motion.div
+                      key={item.label}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.1 + i * 0.05 }}
+                      className="text-center bg-white/5 backdrop-blur-sm rounded-xl p-3 border border-white/5"
+                    >
+                      <p className="text-[10px] text-slate-400 uppercase tracking-wider">{item.label}</p>
+                      <p className={`font-bold text-sm mt-0.5 ${item.color}`}>{item.value}</p>
+                    </motion.div>
+                  ))}
                 </div>
               )}
             </div>
@@ -248,38 +290,53 @@ export function BillingSubscription() {
 
       {/* Usage Meters */}
       <motion.div variants={itemVariants}>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
-              <Zap className="h-5 w-5 text-primary" />
-              Plan Usage
-            </CardTitle>
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-emerald-500 to-teal-500" />
+          <CardHeader className="pl-7 pb-3">
+            <div className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-emerald-500" />
+              <CardTitle className="text-lg font-semibold">Plan Usage</CardTitle>
+            </div>
             <CardDescription>Current resource utilization</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="grid gap-5 sm:grid-cols-2">
-              {usageMeters.map((meter) => {
+          <CardContent className="pl-7">
+            <div className="grid gap-6 sm:grid-cols-2">
+              {usageMeters.map((meter, i) => {
                 const pct = meter.limit > 0 ? Math.min((meter.used / meter.limit) * 100, 100) : 0
                 const isWarning = pct >= 80
                 const isCritical = pct >= 95
+                const barColor = isCritical ? '[&>div]:bg-red-500' : isWarning ? '[&>div]:bg-amber-500' : meter.barColor
                 return (
-                  <div key={meter.label} className="space-y-2">
+                  <motion.div
+                    key={meter.label}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.08 }}
+                    className="space-y-2"
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <meter.icon className={`h-4 w-4 ${meter.color}`} />
+                        <div className={`h-7 w-7 rounded-lg bg-gradient-to-br ${meter.gradient} flex items-center justify-center`}>
+                          <meter.icon className="h-3.5 w-3.5 text-white" />
+                        </div>
                         <span className="text-sm font-medium">{meter.label}</span>
                       </div>
-                      <span className={`text-sm font-semibold ${isCritical ? 'text-red-600' : isWarning ? 'text-amber-600' : 'text-foreground'}`}>
+                      <span className={`text-sm font-bold ${isCritical ? 'text-red-600' : isWarning ? 'text-amber-600' : 'text-foreground'}`}>
                         {meter.used}{meter.unit ? ` ${meter.unit}` : ''} / {meter.limit}{meter.unit ? ` ${meter.unit}` : ''}
                       </span>
                     </div>
-                    <Progress
-                      value={pct}
-                      className={`h-2.5 ${isCritical ? '[&>div]:bg-red-500' : isWarning ? '[&>div]:bg-amber-500' : meter.barColor}`}
-                    />
+                    <div className="relative">
+                      <Progress
+                        value={pct}
+                        className={`h-2.5 ${barColor}`}
+                      />
+                      {isWarning && (
+                        <div className="absolute -top-0.5 h-3.5 w-3.5 rounded-full border-2 border-background" style={{ left: `calc(${Math.min(pct, 97)}% - 7px)`, backgroundColor: isCritical ? '#ef4444' : '#f59e0b' }} />
+                      )}
+                    </div>
                     {isCritical && (
                       <p className="text-xs text-red-600 flex items-center gap-1">
-                        <AlertCircle className="h-3 w-3" /> Limit almost reached
+                        <AlertCircle className="h-3 w-3" /> Limit almost reached — upgrade to avoid disruptions
                       </p>
                     )}
                     {isWarning && !isCritical && (
@@ -287,7 +344,7 @@ export function BillingSubscription() {
                         <AlertCircle className="h-3 w-3" /> Approaching limit
                       </p>
                     )}
-                  </div>
+                  </motion.div>
                 )
               })}
             </div>
@@ -297,45 +354,52 @@ export function BillingSubscription() {
 
       {/* Payment Method Card */}
       <motion.div variants={itemVariants}>
-        <Card>
-          <CardHeader className="pb-3">
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-violet-500 to-purple-500" />
+          <CardHeader className="pl-7 pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                <CreditCard className="h-5 w-5 text-primary" />
-                Payment Method
-              </CardTitle>
-              <Button variant="outline" size="sm">Update</Button>
+              <div className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5 text-violet-500" />
+                <CardTitle className="text-lg font-semibold">Payment Method</CardTitle>
+              </div>
+              <Button variant="outline" size="sm" className="hover:bg-violet-50 hover:text-violet-600 hover:border-violet-200">Update</Button>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 p-5 text-white max-w-sm">
+          <CardContent className="pl-7">
+            <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 p-6 text-white max-w-sm shadow-xl">
               {/* Card decorative elements */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
+              <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/4" />
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/4" />
+              <div className="absolute top-1/2 right-8 w-20 h-20 bg-white/3 rounded-full" />
 
               <div className="relative">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center gap-2">
-                    <div className="h-8 w-12 rounded bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center">
+                    <div className="h-9 w-14 rounded bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center shadow-inner">
                       <span className="text-[10px] font-bold tracking-widest">VISA</span>
                     </div>
                   </div>
                   <div className="flex gap-1">
-                    <div className="h-6 w-6 rounded-full bg-red-500/80" />
-                    <div className="h-6 w-6 rounded-full bg-yellow-500/60 -ml-3" />
+                    <div className="h-7 w-7 rounded-full bg-red-500/80 shadow-sm" />
+                    <div className="h-7 w-7 rounded-full bg-yellow-500/60 -ml-3 shadow-sm" />
                   </div>
                 </div>
-                <p className="font-mono text-lg tracking-[0.25em] mb-4">•••• •••• •••• 4242</p>
+                <p className="font-mono text-lg tracking-[0.3em] mb-6">•••• •••• •••• 4242</p>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-[10px] text-slate-400 uppercase">Card Holder</p>
-                    <p className="text-sm font-medium">{currentUser?.name || 'Merchant User'}</p>
+                    <p className="text-[10px] text-slate-400 uppercase tracking-wider">Card Holder</p>
+                    <p className="text-sm font-medium mt-0.5">{currentUser?.name || 'Merchant User'}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] text-slate-400 uppercase">Expires</p>
-                    <p className="text-sm font-medium">12/27</p>
+                    <p className="text-[10px] text-slate-400 uppercase tracking-wider">Expires</p>
+                    <p className="text-sm font-medium mt-0.5">12/27</p>
                   </div>
                 </div>
+              </div>
+
+              {/* Chip icon */}
+              <div className="absolute top-6 left-1/2 -translate-x-1/2">
+                <div className="h-8 w-10 rounded-md bg-gradient-to-br from-amber-300 via-yellow-200 to-amber-300 opacity-60 shadow-inner" />
               </div>
             </div>
           </CardContent>
@@ -345,9 +409,12 @@ export function BillingSubscription() {
       {/* Plan Comparison */}
       <motion.div variants={itemVariants}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Available Plans</h3>
+          <div>
+            <h3 className="text-lg font-semibold">Available Plans</h3>
+            <p className="text-sm text-muted-foreground">Choose the plan that fits your business</p>
+          </div>
           {!isHighestPlan && (
-            <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0">
+            <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0 animate-pulse">
               <Sparkles className="h-3 w-3 mr-1" />
               Upgrade Available
             </Badge>
@@ -356,20 +423,23 @@ export function BillingSubscription() {
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {plans.map((plan, i) => {
             const isCurrentPlan = plan.id === currentPlanId
-            const isPopular = i === 1 // Middle plan is popular
+            const isPopular = i === 1
             return (
               <motion.div
                 key={plan.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                whileHover={{ y: -4 }}
+                whileHover={{ y: -6, transition: { duration: 0.2 } }}
               >
-                <Card className={`h-full relative ${isPopular ? 'border-primary shadow-md' : ''} ${isCurrentPlan ? 'ring-2 ring-primary' : ''} transition-shadow duration-300 hover:shadow-lg`}>
+                <Card className={`h-full relative overflow-hidden ${isPopular ? 'border-primary shadow-lg' : ''} ${isCurrentPlan ? 'ring-2 ring-primary' : ''} transition-shadow duration-300 hover:shadow-lg`}>
+                  {isPopular && (
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-yellow-500 to-orange-500" />
+                  )}
                   {isPopular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <Badge className="bg-primary text-primary-foreground">
-                        <Star className="h-3 w-3 mr-1" />
+                      <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 shadow-md">
+                        <Star className="h-3 w-3 mr-1 fill-current" />
                         Most Popular
                       </Badge>
                     </div>
@@ -379,7 +449,7 @@ export function BillingSubscription() {
                       <h4 className="text-lg font-bold">{plan.displayName}</h4>
                       <p className="text-sm text-muted-foreground mt-1">{plan.description}</p>
                       <div className="mt-4">
-                        <span className="text-3xl font-bold">${plan.price}</span>
+                        <span className="text-4xl font-bold">${plan.price}</span>
                         <span className="text-muted-foreground">/{plan.interval === 'monthly' ? 'mo' : 'yr'}</span>
                       </div>
                     </div>
@@ -402,8 +472,17 @@ export function BillingSubscription() {
                       onClick={() => handlePlanChange(plan.id)}
                       disabled={isCurrentPlan}
                     >
-                      {isCurrentPlan ? 'Current Plan' : 'Upgrade'}
-                      {!isCurrentPlan && <ArrowUpRight className="ml-1 h-4 w-4" />}
+                      {isCurrentPlan ? (
+                        <>
+                          <Check className="mr-1 h-4 w-4" />
+                          Current Plan
+                        </>
+                      ) : (
+                        <>
+                          Upgrade
+                          <ArrowUpRight className="ml-1 h-4 w-4" />
+                        </>
+                      )}
                     </Button>
                   </CardContent>
                 </Card>
@@ -416,8 +495,9 @@ export function BillingSubscription() {
       {/* Upgrade CTA */}
       {!isHighestPlan && highestPlan && (
         <motion.div variants={itemVariants}>
-          <Card className="border-primary/30 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 overflow-hidden relative">
-            <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, currentColor 10px, currentColor 11px)' }} />
+          <Card className="border-primary/30 overflow-hidden relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5" />
+            <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, currentColor 10px, currentColor 11px)' }} />
             <CardContent className="relative p-6 sm:p-8">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-start gap-4">
@@ -427,6 +507,18 @@ export function BillingSubscription() {
                   <div>
                     <h3 className="text-lg font-bold">Unlock {highestPlan.displayName}</h3>
                     <p className="text-sm text-muted-foreground mt-0.5">Get unlimited products, advanced analytics, priority support, and more.</p>
+                    <div className="flex items-center gap-3 mt-2">
+                      {[
+                        { icon: Package, label: 'Unlimited Products' },
+                        { icon: BarChart3, label: 'Advanced Analytics' },
+                        { icon: Headphones, label: 'Priority Support' },
+                      ].map((feature) => (
+                        <div key={feature.label} className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <feature.icon className="h-3 w-3" />
+                          {feature.label}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -447,32 +539,40 @@ export function BillingSubscription() {
       {/* Invoices */}
       {billingData && billingData.invoices.length > 0 && (
         <motion.div variants={itemVariants}>
-          <Card>
-            <CardHeader className="pb-3">
+          <Card className="relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-slate-500 to-slate-700" />
+            <CardHeader className="pl-7 pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-primary" />
-                  Invoice History
-                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-slate-600" />
+                  <CardTitle className="text-lg font-semibold">Invoice History</CardTitle>
+                </div>
                 <Badge variant="outline" className="text-xs">{billingData.invoices.length} invoices</Badge>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
+            <CardContent className="pl-7">
+              <div className="overflow-x-auto rounded-xl border">
                 <Table>
                   <TableHeader>
-                    <TableRow>
+                    <TableRow className="bg-muted/50">
                       <TableHead className="text-xs font-semibold uppercase tracking-wider">Invoice</TableHead>
                       <TableHead className="text-xs font-semibold uppercase tracking-wider">Plan</TableHead>
                       <TableHead className="text-xs font-semibold uppercase tracking-wider">Date</TableHead>
                       <TableHead className="text-xs font-semibold uppercase tracking-wider">Due Date</TableHead>
                       <TableHead className="text-xs font-semibold uppercase tracking-wider">Status</TableHead>
                       <TableHead className="text-xs font-semibold uppercase tracking-wider text-right">Amount</TableHead>
+                      <TableHead className="text-xs font-semibold uppercase tracking-wider text-right w-20">Action</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {billingData.invoices.map((invoice) => (
-                      <TableRow key={invoice.id} className="hover:bg-muted/50 transition-colors group">
+                    {billingData.invoices.map((invoice, i) => (
+                      <motion.tr
+                        key={invoice.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        className="hover:bg-muted/50 transition-colors group"
+                      >
                         <TableCell className="font-medium text-sm">
                           <div className="flex items-center gap-2">
                             <FileText className="h-4 w-4 text-muted-foreground" />
@@ -502,7 +602,22 @@ export function BillingSubscription() {
                         <TableCell className="text-right font-semibold text-sm">
                           ${invoice.amount.toFixed(2)}
                         </TableCell>
-                      </TableRow>
+                        <TableCell className="text-right">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 hover:bg-primary/10 hover:text-primary"
+                                onClick={() => handleDownloadInvoice(invoice.id)}
+                              >
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Download PDF</TooltipContent>
+                          </Tooltip>
+                        </TableCell>
+                      </motion.tr>
                     ))}
                   </TableBody>
                 </Table>

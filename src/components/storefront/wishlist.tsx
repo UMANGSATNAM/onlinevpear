@@ -16,6 +16,12 @@ import {
   XCircle,
   Link2,
   ShoppingBag,
+  Loader2,
+  Twitter,
+  Facebook,
+  Mail as MailIcon,
+  MoveRight,
+  SlidersHorizontal,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -29,6 +35,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAppStore } from '@/lib/store'
 import { toast } from 'sonner'
@@ -126,12 +137,13 @@ export function WishlistPage() {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
   const [addingToCart, setAddingToCart] = useState<string | null>(null)
   const [removingItem, setRemovingItem] = useState<string | null>(null)
+  const [showShareMenu, setShowShareMenu] = useState(false)
+  const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null)
 
   // Load wishlist from localStorage on mount
   useEffect(() => {
     const loadWishlist = async () => {
       try {
-        // Try to load from localStorage first
         const stored = localStorage.getItem('shopforge_wishlist')
         if (stored) {
           const parsed = JSON.parse(stored)
@@ -142,7 +154,6 @@ export function WishlistPage() {
           }
         }
 
-        // If no localStorage data, fetch products from API and add sample items
         const storeId = sessionStorage.getItem('shopforge_store_id') || selectedStoreId
         if (!storeId) {
           setLoading(false)
@@ -153,7 +164,7 @@ export function WishlistPage() {
         if (res.ok) {
           const data = await res.json()
           const products = (data.products || []).slice(0, 10)
-          const wishlistProducts: WishlistProduct[] = products.map((p: any, i: number) => ({
+          const wishlistProducts: WishlistProduct[] = products.map((p: Record<string, unknown>, i: number) => ({
             ...p,
             addedToWishlistAt: new Date(Date.now() - i * 86400000 * Math.floor(Math.random() * 14 + 1)).toISOString(),
           }))
@@ -161,7 +172,6 @@ export function WishlistPage() {
           localStorage.setItem('shopforge_wishlist', JSON.stringify(wishlistProducts))
         }
       } catch {
-        // If API fails, use sample data
         const sampleItems: WishlistProduct[] = Array.from({ length: 8 }, (_, i) => ({
           id: `sample-${i + 1}`,
           name: ['Premium Headphones', 'Smart Watch Pro', 'Wireless Speaker', 'Phone Case Ultra', 'USB-C Charging Dock', 'Bluetooth Keyboard', 'HD Camera Lens', 'Portable Charger'][i],
@@ -242,6 +252,7 @@ export function WishlistPage() {
         return next
       })
       setRemovingItem(null)
+      setConfirmRemoveId(null)
       toast.success('Removed from wishlist')
     }, 300)
   }, [])
@@ -312,14 +323,62 @@ export function WishlistPage() {
     }
   }, [sortedItems, selectedItems])
 
-  // Share wishlist
-  const handleShareWishlist = useCallback(() => {
-    const url = window.location.href
-    navigator.clipboard.writeText(url).then(() => {
-      toast.success('Wishlist link copied to clipboard!')
-    }).catch(() => {
-      toast.error('Failed to copy link')
+  // Move all to cart
+  const handleMoveAllToCart = useCallback(async () => {
+    const inStockItems = sortedItems.filter((item) => {
+      const stock = item.inventory?.reduce((sum, inv) => sum + inv.quantity - inv.reserved, 0) ?? 99
+      return stock > 0
     })
+    if (inStockItems.length === 0) {
+      toast.error('No items in stock to add')
+      return
+    }
+
+    try {
+      const sessionId = sessionStorage.getItem('shopforge_session_id') || `sess_${Date.now()}`
+      sessionStorage.setItem('shopforge_session_id', sessionId)
+      const storeId = sessionStorage.getItem('shopforge_store_id')
+      if (!storeId) {
+        toast.error('Store not found')
+        return
+      }
+
+      const res = await fetch('/api/storefront/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          storeId,
+          sessionId,
+          items: inStockItems.map((item) => ({ productId: item.id, quantity: 1, price: item.price })),
+        }),
+      })
+      if (res.ok) {
+        toast.success(`${inStockItems.length} item${inStockItems.length > 1 ? 's' : ''} moved to cart`)
+      } else {
+        toast.error('Failed to add items to cart')
+      }
+    } catch {
+      toast.error('Failed to add items to cart')
+    }
+  }, [sortedItems])
+
+  // Share wishlist
+  const handleShareWishlist = useCallback((platform?: string) => {
+    const url = window.location.href
+    if (platform === 'twitter') {
+      window.open(`https://twitter.com/intent/tweet?text=Check out my wishlist!&url=${encodeURIComponent(url)}`, '_blank')
+    } else if (platform === 'facebook') {
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank')
+    } else if (platform === 'email') {
+      window.open(`mailto:?subject=My Wishlist&body=Check out my wishlist: ${url}`)
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        toast.success('Wishlist link copied to clipboard!')
+      }).catch(() => {
+        toast.error('Failed to copy link')
+      })
+    }
+    setShowShareMenu(false)
   }, [])
 
   // Navigate to product detail
@@ -338,7 +397,7 @@ export function WishlistPage() {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         <div className="flex items-center gap-4 mb-8">
-          <Skeleton className="h-10 w-10 rounded-xl" />
+          <Skeleton className="h-14 w-14 rounded-2xl" />
           <div>
             <Skeleton className="h-8 w-48 mb-2" />
             <Skeleton className="h-4 w-32" />
@@ -370,18 +429,42 @@ export function WishlistPage() {
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col items-center justify-center py-20"
         >
-          {/* Illustration */}
+          {/* Animated Illustration */}
           <div className="relative mb-8">
-            <div className="h-32 w-32 rounded-full bg-gradient-to-br from-rose-100 to-pink-50 flex items-center justify-center">
-              <Heart className="h-14 w-14 text-rose-300" />
+            <div className="h-36 w-36 rounded-full bg-gradient-to-br from-rose-100 via-pink-50 to-fuchsia-50 flex items-center justify-center">
+              <motion.div
+                animate={{
+                  scale: [1, 1.15, 1],
+                  rotate: [0, 5, -5, 0],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                }}
+              >
+                <Heart className="h-16 w-16 text-rose-300" />
+              </motion.div>
             </div>
-            <div className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-white shadow-md flex items-center justify-center">
+            <div className="absolute -top-2 -right-2 h-10 w-10 rounded-full bg-white shadow-lg flex items-center justify-center">
               <span className="text-sm font-bold text-rose-400">0</span>
             </div>
             {/* Decorative dots */}
-            <div className="absolute -bottom-1 -left-4 h-3 w-3 rounded-full bg-pink-200" />
-            <div className="absolute top-2 -left-6 h-2 w-2 rounded-full bg-rose-200" />
-            <div className="absolute -bottom-3 right-8 h-2.5 w-2.5 rounded-full bg-pink-300" />
+            <motion.div
+              animate={{ y: [0, -5, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+              className="absolute -bottom-1 -left-5 h-3 w-3 rounded-full bg-pink-200"
+            />
+            <motion.div
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
+              className="absolute top-4 -left-7 h-2.5 w-2.5 rounded-full bg-rose-200"
+            />
+            <motion.div
+              animate={{ y: [0, -6, 0] }}
+              transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut', delay: 0.6 }}
+              className="absolute -bottom-3 right-10 h-2 w-2 rounded-full bg-fuchsia-300"
+            />
           </div>
 
           <h2 className="text-2xl font-bold mb-2">Your Wishlist is Empty</h2>
@@ -389,14 +472,16 @@ export function WishlistPage() {
             Start adding items you love to your wishlist. Click the heart icon on any product to save it here for later.
           </p>
 
-          <Button
-            onClick={handleBrowseProducts}
-            className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
-            size="lg"
-          >
-            <ShoppingBag className="h-5 w-5 mr-2" />
-            Browse Products
-          </Button>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              onClick={handleBrowseProducts}
+              className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+              size="lg"
+            >
+              <ShoppingBag className="h-5 w-5 mr-2" />
+              Continue Shopping
+            </Button>
+          </motion.div>
         </motion.div>
       </div>
     )
@@ -404,64 +489,108 @@ export function WishlistPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
-      {/* Page Header */}
+      {/* Gradient Hero Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-rose-500 to-pink-500 flex items-center justify-center shadow-lg shadow-rose-500/20">
-              <Heart className="h-6 w-6 text-white fill-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl sm:text-3xl font-bold">My Wishlist</h1>
-                <Badge className="bg-gradient-to-r from-rose-500 to-pink-500 text-white border-0 px-2.5 py-0.5 text-sm font-semibold">
-                  {wishlistItems.length}
-                </Badge>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-fuchsia-500 p-6 sm:p-8">
+          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.2) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(255,255,255,0.15) 0%, transparent 50%)' }} />
+          <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="h-14 w-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
+                <Heart className="h-7 w-7 text-white fill-white" />
               </div>
-              <p className="text-muted-foreground text-sm mt-0.5">
-                {wishlistItems.length} item{wishlistItems.length !== 1 ? 's' : ''} saved for later
-              </p>
+              <div>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white">My Wishlist</h1>
+                  <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-3 py-1 text-sm font-bold">
+                    {wishlistItems.length} items
+                  </Badge>
+                </div>
+                <p className="text-white/80 text-sm mt-0.5">
+                  {wishlistItems.length} item{wishlistItems.length !== 1 ? 's' : ''} saved for later
+                </p>
+              </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-2">
-            {/* Share Wishlist */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleShareWishlist}
-              className="border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
-            >
-              <Share2 className="h-4 w-4 mr-1.5" />
-              Share
-            </Button>
+            <div className="flex items-center gap-2">
+              {/* Share Wishlist */}
+              <div className="relative">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowShareMenu(!showShareMenu)}
+                  className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm"
+                >
+                  <Share2 className="h-4 w-4 mr-1.5" />
+                  Share
+                </Button>
+                <AnimatePresence>
+                  {showShareMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -5, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -5, scale: 0.95 }}
+                      className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-xl border p-2 min-w-[160px] z-50"
+                    >
+                      {[
+                        { icon: Twitter, label: 'Twitter', action: () => handleShareWishlist('twitter') },
+                        { icon: Facebook, label: 'Facebook', action: () => handleShareWishlist('facebook') },
+                        { icon: MailIcon, label: 'Email', action: () => handleShareWishlist('email') },
+                        { icon: Link2, label: 'Copy Link', action: () => handleShareWishlist() },
+                      ].map((item) => (
+                        <button
+                          key={item.label}
+                          onClick={item.action}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-muted rounded-lg transition-colors"
+                        >
+                          <item.icon className="h-4 w-4" />
+                          {item.label}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
 
-            {/* Sort */}
-            <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-              <SelectTrigger className="w-[170px] h-9 text-sm">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="recently-added">Recently Added</SelectItem>
-                <SelectItem value="price-low-high">Price: Low to High</SelectItem>
-                <SelectItem value="price-high-low">Price: High to Low</SelectItem>
-                <SelectItem value="name-a-z">Name: A to Z</SelectItem>
-              </SelectContent>
-            </Select>
+              {/* Sort */}
+              <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+                <SelectTrigger className="w-[170px] h-9 text-sm bg-white/10 border-white/20 text-white hover:bg-white/20">
+                  <SlidersHorizontal className="h-3.5 w-3.5 mr-1 text-white/70" />
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recently-added">Recently Added</SelectItem>
+                  <SelectItem value="price-low-high">Price: Low to High</SelectItem>
+                  <SelectItem value="price-high-low">Price: High to Low</SelectItem>
+                  <SelectItem value="name-a-z">Name: A to Z</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Move All to Cart */}
+              <Button
+                size="sm"
+                onClick={handleMoveAllToCart}
+                className="bg-white/20 border border-white/30 text-white hover:bg-white/30 backdrop-blur-sm"
+              >
+                <MoveRight className="h-4 w-4 mr-1.5" />
+                Move All to Cart
+              </Button>
+            </div>
           </div>
         </div>
+      </motion.div>
 
-        {/* Bulk Actions Bar */}
+      {/* Bulk Actions Bar */}
+      <AnimatePresence>
         {selectedItems.size > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="mt-4 flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-100"
+            initial={{ opacity: 0, y: -10, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
+            exit={{ opacity: 0, y: -10, height: 0 }}
+            className="mb-4 flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-100"
           >
             <Checkbox
               checked={selectedItems.size === sortedItems.length}
@@ -494,7 +623,7 @@ export function WishlistPage() {
             </Button>
           </motion.div>
         )}
-      </motion.div>
+      </AnimatePresence>
 
       {/* Select All Row */}
       {selectedItems.size === 0 && sortedItems.length > 1 && (
@@ -527,6 +656,7 @@ export function WishlistPage() {
             const isRemoving = removingItem === item.id
             const isAddingToCart = addingToCart === item.id
             const StockIcon = stockStatus.icon
+            const isConfirmingRemove = confirmRemoveId === item.id
 
             return (
               <motion.div
@@ -536,10 +666,13 @@ export function WishlistPage() {
                 layout
               >
                 <Card
-                  className={`group overflow-hidden border-0 shadow-sm hover:shadow-lg transition-all duration-300 ${
+                  className={`group overflow-hidden border-0 shadow-sm hover:shadow-xl transition-all duration-300 hover:scale-[1.02] ${
                     isRemoving ? 'opacity-0 scale-90' : ''
                   } ${isSelected ? 'ring-2 ring-rose-300 ring-offset-2' : ''}`}
                 >
+                  {/* Gradient Accent Bar at Top */}
+                  <div className={`h-1 bg-gradient-to-r ${gradient}`} />
+
                   {/* Product Image Area */}
                   <div
                     className="relative aspect-[4/3] overflow-hidden cursor-pointer"
@@ -562,20 +695,50 @@ export function WishlistPage() {
                     )}
 
                     {/* Remove Button - Top Right */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleRemoveItem(item.id)
-                      }}
-                      className="absolute top-3 right-3 z-20 h-9 w-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-white transition-all hover:scale-110 group/heart"
-                    >
-                      <Heart className="h-4 w-4 fill-rose-500 text-rose-500 transition-all group-hover/heart:scale-125" />
-                    </button>
+                    <div className="absolute top-3 right-3 z-20">
+                      {isConfirmingRemove ? (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="flex items-center gap-1 bg-white rounded-full shadow-md p-1"
+                        >
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleRemoveItem(item.id)
+                            }}
+                            className="h-7 w-7 rounded-full bg-red-500 flex items-center justify-center text-white hover:bg-red-600 transition-colors"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setConfirmRemoveId(null)
+                            }}
+                            className="h-7 w-7 rounded-full bg-muted flex items-center justify-center hover:bg-gray-200 transition-colors text-xs font-bold"
+                          >
+                            ✕
+                          </button>
+                        </motion.div>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setConfirmRemoveId(item.id)
+                          }}
+                          className="h-9 w-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-white transition-all hover:scale-110 group/heart"
+                        >
+                          <Heart className="h-4 w-4 fill-rose-500 text-rose-500 transition-all group-hover/heart:scale-125" />
+                        </button>
+                      )}
+                    </div>
 
-                    {/* Select Checkbox - Top Left (below badge) */}
+                    {/* Select Checkbox */}
                     <div
-                      className="absolute top-3 left-3 z-20 mt-8"
+                      className="absolute top-3 left-3 z-20"
                       onClick={(e) => e.stopPropagation()}
+                      style={{ top: hasDiscount ? '2.5rem' : '0.75rem' }}
                     >
                       <Checkbox
                         checked={isSelected}
@@ -639,7 +802,7 @@ export function WishlistPage() {
                     </div>
 
                     {/* Price */}
-                    <div className="flex items-baseline gap-2 mb-3">
+                    <div className="flex items-baseline gap-2 mb-2">
                       <span className="font-bold text-lg">{formatPrice(item.price)}</span>
                       {hasDiscount && (
                         <span className="text-sm text-muted-foreground line-through">
@@ -665,7 +828,7 @@ export function WishlistPage() {
                     >
                       {isAddingToCart ? (
                         <div className="flex items-center gap-2">
-                          <div className="h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
                           Adding...
                         </div>
                       ) : stockStatus.label === 'Out of Stock' ? (
@@ -729,6 +892,7 @@ export function WishlistPage() {
                   className="group cursor-pointer overflow-hidden border-0 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
                   onClick={handleBrowseProducts}
                 >
+                  <div className={`h-1 bg-gradient-to-r ${gradient}`} />
                   <div className="relative aspect-square overflow-hidden">
                     <div className={`absolute inset-0 bg-gradient-to-br ${gradient} transition-transform duration-500 group-hover:scale-110`} />
                     <div className="absolute inset-0 flex items-center justify-center">

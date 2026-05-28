@@ -28,6 +28,9 @@ export type DashboardPage =
   | "email-templates"
   | "data-import"
   | "gift-cards"
+  | "loyalty"
+  | "abandoned-carts"
+  | "shipping-settings"
 
 export type AdminPage =
   | "overview"
