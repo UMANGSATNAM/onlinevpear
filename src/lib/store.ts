@@ -24,6 +24,7 @@ export type DashboardPage =
   | "staff"
   | "billing"
   | "store-settings"
+  | "reviews"
 
 export type AdminPage =
   | "overview"

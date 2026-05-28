@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import ZaiSdk from 'z-ai-web-dev-sdk'
+import ZAI from 'z-ai-web-dev-sdk'
 
-const sdk = new ZaiSdk()
+// Initialize SDK lazily
+let sdkInstance: Awaited<ReturnType<typeof ZAI.create>> | null = null
+
+async function getSdk() {
+  if (!sdkInstance) {
+    sdkInstance = await ZAI.create()
+  }
+  return sdkInstance
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,33 +54,41 @@ export async function POST(request: NextRequest) {
     const systemPrompt = systemPrompts[feature] || 'You are a helpful AI assistant for an ecommerce platform.'
 
     const messages = [
-      { role: 'system' as const, content: systemPrompt },
+      { role: 'assistant' as const, content: systemPrompt },
     ]
 
     if (context) {
-      messages.push({ role: 'system' as const, content: `Context: ${JSON.stringify(context)}` })
+      messages.push({ role: 'assistant' as const, content: `Context: ${JSON.stringify(context)}` })
     }
 
     messages.push({ role: 'user' as const, content: prompt })
 
-    const response = await sdk.chat({ messages })
+    const sdk = await getSdk()
+    const response = await sdk.chat.completions.create({
+      messages,
+      thinking: { type: 'disabled' },
+    })
 
     const result = response.choices?.[0]?.message?.content || ''
 
     // Track AI usage
     if (merchantId) {
-      await db.aiUsage.create({
-        data: {
-          merchantId,
-          feature,
-          model: 'default',
-          inputTokens: response.usage?.prompt_tokens || 0,
-          outputTokens: response.usage?.completion_tokens || 0,
-          totalTokens: response.usage?.total_tokens || 0,
-          cost: 0,
-          metadata: JSON.stringify({ promptLength: prompt.length }),
-        },
-      })
+      try {
+        await db.aiUsage.create({
+          data: {
+            merchantId,
+            feature,
+            model: 'default',
+            inputTokens: response.usage?.prompt_tokens || 0,
+            outputTokens: response.usage?.completion_tokens || 0,
+            totalTokens: response.usage?.total_tokens || 0,
+            cost: 0,
+            metadata: JSON.stringify({ promptLength: prompt.length }),
+          },
+        })
+      } catch {
+        // Ignore tracking errors
+      }
     }
 
     return NextResponse.json({

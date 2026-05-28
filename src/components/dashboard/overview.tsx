@@ -347,11 +347,11 @@ export function OverviewDashboard() {
                       <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${productGradients[i % productGradients.length]} text-white text-sm font-bold shadow-sm`}>
                         {i + 1}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">{tp.product?.name || 'Unknown'}</p>
+                      <div className="flex-1 min-w-0 pr-2">
+                        <p className="text-sm font-medium group-hover:text-primary transition-colors" title={tp.product?.name || 'Unknown'}>{tp.product?.name || 'Unknown'}</p>
                         <p className="text-xs text-muted-foreground">{tp.totalQuantity} sold · {tp.orderCount} orders</p>
                       </div>
-                      <div className="text-right">
+                      <div className="text-right shrink-0">
                         <p className="text-sm font-bold">${tp.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                       </div>
                     </div>

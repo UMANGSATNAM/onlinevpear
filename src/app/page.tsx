@@ -21,6 +21,7 @@ import { CategoriesManagement } from '@/components/dashboard/categories'
 import { MarketingAutomation } from '@/components/dashboard/marketing'
 import { StaffManagement } from '@/components/dashboard/staff'
 import { ThemeCustomization } from '@/components/dashboard/themes'
+import { ReviewsManagement } from '@/components/dashboard/reviews'
 import { NotificationsPanel } from '@/components/dashboard/notifications-panel'
 import { OnboardingWizard } from '@/components/dashboard/onboarding-wizard'
 import { AdminOverview } from '@/components/admin/overview'
@@ -81,6 +82,7 @@ import {
   Megaphone,
   UsersRound,
   Palette,
+  Star,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -104,6 +106,7 @@ const dashboardNavItems: Array<{ page: DashboardPage; label: string; icon: React
   { page: 'discounts', label: 'Discounts', icon: <Tags className="h-4 w-4" />, group: 'Insights' },
   { page: 'inventory', label: 'Inventory', icon: <Warehouse className="h-4 w-4" />, group: 'Insights' },
   { page: 'marketing', label: 'Marketing', icon: <Megaphone className="h-4 w-4" />, group: 'Insights' },
+  { page: 'reviews', label: 'Reviews', icon: <Star className="h-4 w-4" />, group: 'Insights' },
   { page: 'themes', label: 'Themes', icon: <Palette className="h-4 w-4" />, group: 'Customize' },
   { page: 'ai-assistant', label: 'AI Assistant', icon: <Bot className="h-4 w-4" />, group: 'Tools' },
   { page: 'workflows', label: 'Workflows', icon: <GitBranch className="h-4 w-4" />, group: 'Tools' },
@@ -408,6 +411,7 @@ function DashboardContent() {
         {dashboardPage === 'staff' && <StaffManagement />}
         {dashboardPage === 'billing' && <BillingSubscription />}
         {dashboardPage === 'store-settings' && <StoreSettings />}
+        {dashboardPage === 'reviews' && <ReviewsManagement />}
       </motion.div>
     </AnimatePresence>
   )

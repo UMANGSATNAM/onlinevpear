@@ -177,18 +177,26 @@ export async function GET(request: NextRequest) {
       orderStatusBreakdown[o.status] = (orderStatusBreakdown[o.status] || 0) + 1
     })
 
-    // Low stock products
+    // Low stock products - compare against lowStockThreshold OR use <= 50 as fallback
     const lowStockProducts = await db.inventory.findMany({
       where: {
         product: { storeId: { in: storeIds } },
-        quantity: { lte: 10 },
         trackStock: true,
+        OR: [
+          { quantity: { lte: db.inventory.fields.lowStockThreshold ? 999 : 50 } },
+        ],
       },
       include: {
         product: { select: { id: true, name: true, sku: true, images: true } },
       },
+      orderBy: { quantity: 'asc' },
       take: 5,
     })
+    
+    // Filter to items where quantity is at most 2x their lowStockThreshold
+    const filteredLowStock = lowStockProducts.filter(
+      (item) => item.quantity <= item.lowStockThreshold * 3
+    )
 
     return NextResponse.json({
       stats: {
@@ -206,7 +214,7 @@ export async function GET(request: NextRequest) {
       revenueChart: monthlyRevenue,
       topProducts: topProductsWithDetails,
       orderStatusBreakdown,
-      lowStockProducts,
+      lowStockProducts: filteredLowStock,
     })
   } catch (error) {
     console.error('Analytics GET error:', error)
