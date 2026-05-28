@@ -25,6 +25,9 @@ export type DashboardPage =
   | "billing"
   | "store-settings"
   | "reviews"
+  | "email-templates"
+  | "data-import"
+  | "gift-cards"
 
 export type AdminPage =
   | "overview"
@@ -89,6 +92,9 @@ interface AppState {
   selectedMerchantAdminId: string | null
   setSelectedMerchantAdminId: (id: string | null) => void
   
+  selectedCategoryId: string | null
+  setSelectedCategoryId: (id: string | null) => void
+  
   // UI state
   sidebarOpen: boolean
   setSidebarOpen: (open: boolean) => void
@@ -135,6 +141,9 @@ export const useAppStore = create<AppState>((set) => ({
   
   selectedMerchantAdminId: null,
   setSelectedMerchantAdminId: (id) => set({ selectedMerchantAdminId: id }),
+  
+  selectedCategoryId: null,
+  setSelectedCategoryId: (id) => set({ selectedCategoryId: id }),
   
   sidebarOpen: true,
   setSidebarOpen: (open) => set({ sidebarOpen: open }),

@@ -20,6 +20,9 @@ import {
   PenLine,
   Calendar,
   Tag,
+  FolderOpen,
+  MessageCircle,
+  ChevronDown,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -131,6 +134,39 @@ const categoryGradients = [
   'from-fuchsia-400 to-pink-300',
 ]
 
+const categoryBarGradients: Record<string, string> = {
+  Technology: 'from-orange-500 to-red-400',
+  Reviews: 'from-sky-500 to-blue-400',
+  Guides: 'from-emerald-500 to-teal-400',
+  News: 'from-red-500 to-rose-400',
+  Lifestyle: 'from-fuchsia-500 to-pink-400',
+  'AI & Automation': 'from-amber-500 to-yellow-400',
+  Business: 'from-teal-500 to-cyan-400',
+  Marketing: 'from-violet-500 to-purple-400',
+  Product: 'from-indigo-500 to-blue-400',
+  Design: 'from-pink-500 to-rose-400',
+}
+
+const suggestedSearchTerms = [
+  'Headphones',
+  'Wireless',
+  'Smart',
+  'Running',
+  'Laptop',
+  'Yoga',
+  'Backpack',
+  'Shoes',
+]
+
+const popularCategoriesGrid = [
+  { name: 'Electronics', emoji: '🔌' },
+  { name: 'Fashion', emoji: '👗' },
+  { name: 'Sports', emoji: '⚽' },
+  { name: 'Home', emoji: '🏠' },
+  { name: 'Books', emoji: '📚' },
+  { name: 'Beauty', emoji: '💄' },
+]
+
 // --- Animation Variants ---
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -186,7 +222,15 @@ function useRecentSearches() {
   const addSearch = useCallback((term: string) => {
     setRecentSearches((prev) => {
       const filtered = prev.filter((t) => t.toLowerCase() !== term.toLowerCase())
-      const updated = [term, ...filtered].slice(0, 5)
+      const updated = [term, ...filtered].slice(0, 8)
+      try { localStorage.setItem('shopforge_recent_searches', JSON.stringify(updated)) } catch { /* ignore */ }
+      return updated
+    })
+  }, [])
+
+  const removeSearch = useCallback((term: string) => {
+    setRecentSearches((prev) => {
+      const updated = prev.filter((t) => t.toLowerCase() !== term.toLowerCase())
       try { localStorage.setItem('shopforge_recent_searches', JSON.stringify(updated)) } catch { /* ignore */ }
       return updated
     })
@@ -197,13 +241,13 @@ function useRecentSearches() {
     try { localStorage.removeItem('shopforge_recent_searches') } catch { /* ignore */ }
   }, [])
 
-  return { recentSearches, addSearch, clearSearches }
+  return { recentSearches, addSearch, removeSearch, clearSearches }
 }
 
 // --- Main Component ---
 export function SearchPage() {
   const { globalSearchQuery, setGlobalSearchQuery, selectedStoreId, setSelectedProductId, setStorefrontPage, setSelectedCategoryId } = useAppStore()
-  const { recentSearches, addSearch, clearSearches } = useRecentSearches()
+  const { recentSearches, addSearch, removeSearch, clearSearches } = useRecentSearches()
   const [searchInput, setSearchInput] = useState(globalSearchQuery || '')
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -216,8 +260,10 @@ export function SearchPage() {
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set())
   const [priceRange, setPriceRange] = useState([0, 1000])
   const [minRating, setMinRating] = useState(0)
+  const [sortDropdownOpen, setSortDropdownOpen] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const suggestionsRef = useRef<HTMLDivElement>(null)
+  const sortDropdownRef = useRef<HTMLDivElement>(null)
 
   // Fetch categories
   useEffect(() => {
@@ -248,6 +294,9 @@ export function SearchPage() {
     const handleClick = (e: MouseEvent) => {
       if (suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node)) {
         setShowSuggestions(false)
+      }
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(e.target as Node)) {
+        setSortDropdownOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClick)
@@ -341,6 +390,13 @@ export function SearchPage() {
 
   const totalResults = filteredProducts.length + blogResults.length + categoryResults.length
 
+  const sortOptions = [
+    { value: 'relevance', label: 'Relevance' },
+    { value: 'price-asc', label: 'Price: Low → High' },
+    { value: 'price-desc', label: 'Price: High → Low' },
+    { value: 'newest', label: 'Newest First' },
+  ]
+
   const FilterContent = () => (
     <div className="space-y-6">
       {categories.length > 0 && (
@@ -422,52 +478,63 @@ export function SearchPage() {
               Results for &quot;{globalSearchQuery}&quot;
             </>
           ) : (
-            'Search'
+            <>
+              <span className="bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 bg-clip-text text-transparent">Search</span>{' '}
+              TechGear Pro
+            </>
           )}
         </h1>
 
-        {/* Search Input with Glass Morphism */}
+        {/* Search Input with Gradient Border */}
         <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto">
           <div className="relative">
-            <motion.div
-              animate={loading ? { scale: [1, 1.1, 1] } : {}}
-              transition={{ duration: 1, repeat: Infinity }}
-            >
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground z-10" />
-            </motion.div>
-            <Input
-              ref={searchInputRef}
-              placeholder="Search for products, articles, categories..."
-              value={searchInput}
-              onChange={(e) => {
-                setSearchInput(e.target.value)
-                setShowSuggestions(e.target.value.length >= 2)
-              }}
-              onFocus={() => {
-                if (searchInput.length >= 2) setShowSuggestions(true)
-              }}
-              className="pl-12 pr-12 h-14 bg-white/70 backdrop-blur-lg border-2 border-rose-100 focus:border-rose-300 focus:ring-4 focus:ring-rose-100 rounded-2xl text-base shadow-lg shadow-rose-100/30"
-            />
-            {searchInput && (
-              <button
-                type="button"
-                onClick={() => { setSearchInput(''); setShowSuggestions(false); searchInputRef.current?.focus() }}
-                className="absolute right-14 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center transition-colors"
+            {/* Gradient border wrapper */}
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-rose-400 via-orange-400 to-amber-400 rounded-2xl opacity-0 focus-within:opacity-100 transition-opacity duration-300 blur-[1px]" />
+            <div className="relative">
+              <motion.div
+                animate={loading ? { scale: [1, 1.15, 1], opacity: [1, 0.6, 1] } : {}}
+                transition={{ duration: 1.2, repeat: Infinity }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
               >
-                <X className="h-3.5 w-3.5 text-muted-foreground" />
-              </button>
-            )}
-            <Button
-              type="submit"
-              size="sm"
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-rose-500 hover:bg-rose-600 h-10 px-5 rounded-xl shadow-md"
-            >
-              {loading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Search className="h-4 w-4" />
-              )}
-            </Button>
+                <Search className="h-5 w-5 text-muted-foreground" />
+              </motion.div>
+              <Input
+                ref={searchInputRef}
+                placeholder="Search for products, articles, categories..."
+                value={searchInput}
+                onChange={(e) => {
+                  setSearchInput(e.target.value)
+                  setShowSuggestions(e.target.value.length >= 2)
+                }}
+                onFocus={() => {
+                  if (searchInput.length >= 2) setShowSuggestions(true)
+                }}
+                className="pl-12 pr-24 h-14 bg-white/80 backdrop-blur-lg border-2 border-rose-100 focus:border-rose-300 focus:ring-4 focus:ring-rose-100/50 rounded-2xl text-base shadow-lg shadow-rose-100/30 transition-all"
+              />
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                {searchInput && (
+                  <button
+                    type="button"
+                    onClick={() => { setSearchInput(''); setShowSuggestions(false); searchInputRef.current?.focus() }}
+                    className="h-8 px-2.5 rounded-lg bg-muted hover:bg-muted/80 flex items-center justify-center transition-colors text-xs text-muted-foreground font-medium"
+                  >
+                    <X className="h-3.5 w-3.5 mr-1" />
+                    Clear
+                  </button>
+                )}
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 h-10 px-5 rounded-xl shadow-md transition-all"
+                >
+                  {loading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Search className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
           </div>
 
           {/* Autocomplete Suggestions Dropdown */}
@@ -496,6 +563,45 @@ export function SearchPage() {
             )}
           </AnimatePresence>
         </form>
+
+        {/* Recent Searches Pills below input */}
+        {recentSearches.length > 0 && !searched && (
+          <motion.div
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="max-w-2xl mx-auto mt-4"
+          >
+            <div className="flex items-center gap-2 flex-wrap justify-center">
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                Recent:
+              </span>
+              {recentSearches.slice(0, 5).map((term) => (
+                <div key={term} className="group/recent relative">
+                  <button
+                    onClick={() => handleSuggestionClick(term)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs bg-muted/80 hover:bg-rose-100 hover:text-rose-700 transition-colors pr-7"
+                  >
+                    {term}
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); removeSearch(term) }}
+                    className="absolute -right-0.5 top-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-muted group-hover/recent:bg-rose-200 flex items-center justify-center opacity-0 group-hover/recent:opacity-100 transition-opacity"
+                  >
+                    <X className="h-2.5 w-2.5 text-muted-foreground" />
+                  </button>
+                </div>
+              ))}
+              <button
+                onClick={clearSearches}
+                className="text-[11px] text-muted-foreground hover:text-rose-500 transition-colors underline underline-offset-2"
+              >
+                Clear all
+              </button>
+            </div>
+          </motion.div>
+        )}
       </motion.div>
 
       {/* ====== Pre-Search State ====== */}
@@ -506,7 +612,7 @@ export function SearchPage() {
           transition={{ delay: 0.2 }}
           className="max-w-2xl mx-auto"
         >
-          {/* Recent Searches */}
+          {/* Recent Searches (detailed) */}
           {recentSearches.length > 0 && (
             <div className="mb-8">
               <div className="flex items-center justify-between mb-3">
@@ -523,14 +629,21 @@ export function SearchPage() {
               </div>
               <div className="flex flex-wrap gap-2">
                 {recentSearches.map((term) => (
-                  <button
-                    key={term}
-                    onClick={() => handleSuggestionClick(term)}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-sm bg-muted/80 hover:bg-rose-100 hover:text-rose-700 transition-colors"
-                  >
-                    <Clock className="h-3 w-3 text-muted-foreground" />
-                    {term}
-                  </button>
+                  <div key={term} className="group/recent relative">
+                    <button
+                      onClick={() => handleSuggestionClick(term)}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-sm bg-muted/80 hover:bg-rose-100 hover:text-rose-700 transition-colors pr-7"
+                    >
+                      <Clock className="h-3 w-3 text-muted-foreground" />
+                      {term}
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); removeSearch(term) }}
+                      className="absolute -right-0.5 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-muted group-hover/recent:bg-rose-200 flex items-center justify-center opacity-0 group-hover/recent:opacity-100 transition-opacity"
+                    >
+                      <X className="h-3 w-3 text-muted-foreground" />
+                    </button>
+                  </div>
                 ))}
               </div>
             </div>
@@ -549,10 +662,10 @@ export function SearchPage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleSuggestionClick(item.term)}
-                  className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-white border border-gray-100 hover:border-rose-200 hover:shadow-md transition-all text-left shadow-sm"
+                  className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-white border border-gray-100 hover:border-rose-200 hover:shadow-md transition-all text-left shadow-sm group/pop"
                 >
                   <span className="text-lg">{item.icon}</span>
-                  <span className="text-sm font-medium">{item.term}</span>
+                  <span className="text-sm font-medium group-hover/pop:text-rose-600 transition-colors">{item.term}</span>
                 </motion.button>
               ))}
             </div>
@@ -583,6 +696,47 @@ export function SearchPage() {
               </div>
             </div>
           )}
+
+          {/* Suggested Search Terms */}
+          <div className="mt-10">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="h-4 w-4 text-rose-500" />
+              <h3 className="font-semibold text-sm">Try Searching</h3>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {suggestedSearchTerms.map((term) => (
+                <button
+                  key={term}
+                  onClick={() => handleSuggestionClick(term)}
+                  className="px-4 py-2 rounded-full text-sm bg-white border border-gray-100 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 transition-all shadow-sm"
+                >
+                  {term}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Popular Categories Grid */}
+          <div className="mt-10">
+            <div className="flex items-center gap-2 mb-3">
+              <FolderOpen className="h-4 w-4 text-rose-500" />
+              <h3 className="font-semibold text-sm">Popular Categories</h3>
+            </div>
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+              {popularCategoriesGrid.map((cat) => (
+                <motion.button
+                  key={cat.name}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => handleSuggestionClick(cat.name)}
+                  className="flex flex-col items-center gap-2 px-3 py-4 rounded-xl bg-white border border-gray-100 hover:border-rose-200 hover:shadow-md transition-all shadow-sm"
+                >
+                  <span className="text-2xl">{cat.emoji}</span>
+                  <span className="text-xs font-medium">{cat.name}</span>
+                </motion.button>
+              ))}
+            </div>
+          </div>
         </motion.div>
       ) : (
         /* ====== Search Results ====== */
@@ -678,21 +832,37 @@ export function SearchPage() {
                   </div>
                 </div>
               ) : totalResults === 0 ? (
-                /* ====== Empty State ====== */
+                /* ====== No Results State ====== */
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="text-center py-20"
                 >
-                  <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-rose-100 to-orange-100 flex items-center justify-center">
-                    <Search className="h-12 w-12 text-rose-300" />
+                  {/* Illustration */}
+                  <div className="relative w-28 h-28 mx-auto mb-6">
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-rose-100 to-orange-100" />
+                    <div className="absolute inset-2 rounded-full bg-gradient-to-br from-rose-50 to-orange-50 flex items-center justify-center">
+                      <Search className="h-12 w-12 text-rose-300" />
+                    </div>
+                    {/* Small decorative dots */}
+                    <motion.div
+                      animate={{ y: [0, -5, 0] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-200"
+                    />
+                    <motion.div
+                      animate={{ y: [0, 5, 0] }}
+                      transition={{ duration: 2.5, repeat: Infinity }}
+                      className="absolute -bottom-1 -left-1 w-3 h-3 rounded-full bg-orange-200"
+                    />
                   </div>
                   <h3 className="text-xl font-bold mb-2">No results found</h3>
                   <p className="text-muted-foreground text-sm mb-2 max-w-sm mx-auto">
                     We couldn&apos;t find anything matching &quot;{globalSearchQuery}&quot;
                   </p>
-                  <p className="text-muted-foreground text-xs mb-6">
-                    Try checking your spelling, using more general terms, or browse categories.
+                  <p className="text-muted-foreground text-xs mb-6 flex items-center justify-center gap-1.5">
+                    <MessageCircle className="h-3.5 w-3.5" />
+                    Try checking your spelling, using more general terms, or browse categories below.
                   </p>
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                     <Button
@@ -718,22 +888,43 @@ export function SearchPage() {
                     </Button>
                   </div>
 
-                  {/* Suggestion chips */}
+                  {/* Spelling suggestions */}
                   <div className="mt-8">
-                    <p className="text-xs text-muted-foreground mb-3">Popular searches you might try:</p>
+                    <p className="text-xs text-muted-foreground mb-3">Did you mean:</p>
                     <div className="flex flex-wrap justify-center gap-2">
-                      {popularSearches.slice(0, 4).map((item) => (
+                      {suggestedSearchTerms.slice(0, 4).map((term) => (
                         <button
-                          key={item.term}
-                          onClick={() => handleSuggestionClick(item.term)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs bg-muted hover:bg-rose-100 hover:text-rose-700 transition-colors"
+                          key={term}
+                          onClick={() => handleSuggestionClick(term)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs bg-muted hover:bg-rose-100 hover:text-rose-700 transition-colors font-medium"
                         >
-                          <span>{item.icon}</span>
-                          {item.term}
+                          {term}
                         </button>
                       ))}
                     </div>
                   </div>
+
+                  {/* Category links to browse */}
+                  {categories.length > 0 && (
+                    <div className="mt-6">
+                      <p className="text-xs text-muted-foreground mb-3">Or browse a category:</p>
+                      <div className="flex flex-wrap justify-center gap-2">
+                        {categories.slice(0, 6).map((cat) => (
+                          <button
+                            key={cat.id}
+                            onClick={() => {
+                              if (setSelectedCategoryId) setSelectedCategoryId(cat.id)
+                              setStorefrontPage('category')
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-100 hover:border-rose-300 transition-all font-medium"
+                          >
+                            <Hash className="h-3 w-3 text-rose-400" />
+                            {cat.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </motion.div>
               ) : (
                 /* ====== Tabbed Results ====== */
@@ -770,21 +961,40 @@ export function SearchPage() {
                           <p className="text-xs text-muted-foreground">
                             Showing {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
                           </p>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">Sort:</span>
-                            {['relevance', 'price-asc', 'price-desc', 'newest'].map((val) => (
-                              <button
-                                key={val}
-                                onClick={() => setSortBy(val)}
-                                className={`text-xs px-2.5 py-1 rounded-full transition-colors ${
-                                  sortBy === val
-                                    ? 'bg-rose-100 text-rose-700 font-medium'
-                                    : 'text-muted-foreground hover:bg-muted'
-                                }`}
-                              >
-                                {val === 'relevance' ? 'Relevance' : val === 'price-asc' ? 'Price ↑' : val === 'price-desc' ? 'Price ↓' : 'Newest'}
-                              </button>
-                            ))}
+                          {/* Sort dropdown */}
+                          <div ref={sortDropdownRef} className="relative">
+                            <button
+                              onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
+                              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-muted/80 hover:bg-muted transition-colors font-medium"
+                            >
+                              {sortOptions.find(o => o.value === sortBy)?.label}
+                              <ChevronDown className={`h-3 w-3 transition-transform ${sortDropdownOpen ? 'rotate-180' : ''}`} />
+                            </button>
+                            <AnimatePresence>
+                              {sortDropdownOpen && (
+                                <motion.div
+                                  initial={{ opacity: 0, y: -5 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -5 }}
+                                  className="absolute right-0 top-full mt-1 bg-white/95 backdrop-blur-lg border border-rose-100 rounded-xl shadow-xl z-50 overflow-hidden min-w-[180px]"
+                                >
+                                  {sortOptions.map((option) => (
+                                    <button
+                                      key={option.value}
+                                      onClick={() => { setSortBy(option.value); setSortDropdownOpen(false) }}
+                                      className={`w-full text-left px-4 py-2.5 text-sm hover:bg-rose-50 transition-colors flex items-center justify-between ${
+                                        sortBy === option.value ? 'text-rose-600 font-medium bg-rose-50/50' : 'text-foreground'
+                                      }`}
+                                    >
+                                      {option.label}
+                                      {sortBy === option.value && (
+                                        <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+                                      )}
+                                    </button>
+                                  ))}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
                           </div>
                         </div>
 
@@ -813,6 +1023,7 @@ export function SearchPage() {
                                 : 4.5
                               const hasDiscount = product.comparePrice && product.comparePrice > product.price
                               const gradient = getGradient(product.id)
+                              const barGradient = categoryBarGradients[product.category?.name || ''] || 'from-rose-500 to-orange-400'
 
                               return (
                                 <motion.div key={product.id} variants={itemVariants}>
@@ -823,6 +1034,8 @@ export function SearchPage() {
                                       setStorefrontPage('product')
                                     }}
                                   >
+                                    {/* Gradient accent bar */}
+                                    <div className={`h-1 bg-gradient-to-r ${barGradient}`} />
                                     {/* Image */}
                                     <div className="relative aspect-square overflow-hidden">
                                       <div className={`absolute inset-0 bg-gradient-to-br ${gradient} transition-transform duration-500 group-hover:scale-110`} />
@@ -892,10 +1105,12 @@ export function SearchPage() {
                           <div className="space-y-4">
                             {blogResults.map((post) => (
                               <motion.div key={post.id} variants={itemVariants}>
-                                <Card className="p-4 sm:p-5 hover:shadow-md transition-all duration-200 cursor-pointer group border-0 shadow-sm">
+                                <Card className="p-4 sm:p-5 hover:shadow-md transition-all duration-200 cursor-pointer group border-0 shadow-sm overflow-hidden">
+                                  {/* Gradient accent bar */}
+                                  <div className={`h-1 -mx-4 sm:-mx-5 -mt-4 sm:-mt-5 mb-4 bg-gradient-to-r ${categoryBarGradients[post.category] || 'from-rose-500 to-orange-400'}`} />
                                   <div className="flex gap-4">
                                     {/* Image Placeholder */}
-                                    <div className="hidden sm:block w-28 h-28 shrink-0 rounded-xl bg-gradient-to-br from-rose-400 via-pink-400 to-orange-300 flex items-center justify-center">
+                                    <div className="hidden sm:flex w-28 h-28 shrink-0 rounded-xl bg-gradient-to-br from-rose-400 via-pink-400 to-orange-300 items-center justify-center">
                                       <PenLine className="h-8 w-8 text-white/30" />
                                     </div>
                                     {/* Content */}
@@ -964,6 +1179,8 @@ export function SearchPage() {
                                     setStorefrontPage('category')
                                   }}
                                 >
+                                  {/* Gradient accent bar */}
+                                  <div className={`h-1 bg-gradient-to-r ${categoryBarGradients[cat.name] || categoryGradients[i % categoryGradients.length].replace('to-', 'from-').replace('from-', 'to-')}`} />
                                   <div className={`aspect-[3/2] bg-gradient-to-br ${categoryGradients[i % categoryGradients.length]} flex items-center justify-center relative`}>
                                     <span className="text-white/30 text-4xl font-bold">
                                       {cat.name.substring(0, 2).toUpperCase()}

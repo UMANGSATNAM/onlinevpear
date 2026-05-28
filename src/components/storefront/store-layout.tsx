@@ -9,13 +9,6 @@ import {
   X,
   User,
   Heart,
-  Mail,
-  Phone,
-  MapPin,
-  Facebook,
-  Twitter,
-  Instagram,
-  Youtube,
   ChevronRight,
   Truck,
   ArrowLeft,
@@ -27,7 +20,7 @@ import { Badge } from '@/components/ui/badge'
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet'
 import { Separator } from '@/components/ui/separator'
 import { useAppStore, type StorefrontPage } from '@/lib/store'
-import { toast } from 'sonner'
+import { StoreFooter } from './footer'
 
 interface StoreData {
   id: string
@@ -336,136 +329,7 @@ export function StoreLayout({ store, cartItemCount, children }: StoreLayoutProps
       </main>
 
       {/* Footer */}
-      <footer className="bg-neutral-900 text-neutral-300">
-        {/* Newsletter Section */}
-        <div className="border-b border-neutral-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="text-center md:text-left">
-                <h3 className="text-xl font-bold text-white mb-2">Subscribe to our newsletter</h3>
-                <p className="text-neutral-400 text-sm">Get the latest updates on new products and upcoming sales.</p>
-              </div>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  toast?.success?.('Thank you for subscribing!')
-                }}
-                className="flex gap-2 w-full max-w-md"
-              >
-                <Input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="bg-neutral-800 border-neutral-700 text-white placeholder:text-neutral-500 flex-1"
-                  required
-                />
-                <Button type="submit" className="bg-rose-500 hover:bg-rose-600 shrink-0">
-                  Subscribe
-                </Button>
-              </form>
-            </div>
-          </div>
-        </div>
-
-        {/* Links & Info */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {/* About */}
-            <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-rose-500 to-orange-400 flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">
-                    {store?.name?.substring(0, 1) || 'S'}
-                  </span>
-                </div>
-                <span className="font-bold text-white">{store?.name || 'ShopForge'}</span>
-              </div>
-              <p className="text-sm text-neutral-400 mb-4 line-clamp-3">
-                {store?.description || 'Your one-stop shop for amazing products. Quality guaranteed.'}
-              </p>
-              <div className="flex gap-3">
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-400 hover:text-white hover:bg-neutral-800">
-                  <Facebook className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-400 hover:text-white hover:bg-neutral-800">
-                  <Twitter className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-400 hover:text-white hover:bg-neutral-800">
-                  <Instagram className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-400 hover:text-white hover:bg-neutral-800">
-                  <Youtube className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Quick Links */}
-            <div>
-              <h4 className="font-semibold text-white mb-4 text-sm">Quick Links</h4>
-              <ul className="space-y-2">
-                {navLinks.map((link) => (
-                  <li key={link.page}>
-                    <button
-                      onClick={() => handleNavClick(link.page)}
-                      className="text-sm text-neutral-400 hover:text-white transition-colors"
-                    >
-                      {link.label}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Customer Service */}
-            <div>
-              <h4 className="font-semibold text-white mb-4 text-sm">Customer Service</h4>
-              <ul className="space-y-2">
-                {['Contact Us', 'Shipping Policy', 'Returns & Exchanges', 'FAQ', 'Size Guide'].map((item) => (
-                  <li key={item}>
-                    <span className="text-sm text-neutral-400 hover:text-white transition-colors cursor-pointer">
-                      {item}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Contact Info */}
-            <div>
-              <h4 className="font-semibold text-white mb-4 text-sm">Contact</h4>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-2">
-                  <Mail className="h-4 w-4 mt-0.5 shrink-0 text-neutral-500" />
-                  <span className="text-sm text-neutral-400">support@shopforge.com</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Phone className="h-4 w-4 mt-0.5 shrink-0 text-neutral-500" />
-                  <span className="text-sm text-neutral-400">+1 (555) 123-4567</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <MapPin className="h-4 w-4 mt-0.5 shrink-0 text-neutral-500" />
-                  <span className="text-sm text-neutral-400">123 Commerce St, New York, NY 10001</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Bar */}
-        <div className="border-t border-neutral-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
-              <p className="text-xs text-neutral-500">
-                &copy; {new Date().getFullYear()} {store?.name || 'ShopForge'}. All rights reserved.
-              </p>
-              <div className="flex gap-4">
-                <span className="text-xs text-neutral-500 hover:text-neutral-300 cursor-pointer">Privacy Policy</span>
-                <span className="text-xs text-neutral-500 hover:text-neutral-300 cursor-pointer">Terms of Service</span>
-                <span className="text-xs text-neutral-500 hover:text-neutral-300 cursor-pointer">Cookie Policy</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <StoreFooter />
     </div>
   )
 }

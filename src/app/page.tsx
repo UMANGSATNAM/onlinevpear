@@ -22,6 +22,9 @@ import { MarketingAutomation } from '@/components/dashboard/marketing'
 import { StaffManagement } from '@/components/dashboard/staff'
 import { ThemeCustomization } from '@/components/dashboard/themes'
 import { ReviewsManagement } from '@/components/dashboard/reviews'
+import { DataImport } from '@/components/dashboard/data-import'
+import { GiftCardsManagement } from '@/components/dashboard/gift-cards'
+import { EmailTemplates } from '@/components/dashboard/email-templates'
 import { CustomerDetail } from '@/components/dashboard/customer-detail'
 import { NotificationsPanel } from '@/components/dashboard/notifications-panel'
 import { OnboardingWizard } from '@/components/dashboard/onboarding-wizard'
@@ -87,6 +90,9 @@ import {
   UsersRound,
   Palette,
   Star,
+  Gift,
+  Import,
+  Mail,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -115,6 +121,9 @@ const dashboardNavItems: Array<{ page: DashboardPage; label: string; icon: React
   { page: 'ai-assistant', label: 'AI Assistant', icon: <Bot className="h-4 w-4" />, group: 'Tools' },
   { page: 'workflows', label: 'Workflows', icon: <GitBranch className="h-4 w-4" />, group: 'Tools' },
   { page: 'apps', label: 'Apps', icon: <Grid3X3 className="h-4 w-4" />, group: 'Tools' },
+  { page: 'gift-cards', label: 'Gift Cards', icon: <Gift className="h-4 w-4" />, group: 'Tools' },
+  { page: 'email-templates', label: 'Email Templates', icon: <Mail className="h-4 w-4" />, group: 'Tools' },
+  { page: 'data-import', label: 'Data Import', icon: <Import className="h-4 w-4" />, group: 'Settings' },
   { page: 'staff', label: 'Staff', icon: <UsersRound className="h-4 w-4" />, group: 'Settings' },
   { page: 'billing', label: 'Billing', icon: <CreditCard className="h-4 w-4" />, group: 'Settings' },
   { page: 'store-settings', label: 'Store Settings', icon: <Settings className="h-4 w-4" />, group: 'Settings' },
@@ -545,6 +554,9 @@ function DashboardContent() {
         {dashboardPage === 'billing' && <BillingSubscription />}
         {dashboardPage === 'store-settings' && <StoreSettings />}
         {dashboardPage === 'reviews' && <ReviewsManagement />}
+        {dashboardPage === 'data-import' && <DataImport />}
+        {dashboardPage === 'gift-cards' && <GiftCardsManagement />}
+        {dashboardPage === 'email-templates' && <EmailTemplates />}
       </motion.div>
     </AnimatePresence>
   )
