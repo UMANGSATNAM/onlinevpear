@@ -54,3 +54,40 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { userId, action } = body
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'userId is required' },
+        { status: 400 }
+      )
+    }
+
+    if (action === 'mark-all-read' || body.isRead === true) {
+      const result = await db.notification.updateMany({
+        where: { userId, isRead: false },
+        data: { isRead: true },
+      })
+      return NextResponse.json({
+        success: true,
+        count: result.count,
+        message: `Marked ${result.count} notifications as read`,
+      })
+    }
+
+    return NextResponse.json(
+      { error: 'Invalid action' },
+      { status: 400 }
+    )
+  } catch (error) {
+    console.error('Notifications POST error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}

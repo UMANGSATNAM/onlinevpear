@@ -21,6 +21,8 @@ import { CategoriesManagement } from '@/components/dashboard/categories'
 import { MarketingAutomation } from '@/components/dashboard/marketing'
 import { StaffManagement } from '@/components/dashboard/staff'
 import { ThemeCustomization } from '@/components/dashboard/themes'
+import { NotificationsPanel } from '@/components/dashboard/notifications-panel'
+import { OnboardingWizard } from '@/components/dashboard/onboarding-wizard'
 import { AdminOverview } from '@/components/admin/overview'
 import { MerchantManagement } from '@/components/admin/merchants'
 import { RevenueMonitoring } from '@/components/admin/revenue'
@@ -489,6 +491,16 @@ export default function Home() {
 
   const [storeData, setStoreData] = useState<any>(null)
   const [cartItemCount, setCartItemCount] = useState(0)
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const [onboardingOpen, setOnboardingOpen] = useState(false)
+
+  // Show onboarding wizard for new merchants on first login
+  useEffect(() => {
+    if (isAuthenticated && selectedMerchantId && !sessionStorage.getItem('shopforge_onboarded')) {
+      const timer = setTimeout(() => setOnboardingOpen(true), 1500)
+      return () => clearTimeout(timer)
+    }
+  }, [isAuthenticated, selectedMerchantId])
 
   // Load store data when store changes
   useEffect(() => {
@@ -769,7 +781,7 @@ export default function Home() {
                 {/* Notifications */}
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-9 w-9 relative">
+                    <Button variant="ghost" size="icon" className="h-9 w-9 relative" onClick={() => setNotificationsOpen(true)}>
                       <Bell className="h-4 w-4" />
                       <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500" />
                     </Button>
@@ -832,6 +844,21 @@ export default function Home() {
           </div>
         </main>
 
+        <NotificationsPanel
+          open={notificationsOpen}
+          onClose={() => setNotificationsOpen(false)}
+          merchantId={selectedMerchantId || ''}
+        />
+        {!isAdmin && (
+          <OnboardingWizard
+            open={onboardingOpen}
+            onClose={() => {
+              setOnboardingOpen(false)
+              sessionStorage.setItem('shopforge_onboarded', 'true')
+            }}
+            merchantId={selectedMerchantId || ''}
+          />
+        )}
         <Toaster />
       </div>
     </TooltipProvider>

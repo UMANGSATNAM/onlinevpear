@@ -52,11 +52,43 @@ const collectionGradients = [
 ]
 
 const brandValues = [
-  { icon: Truck, title: 'Free Shipping', desc: 'On orders over $100' },
-  { icon: Headphones, title: '24/7 Support', desc: 'Dedicated customer service' },
-  { icon: RotateCcw, title: 'Easy Returns', desc: '30-day return policy' },
-  { icon: Shield, title: 'Secure Payment', desc: '100% secure checkout' },
+  { icon: Truck, title: 'Free Shipping', desc: 'On orders over $100', gradient: 'from-rose-500 to-orange-400' },
+  { icon: Headphones, title: '24/7 Support', desc: 'Dedicated customer service', gradient: 'from-violet-500 to-purple-400' },
+  { icon: RotateCcw, title: 'Easy Returns', desc: '30-day return policy', gradient: 'from-emerald-500 to-teal-400' },
+  { icon: Shield, title: 'Secure Payment', desc: '100% secure checkout', gradient: 'from-amber-500 to-orange-400' },
 ]
+
+// Reusable section header component with gradient line and enhanced View All
+function SectionHeader({
+  title,
+  subtitle,
+  onViewAll,
+}: {
+  title: string
+  subtitle: string
+  onViewAll?: () => void
+}) {
+  return (
+    <div className="flex items-end justify-between mb-8">
+      <div>
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{title}</h2>
+        {/* Gradient line below title */}
+        <div className="h-1 w-16 rounded-full bg-gradient-to-r from-rose-500 to-orange-400 mt-2" />
+        <p className="text-muted-foreground text-sm mt-2">{subtitle}</p>
+      </div>
+      {onViewAll && (
+        <Button
+          variant="ghost"
+          onClick={onViewAll}
+          className="group text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+        >
+          View All
+          <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-1" />
+        </Button>
+      )}
+    </div>
+  )
+}
 
 export function StorefrontHome() {
   const { setStorefrontPage, selectedStoreId } = useAppStore()
@@ -87,6 +119,14 @@ export function StorefrontHome() {
     fetchData()
   }, [selectedStoreId])
 
+  // Enable smooth scrolling
+  useEffect(() => {
+    document.documentElement.style.scrollBehavior = 'smooth'
+    return () => {
+      document.documentElement.style.scrollBehavior = ''
+    }
+  }, [])
+
   const newArrivals = [...products]
     .sort((a, b) => new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime())
     .slice(0, 8)
@@ -99,9 +139,23 @@ export function StorefrontHome() {
     <div>
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900">
+        {/* Floating decorative blobs */}
         <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-rose-500/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-10 right-10 w-96 h-96 bg-amber-500/20 rounded-full blur-3xl" />
+          <motion.div
+            className="absolute top-20 left-10 w-72 h-72 bg-rose-500/20 rounded-full blur-3xl"
+            animate={{ y: [0, -20, 0] }}
+            transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <motion.div
+            className="absolute bottom-10 right-10 w-96 h-96 bg-amber-500/20 rounded-full blur-3xl"
+            animate={{ y: [0, 15, 0] }}
+            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <motion.div
+            className="absolute top-1/2 left-1/2 w-64 h-64 bg-violet-500/10 rounded-full blur-3xl"
+            animate={{ y: [0, -12, 0], x: [0, 10, 0] }}
+            transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+          />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24 lg:py-32">
           <div className="max-w-2xl">
@@ -110,25 +164,25 @@ export function StorefrontHome() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 text-white/80 text-sm font-medium mb-6">
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm text-white/80 text-sm font-medium mb-6 border border-white/10">
                 New Collection Available
                 <ArrowRight className="h-3 w-3" />
               </span>
             </motion.div>
             <motion.h1
-              className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6"
+              className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-white leading-tight mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
               Discover Your
               <br />
-              <span className="bg-gradient-to-r from-rose-400 to-orange-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-rose-400 via-orange-400 to-amber-400 bg-clip-text text-transparent drop-shadow-lg">
                 Perfect Style
               </span>
             </motion.h1>
             <motion.p
-              className="text-lg text-neutral-300 mb-8 max-w-lg"
+              className="text-lg text-neutral-300 mb-8 max-w-lg leading-relaxed"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
@@ -144,16 +198,19 @@ export function StorefrontHome() {
               <Button
                 size="lg"
                 onClick={() => setStorefrontPage('category')}
-                className="bg-rose-500 hover:bg-rose-600 text-white"
+                className="bg-rose-500 hover:bg-rose-600 text-white relative overflow-hidden group"
               >
+                <span className="absolute inset-0 rounded-md bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                 Shop Now
                 <ArrowRight className="ml-2 h-4 w-4" />
+                {/* Pulse ring */}
+                <span className="absolute inset-0 rounded-md animate-ping bg-rose-400/20" />
               </Button>
               <Button
                 size="lg"
                 variant="outline"
                 onClick={() => setStorefrontPage('category')}
-                className="border-white/20 text-white hover:bg-white/10"
+                className="border-white/20 text-white hover:bg-white/10 hover:border-white/30 transition-all focus:ring-2 focus:ring-white/20"
               >
                 View Collections
               </Button>
@@ -164,7 +221,7 @@ export function StorefrontHome() {
 
       {/* Brand Values */}
       <section className="border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8">
             {brandValues.map((value, i) => (
               <motion.div
@@ -172,10 +229,10 @@ export function StorefrontHome() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: i * 0.1 }}
-                className="flex flex-col sm:flex-row items-center gap-3 text-center sm:text-left"
+                className="flex flex-col sm:flex-row items-center gap-3 text-center sm:text-left cursor-default hover:scale-105 transition-transform duration-200"
               >
-                <div className="h-10 w-10 rounded-full bg-rose-50 flex items-center justify-center shrink-0">
-                  <value.icon className="h-5 w-5 text-rose-500" />
+                <div className={`h-11 w-11 rounded-full bg-gradient-to-br ${value.gradient} flex items-center justify-center shrink-0 shadow-sm`}>
+                  <value.icon className="h-5 w-5 text-white" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-sm">{value.title}</h3>
@@ -189,16 +246,12 @@ export function StorefrontHome() {
 
       {/* Featured Collections */}
       {collections.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-2xl font-bold">Featured Collections</h2>
-              <p className="text-muted-foreground text-sm mt-1">Handpicked collections for you</p>
-            </div>
-            <Button variant="ghost" onClick={() => setStorefrontPage('category')}>
-              View All <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+          <SectionHeader
+            title="Featured Collections"
+            subtitle="Handpicked collections for you"
+            onViewAll={() => setStorefrontPage('category')}
+          />
           <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
             {collections.map((collection, i) => (
               <motion.div
@@ -209,7 +262,7 @@ export function StorefrontHome() {
                 className="shrink-0"
               >
                 <Card
-                  className="w-52 sm:w-64 overflow-hidden cursor-pointer group border-0 shadow-sm hover:shadow-md transition-all"
+                  className="w-52 sm:w-64 overflow-hidden cursor-pointer group border-0 shadow-sm hover:shadow-lg transition-all duration-300"
                   onClick={() => setStorefrontPage('category')}
                 >
                   <div className={`h-36 sm:h-44 bg-gradient-to-br ${collectionGradients[i % collectionGradients.length]} relative`}>
@@ -233,14 +286,12 @@ export function StorefrontHome() {
 
       {/* Categories Quick Access */}
       {categories.length > 0 && (
-        <section className="bg-neutral-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-bold">Shop by Category</h2>
-                <p className="text-muted-foreground text-sm mt-1">Browse our categories</p>
-              </div>
-            </div>
+        <section className="bg-gradient-to-b from-neutral-50 to-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+            <SectionHeader
+              title="Shop by Category"
+              subtitle="Browse our categories"
+            />
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {categories.slice(0, 8).map((cat, i) => (
                 <motion.div
@@ -250,14 +301,14 @@ export function StorefrontHome() {
                   transition={{ duration: 0.3, delay: i * 0.05 }}
                 >
                   <Card
-                    className="overflow-hidden cursor-pointer group border-0 shadow-sm hover:shadow-md transition-all"
+                    className="overflow-hidden cursor-pointer group border-0 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
                     onClick={() => setStorefrontPage('category')}
                   >
                     <div className={`h-24 sm:h-32 bg-gradient-to-br ${collectionGradients[i % collectionGradients.length]} flex items-center justify-center relative`}>
                       <span className="text-white/40 text-4xl font-bold">{cat.name.substring(0, 1).toUpperCase()}</span>
                     </div>
                     <div className="p-3 text-center">
-                      <h3 className="font-semibold text-sm">{cat.name}</h3>
+                      <h3 className="font-semibold text-sm group-hover:text-rose-500 transition-colors">{cat.name}</h3>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {cat._count?.products || 0} products
                       </p>
@@ -271,22 +322,42 @@ export function StorefrontHome() {
       )}
 
       {/* New Arrivals */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-bold">New Arrivals</h2>
-            <p className="text-muted-foreground text-sm mt-1">Fresh picks just for you</p>
-          </div>
-          <Button variant="ghost" onClick={() => setStorefrontPage('category')}>
-            View All <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
-        </div>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+        <SectionHeader
+          title="New Arrivals"
+          subtitle="Fresh picks just for you"
+          onViewAll={() => setStorefrontPage('category')}
+        />
         <ProductGrid products={newArrivals} loading={loading} />
       </section>
 
       {/* Promotional Banner */}
-      <section className="bg-gradient-to-r from-rose-500 to-orange-400">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+      <section className="relative bg-gradient-to-r from-rose-500 to-orange-400 overflow-hidden">
+        {/* Diagonal pattern overlay */}
+        <div
+          className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage: `repeating-linear-gradient(
+              45deg,
+              transparent,
+              transparent 10px,
+              rgba(255,255,255,0.1) 10px,
+              rgba(255,255,255,0.1) 20px
+            )`,
+          }}
+        />
+        {/* Floating background element */}
+        <motion.div
+          className="absolute -top-20 -right-20 w-80 h-80 bg-white/10 rounded-full blur-3xl"
+          animate={{ y: [0, 20, 0], x: [0, -15, 0] }}
+          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="absolute -bottom-20 -left-20 w-60 h-60 bg-white/10 rounded-full blur-3xl"
+          animate={{ y: [0, -15, 0] }}
+          transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="text-center md:text-left">
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3">
@@ -299,7 +370,7 @@ export function StorefrontHome() {
             <Button
               size="lg"
               onClick={() => setStorefrontPage('category')}
-              className="bg-white text-rose-500 hover:bg-white/90 shrink-0"
+              className="bg-white text-rose-500 hover:bg-white/90 shrink-0 shadow-lg hover:shadow-xl transition-all focus:ring-2 focus:ring-white/30"
             >
               Shop the Sale
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -309,44 +380,64 @@ export function StorefrontHome() {
       </section>
 
       {/* Best Sellers */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-bold">Best Sellers</h2>
-            <p className="text-muted-foreground text-sm mt-1">Our most popular products</p>
-          </div>
-          <Button variant="ghost" onClick={() => setStorefrontPage('category')}>
-            View All <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
-        </div>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+        <SectionHeader
+          title="Best Sellers"
+          subtitle="Our most popular products"
+          onViewAll={() => setStorefrontPage('category')}
+        />
         <ProductGrid products={bestSellers} loading={loading} />
       </section>
 
       {/* Newsletter Section */}
-      <section className="bg-neutral-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+      <section className="relative bg-gradient-to-br from-neutral-50 via-rose-50/30 to-orange-50/30 overflow-hidden">
+        {/* Decorative animated elements */}
+        <motion.div
+          className="absolute top-10 right-10 w-20 h-20 bg-rose-200/30 rounded-full blur-xl"
+          animate={{ y: [0, -10, 0], scale: [1, 1.1, 1] }}
+          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="absolute bottom-10 left-10 w-24 h-24 bg-orange-200/30 rounded-full blur-xl"
+          animate={{ y: [0, 8, 0], scale: [1, 1.05, 1] }}
+          transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="absolute top-1/2 left-1/3 w-16 h-16 bg-amber-200/20 rounded-full blur-lg"
+          animate={{ y: [0, -6, 0] }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
           <div className="max-w-xl mx-auto text-center">
-            <h2 className="text-2xl font-bold mb-3">Stay in the Loop</h2>
-            <p className="text-muted-foreground mb-6">
-              Subscribe to our newsletter and get 10% off your first order.
-            </p>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault()
-                toast.success('Thank you for subscribing! Check your email for 10% off.')
-              }}
-              className="flex gap-2"
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
             >
-              <Input
-                type="email"
-                placeholder="Enter your email address"
-                className="flex-1"
-                required
-              />
-              <Button type="submit" className="bg-rose-500 hover:bg-rose-600 shrink-0">
-                Subscribe
-              </Button>
-            </form>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-3">Stay in the Loop</h2>
+              <div className="h-1 w-12 rounded-full bg-gradient-to-r from-rose-500 to-orange-400 mx-auto mb-4" />
+              <p className="text-muted-foreground mb-8">
+                Subscribe to our newsletter and get 10% off your first order.
+              </p>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  toast.success('Thank you for subscribing! Check your email for 10% off.')
+                }}
+                className="flex gap-2"
+              >
+                <Input
+                  type="email"
+                  placeholder="Enter your email address"
+                  className="flex-1 bg-white/80 backdrop-blur-sm border-neutral-200 focus:ring-2 focus:ring-rose-500/20 focus:border-rose-300 transition-all"
+                  required
+                />
+                <Button type="submit" className="bg-rose-500 hover:bg-rose-600 shrink-0 shadow-sm hover:shadow-md transition-all focus:ring-2 focus:ring-rose-500/30">
+                  Subscribe
+                </Button>
+              </form>
+            </motion.div>
           </div>
         </div>
       </section>

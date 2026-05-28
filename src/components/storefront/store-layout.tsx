@@ -18,6 +18,8 @@ import {
   Youtube,
   ChevronRight,
   Truck,
+  ArrowLeft,
+  LayoutDashboard,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -52,7 +54,7 @@ const navLinks: Array<{ page: StorefrontPage; label: string }> = [
 ]
 
 export function StoreLayout({ store, cartItemCount, children }: StoreLayoutProps) {
-  const { storefrontPage, setStorefrontPage, setGlobalSearchQuery } = useAppStore()
+  const { storefrontPage, setStorefrontPage, setGlobalSearchQuery, setCurrentView } = useAppStore()
   const [isScrolled, setIsScrolled] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchInput, setSearchInput] = useState('')
@@ -146,6 +148,15 @@ export function StoreLayout({ store, cartItemCount, children }: StoreLayoutProps
                     <ul className="space-y-1">
                       <li>
                         <button
+                          onClick={() => setCurrentView('dashboard')}
+                          className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors"
+                        >
+                          <LayoutDashboard className="h-4 w-4" />
+                          Back to Dashboard
+                        </button>
+                      </li>
+                      <li>
+                        <button
                           onClick={() => handleNavClick('account')}
                           className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
                         >
@@ -200,6 +211,27 @@ export function StoreLayout({ store, cartItemCount, children }: StoreLayoutProps
 
             {/* Right Actions */}
             <div className="flex items-center gap-1 sm:gap-2">
+              {/* Back to Dashboard - Desktop */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentView('dashboard')}
+                className="hidden lg:inline-flex items-center gap-1.5 h-9 px-3 text-xs font-medium border-neutral-200 text-neutral-600 hover:text-foreground hover:border-neutral-300 hover:bg-neutral-50 transition-colors"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Dashboard
+              </Button>
+              {/* Back to Dashboard - Mobile text */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCurrentView('dashboard')}
+                className="lg:hidden inline-flex items-center gap-1 h-9 px-2 text-xs font-medium text-neutral-500 hover:text-foreground"
+              >
+                <LayoutDashboard className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Dashboard</span>
+              </Button>
+
               {/* Search Toggle */}
               <Button
                 variant="ghost"
