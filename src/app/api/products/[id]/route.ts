@@ -74,7 +74,7 @@ export async function PUT(
       'name', 'slug', 'description', 'shortDesc', 'sku', 'barcode',
       'price', 'comparePrice', 'costPrice', 'status', 'visibility',
       'type', 'vendor', 'weight', 'dimensions', 'tracksInventory',
-      'categoryId', 'seo', 'meta',
+      'categoryId', 'images', 'tags', 'collectionIds', 'seo', 'meta',
     ]
 
     for (const field of allowedFields) {

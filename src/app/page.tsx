@@ -25,6 +25,7 @@ import { ReviewsManagement } from '@/components/dashboard/reviews'
 import { CustomerDetail } from '@/components/dashboard/customer-detail'
 import { NotificationsPanel } from '@/components/dashboard/notifications-panel'
 import { OnboardingWizard } from '@/components/dashboard/onboarding-wizard'
+import { CommandPalette } from '@/components/dashboard/command-palette'
 import { AdminOverview } from '@/components/admin/overview'
 import { MerchantManagement } from '@/components/admin/merchants'
 import { RevenueMonitoring } from '@/components/admin/revenue'
@@ -1087,6 +1088,7 @@ export default function Home() {
         )}
         <Toaster />
       </div>
+      <CommandPalette onNavigate={(view) => setCurrentView(view)} />
     </TooltipProvider>
   )
 }

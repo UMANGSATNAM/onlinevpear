@@ -11,6 +11,9 @@ import {
   Users,
   DollarSign,
   Star,
+  ArrowUpRight,
+  TrendingUp,
+  Sparkles,
 } from 'lucide-react'
 import {
   Card,
@@ -46,11 +49,42 @@ import {
 } from '@/components/ui/table'
 import { api } from '@/lib/api-client'
 import { toast } from 'sonner'
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from '@/components/ui/chart'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  PieChart,
+  Pie,
+  Cell,
+} from 'recharts'
 
-const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.4 },
+const PLAN_COLORS = ['#10b981', '#8b5cf6', '#f59e0b']
+
+const planChartConfig = {
+  starter: { label: 'Starter', color: '#10b981' },
+  professional: { label: 'Professional', color: '#8b5cf6' },
+  enterprise: { label: 'Enterprise', color: '#f59e0b' },
+} satisfies ChartConfig
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.06 },
+  },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
 }
 
 interface Plan {
@@ -154,28 +188,45 @@ export function PlanControl() {
     }
   }
 
-  const parseLimitsSafe = (str: string): Record<string, unknown> => {
-    try {
-      return JSON.parse(str)
-    } catch {
-      return {}
-    }
-  }
+  // Distribution data for donut chart
+  const distributionData = plans.map((plan, i) => ({
+    name: plan.displayName,
+    value: plan._count.merchants,
+    color: PLAN_COLORS[i % PLAN_COLORS.length],
+  }))
+
+  // Revenue data for bar chart
+  const revenueData = plans.map((plan, i) => ({
+    name: plan.displayName,
+    revenue: plan._count.merchants * plan.price,
+    subscribers: plan._count.merchants,
+    color: PLAN_COLORS[i % PLAN_COLORS.length],
+  }))
 
   if (loading) return <PlansSkeleton />
 
   return (
-    <div className="space-y-6">
-      <motion.div {...fadeIn}>
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold">Subscription Plans</h2>
-            <p className="text-muted-foreground">Manage subscription tiers and pricing</p>
+    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
+      {/* Page Header */}
+      <motion.div variants={itemVariants}>
+        <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-slate-900 via-amber-900/20 to-slate-900 p-6">
+          <div className="absolute inset-0 opacity-[0.03]" style={{
+            backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
+            backgroundSize: '40px 40px',
+          }} />
+          <div className="relative flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
+              <Crown className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-white">Subscription Plans</h2>
+              <p className="text-slate-400 text-sm">Manage subscription tiers and pricing</p>
+            </div>
           </div>
         </div>
       </motion.div>
 
-      {/* Plan Cards */}
+      {/* Plan Cards - Enhanced */}
       <div className="grid gap-6 md:grid-cols-3">
         {plans.map((plan, i) => {
           const key = plan.name.toLowerCase()
@@ -183,11 +234,24 @@ export function PlanControl() {
           const icon = planIcons[key] || <Star className="h-6 w-6" />
           const features = parseJsonSafe(plan.features)
           const revenue = plan._count.merchants * plan.price
+          const totalMerchants = plans.reduce((sum, p) => sum + p._count.merchants, 0)
+          const sharePct = totalMerchants > 0 ? Math.round((plan._count.merchants / totalMerchants) * 100) : 0
 
           return (
-            <motion.div key={plan.id} {...fadeIn} transition={{ duration: 0.4, delay: i * 0.1 }}>
-              <Card className={`relative overflow-hidden ${colors.border} border-2`}>
-                {!plan.isActive && (
+            <motion.div key={plan.id} variants={itemVariants}>
+              <Card className={`relative overflow-hidden ${colors.border} border-2 hover:shadow-xl transition-all duration-300`}>
+                <div className={`h-1.5 bg-gradient-to-r ${
+                  key === 'starter' ? 'from-emerald-500 to-teal-600' :
+                  key === 'professional' ? 'from-violet-500 to-purple-600' :
+                  'from-amber-500 to-orange-600'
+                }`} />
+                {/* Popular badge for middle plan */}
+                {key === 'professional' && (
+                  <div className="absolute top-0 right-0 bg-gradient-to-r from-violet-500 to-purple-600 text-white text-[10px] px-3 py-1 rounded-bl-lg font-semibold flex items-center gap-1">
+                    <Sparkles className="h-3 w-3" /> Most Popular
+                  </div>
+                )}
+                {!plan.isActive && key !== 'professional' && (
                   <div className="absolute top-0 right-0 bg-gray-200 text-gray-600 text-[10px] px-2 py-0.5 rounded-bl">
                     Inactive
                   </div>
@@ -207,7 +271,7 @@ export function PlanControl() {
                     <span className="text-muted-foreground">/{plan.interval}</span>
                   </div>
 
-                  <div className="mt-4 grid grid-cols-2 gap-2 text-center">
+                  <div className="mt-4 grid grid-cols-3 gap-2 text-center">
                     <div className="p-2 rounded-lg bg-muted/50">
                       <p className="text-xs text-muted-foreground">Subscribers</p>
                       <p className="text-lg font-bold">{plan._count.merchants}</p>
@@ -215,6 +279,10 @@ export function PlanControl() {
                     <div className="p-2 rounded-lg bg-muted/50">
                       <p className="text-xs text-muted-foreground">Revenue</p>
                       <p className="text-lg font-bold">${revenue.toLocaleString()}</p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-muted/50">
+                      <p className="text-xs text-muted-foreground">Share</p>
+                      <p className="text-lg font-bold">{sharePct}%</p>
                     </div>
                   </div>
 
@@ -248,11 +316,136 @@ export function PlanControl() {
         })}
       </div>
 
-      {/* Plan Comparison Table */}
-      <motion.div {...fadeIn} transition={{ duration: 0.4, delay: 0.4 }}>
-        <Card>
+      {/* Distribution + Revenue Charts */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Plan Distribution Donut - Enhanced */}
+        <motion.div variants={itemVariants}>
+          <Card className="overflow-hidden">
+            <div className="h-1 bg-gradient-to-r from-violet-500 to-purple-600" />
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-lg bg-violet-100 flex items-center justify-center">
+                  <Users className="h-4 w-4 text-violet-600" />
+                </div>
+                Merchant Distribution
+              </CardTitle>
+              <CardDescription>Merchants across plan tiers</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {distributionData.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">No data</p>
+              ) : (
+                <div className="flex flex-col sm:flex-row items-center gap-6">
+                  <div className="relative">
+                    <ChartContainer config={planChartConfig} className="h-[180px] w-[180px]">
+                      <PieChart>
+                        <Pie
+                          data={distributionData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={50}
+                          outerRadius={80}
+                          paddingAngle={3}
+                          dataKey="value"
+                        >
+                          {distributionData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                      </PieChart>
+                    </ChartContainer>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                      <span className="text-xl font-bold">{plans.reduce((sum, p) => sum + p._count.merchants, 0)}</span>
+                      <span className="text-[10px] text-muted-foreground">total</span>
+                    </div>
+                  </div>
+                  <div className="flex-1 space-y-3">
+                    {distributionData.map((item) => {
+                      const total = distributionData.reduce((s, d) => s + d.value, 0)
+                      const pct = total > 0 ? Math.round((item.value / total) * 100) : 0
+                      return (
+                        <div key={item.name} className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/30 transition-colors">
+                          <div className="h-5 w-5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                          <div className="flex-1">
+                            <span className="text-sm font-medium">{item.name}</span>
+                            <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-1">
+                              <div className="h-full rounded-full" style={{ backgroundColor: item.color, width: `${pct}%` }} />
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-sm font-bold">{item.value}</span>
+                            <p className="text-[10px] text-muted-foreground">{pct}%</p>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Revenue per Plan - Enhanced */}
+        <motion.div variants={itemVariants}>
+          <Card className="overflow-hidden">
+            <div className="h-1 bg-gradient-to-r from-amber-500 to-orange-600" />
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                  <DollarSign className="h-4 w-4 text-amber-600" />
+                </div>
+                Revenue per Plan
+              </CardTitle>
+              <CardDescription>Monthly revenue contribution by tier</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {revenueData.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">No data</p>
+              ) : (
+                <>
+                  <ChartContainer config={planChartConfig} className="h-[200px] w-full">
+                    <BarChart data={revenueData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis dataKey="name" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                      <YAxis className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} tickFormatter={(v) => `$${v}`} />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Bar dataKey="revenue" name="Revenue" radius={[6, 6, 0, 0]}>
+                        {revenueData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ChartContainer>
+                  <Separator className="my-4" />
+                  <div className="grid grid-cols-3 gap-3">
+                    {revenueData.map((item) => (
+                      <div key={item.name} className="text-center p-3 rounded-lg bg-muted/50">
+                        <p className="text-[10px] text-muted-foreground">{item.name}</p>
+                        <p className="text-sm font-bold">${item.revenue.toLocaleString()}</p>
+                        <p className="text-[10px] text-muted-foreground">{item.subscribers} merchants</p>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+
+      {/* Plan Comparison Table - Enhanced */}
+      <motion.div variants={itemVariants}>
+        <Card className="overflow-hidden">
+          <div className="h-1 bg-gradient-to-r from-slate-600 to-slate-800" />
           <CardHeader>
-            <CardTitle>Plan Comparison</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center">
+                <Check className="h-4 w-4 text-slate-600" />
+              </div>
+              Plan Comparison
+            </CardTitle>
             <CardDescription>Side-by-side feature comparison</CardDescription>
           </CardHeader>
           <CardContent>
@@ -260,26 +453,29 @@ export function PlanControl() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Feature</TableHead>
-                    {plans.map((plan) => (
-                      <TableHead key={plan.id} className="text-center">{plan.displayName}</TableHead>
-                    ))}
+                    <TableHead className="w-[200px]">Feature</TableHead>
+                    {plans.map((plan) => {
+                      const key = plan.name.toLowerCase()
+                      return (
+                        <TableHead key={plan.id} className="text-center">
+                          <div className="flex flex-col items-center gap-1">
+                            <div className={`h-8 w-8 rounded-full ${planColors[key]?.bg || 'bg-muted'} flex items-center justify-center ${planColors[key]?.icon || 'text-muted-foreground'}`}>
+                              {planIcons[key] || <Star className="h-4 w-4" />}
+                            </div>
+                            <span className="font-semibold">{plan.displayName}</span>
+                            <Badge variant="secondary" className="text-[10px]">${plan.price}/{plan.interval}</Badge>
+                          </div>
+                        </TableHead>
+                      )
+                    })}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   <TableRow>
-                    <TableCell className="font-medium">Price</TableCell>
-                    {plans.map((plan) => (
-                      <TableCell key={plan.id} className="text-center">
-                        ${plan.price}/{plan.interval}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                  <TableRow>
                     <TableCell className="font-medium">Subscribers</TableCell>
                     {plans.map((plan) => (
                       <TableCell key={plan.id} className="text-center">
-                        {plan._count.merchants}
+                        <span className="font-semibold">{plan._count.merchants}</span>
                       </TableCell>
                     ))}
                   </TableRow>
@@ -287,7 +483,15 @@ export function PlanControl() {
                     <TableCell className="font-medium">Revenue</TableCell>
                     {plans.map((plan) => (
                       <TableCell key={plan.id} className="text-center">
-                        ${(plan._count.merchants * plan.price).toLocaleString()}
+                        <span className="font-semibold">${(plan._count.merchants * plan.price).toLocaleString()}</span>
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Price</TableCell>
+                    {plans.map((plan) => (
+                      <TableCell key={plan.id} className="text-center">
+                        <span className="font-bold">${plan.price}/{plan.interval}</span>
                       </TableCell>
                     ))}
                   </TableRow>
@@ -297,14 +501,22 @@ export function PlanControl() {
                       parseJsonSafe(plan.features).forEach((f) => allFeatures.add(f))
                     })
                     return Array.from(allFeatures).map((feature) => (
-                      <TableRow key={feature}>
+                      <TableRow key={feature} className="hover:bg-muted/30 transition-colors">
                         <TableCell className="text-sm">{feature}</TableCell>
                         {plans.map((plan) => (
                           <TableCell key={plan.id} className="text-center">
                             {parseJsonSafe(plan.features).includes(feature) ? (
-                              <Check className="h-4 w-4 text-emerald-500 mx-auto" />
+                              <div className="flex justify-center">
+                                <div className="h-7 w-7 rounded-full bg-emerald-100 flex items-center justify-center">
+                                  <Check className="h-3.5 w-3.5 text-emerald-600" />
+                                </div>
+                              </div>
                             ) : (
-                              <span className="text-muted-foreground">-</span>
+                              <div className="flex justify-center">
+                                <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center">
+                                  <span className="text-muted-foreground text-xs">—</span>
+                                </div>
+                              </div>
                             )}
                           </TableCell>
                         ))}
@@ -318,36 +530,42 @@ export function PlanControl() {
         </Card>
       </motion.div>
 
-      {/* Edit Plan Dialog */}
+      {/* Edit Plan Dialog - Enhanced */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Edit Plan: {editPlan?.displayName}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="h-4 w-4" />
+              Edit Plan: {editPlan?.displayName}
+            </DialogTitle>
             <DialogDescription>Update plan pricing, features, and limits</DialogDescription>
           </DialogHeader>
           {editPlan && (
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Display Name</Label>
-                <Input
-                  value={editForm.displayName}
-                  onChange={(e) => setEditForm({ ...editForm, displayName: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Price ({editPlan.currency})</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={editForm.price}
-                  onChange={(e) => setEditForm({ ...editForm, price: parseFloat(e.target.value) || 0 })}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Display Name</Label>
+                  <Input
+                    value={editForm.displayName}
+                    onChange={(e) => setEditForm({ ...editForm, displayName: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Price ({editPlan.currency})</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={editForm.price}
+                    onChange={(e) => setEditForm({ ...editForm, price: parseFloat(e.target.value) || 0 })}
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label>Description</Label>
                 <Textarea
                   value={editForm.description}
                   onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  rows={2}
                 />
               </div>
               <div className="space-y-2">
@@ -368,22 +586,30 @@ export function PlanControl() {
                   className="font-mono text-xs"
                 />
               </div>
-              <div className="flex items-center gap-3">
+              <Separator />
+              <div className="flex items-center justify-between p-3 rounded-lg border">
+                <div>
+                  <Label className="text-sm font-medium">Active Status</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {editForm.isActive ? 'Plan is visible and available for new signups' : 'Plan is hidden from new signups'}
+                  </p>
+                </div>
                 <Switch
                   checked={editForm.isActive}
                   onCheckedChange={(checked) => setEditForm({ ...editForm, isActive: checked })}
                 />
-                <Label>Active</Label>
               </div>
             </div>
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSavePlan}>Save Changes</Button>
+            <Button onClick={handleSavePlan} className="bg-gradient-to-r from-amber-500 to-orange-600 text-white">
+              Save Changes
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </motion.div>
   )
 }
 

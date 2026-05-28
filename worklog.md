@@ -2137,3 +2137,288 @@ Task: QA testing, fix onboarding bug, deep visual polish on all dashboard pages,
 5. Email notification integration
 6. Data import (CSV import for products/customers)
 7. Mobile responsive testing and fixes
+
+---
+
+Task ID: 2-3
+Agent: AI Chat & Product Images Agent
+Task: Add real-time AI Chat via WebSocket and generate remaining product images
+
+### Work Completed:
+
+#### 1. Chat Service Mini-Service (NEW)
+- Created `/home/z/my-project/mini-services/chat-service/` — independent bun project
+- **package.json**: socket.io + z-ai-web-dev-sdk dependencies, bun --hot for auto-restart
+- **index.ts**: Socket.io server on port 3003 with full chat functionality
+  - `chat:message` handler: receives messages, generates AI responses using z-ai-web-dev-sdk
+  - `chat:response` handler: sends AI responses back to client
+  - `chat:typing` handler: typing indicator support
+  - `chat:history` handler: loads previous messages for a conversation
+  - `chat:error` handler: error notifications
+  - In-memory conversation store (Map, max 50 messages per conversation)
+  - Auto-cleanup of stale conversations (30-minute interval)
+  - CORS support for localhost:3000
+  - Error handling with fallback responses when AI fails
+  - Lazy SDK initialization for performance
+- Service running on port 3003
+
+#### 2. Enhanced AI Assistant Page (MAJOR REWRITE)
+- Rewrote `/src/components/dashboard/ai-assistant.tsx` with WebSocket support
+- **WebSocket Integration**:
+  - Connects using `io("/?XTransformPort=3003")` per Caddy gateway requirements
+  - Real-time message sending/receiving via socket events
+  - Auto-reconnection with 5 attempts
+  - HTTP fallback when WebSocket connection fails (graceful degradation)
+- **UI Enhancements**:
+  - Connection Status Badge (green "Live" / red "Offline" / amber "HTTP Mode")
+  - Typing Indicator with animated bouncing dots + "ShopForge AI is typing..."
+  - Message Bubbles: user on right (primary), AI on left (muted) with gradient bot avatar
+  - Message Timestamps on every message
+  - Auto-scroll to bottom on new messages
+  - Basic Markdown Rendering (bold, code, code blocks, bullet/numbered lists)
+  - Clear Chat button
+  - Connection Info Panel (mode, status, message count)
+- **5 Suggested Prompts (Quick Actions)**:
+  1. "Analyze my store performance" — BarChart3 icon, amber theme
+  2. "Suggest marketing strategies" — Megaphone icon, rose theme
+  3. "Help optimize my products" — Package icon, emerald theme
+  4. "Generate a discount code" — Tag icon, violet theme
+  5. "What should I do next?" — Lightbulb icon, cyan theme
+- **Animations**: Framer-motion entry animations, typing indicator, spring animations on empty state
+
+#### 3. Product Image Generation (6 new images)
+- Generated using `z-ai image` CLI tool:
+  1. `smartlock.png` — Smart Lock Pro
+  2. `earbuds.png` — SmartBud Pro Earbuds
+  3. `charger.png` — USB-C Nano Charger 65W
+  4. `desk.png` — ErgoDesk Pro Standing Desk
+  5. `camera.png` — ActionCam 4K Pro
+  6. `laptop.png` — CloudBook Air 14
+- All generated at 1024x1024 with professional product photography prompts
+
+#### 4. Database Updates
+- Updated all 12 products with correct image paths (JSON array format)
+- Fixed incorrect image assignments from seed data
+- Products now correctly mapped:
+  - SmartLock Pro → `/products/smartlock.png`
+  - MechKey 75% Keyboard → `/products/keyboard.png`
+  - SmartBud Pro Earbuds → `/products/earbuds.png`
+  - USB-C Nano Charger 65W → `/products/charger.png`
+  - ErgoDesk Pro Standing Desk → `/products/desk.png`
+  - ActionCam 4K Pro → `/products/camera.png`
+  - HomeHub Max Speaker → `/products/speaker.png`
+  - CloudBook Air 14 → `/products/laptop.png`
+  - SlimArmor Pro Case → `/products/phonecase.png`
+  - MagCharge 3-in-1 Station → `/products/dock.png`
+  - FitBand Ultra Smartwatch → `/products/smartwatch.png`
+  - ProSound Elite Headphones → `/products/headphones.png`
+
+#### 5. API Route Fix
+- Updated `/src/app/api/products/[id]/route.ts`: Added `images`, `tags`, `collectionIds` to `allowedFields` so product images can be updated via API
+
+### Files Created:
+- `/home/z/my-project/mini-services/chat-service/package.json`
+- `/home/z/my-project/mini-services/chat-service/index.ts`
+- `/home/z/my-project/public/products/smartlock.png`
+- `/home/z/my-project/public/products/earbuds.png`
+- `/home/z/my-project/public/products/charger.png`
+- `/home/z/my-project/public/products/desk.png`
+- `/home/z/my-project/public/products/camera.png`
+- `/home/z/my-project/public/products/laptop.png`
+
+### Files Modified:
+- `/home/z/my-project/src/components/dashboard/ai-assistant.tsx` — Complete rewrite with WebSocket support
+- `/home/z/my-project/src/app/api/products/[id]/route.ts` — Added images/tags/collectionIds to allowed fields
+
+### Verification:
+- ✅ ESLint passes with zero errors
+- ✅ Chat service running on port 3003
+- ✅ All 12 product images exist and are correctly assigned in database
+- ✅ Dev server compiles successfully
+- ✅ No TypeScript compilation errors
+
+Task ID: 4-5
+Agent: Admin Polish & Command Palette Agent
+Task: Deep polish admin pages (Security, Audit Logs, Infrastructure, AI Monitoring, Plans) and create Command Palette (Cmd+K)
+
+### Work Completed:
+
+#### 1. Command Palette (NEW) — `/src/components/dashboard/command-palette.tsx`
+- **Keyboard shortcut**: Cmd+K / Ctrl+K to open/close
+- **shadcn/ui Command component**: CommandDialog with CommandInput, CommandList, CommandGroup, CommandItem, CommandEmpty
+- **Navigation commands**: All 17 dashboard pages + all 9 admin pages, with icons and current-page indicator
+- **Action commands**: Add Product, Create Discount, Export Data, Open AI Assistant, View Storefront, Switch to Admin, Switch to Dashboard
+- **Recent pages**: Tracked in localStorage (max 8), displayed as first group in palette
+- **Command groups**: Recent, Navigation, Actions, Quick Links
+- **Framer-motion animated entry**: AnimatePresence wrapper for smooth open/close
+- **Empty state**: Visual empty state with Search icon and helpful text
+- **Footer**: Keyboard hints (↑↓ Navigate, ↵ Select, esc Close) + recent count
+- **Smart filtering**: Hides "Switch to Admin" when already in admin view, etc.
+- **localStorage persistence**: Recent pages saved and loaded across sessions
+- **Uses useAppStore**: Direct access to navigation state for seamless page switching
+
+#### 2. Security Center (`/src/components/admin/security.tsx`) — Deep Polish
+- **Animated Security Score**: Circular SVG with animated count-up (0→87), glow effect behind ring, gradient badge
+- **Enhanced Threat Level Banner**: Gradient background matching threat level, decorative shield watermark, activity stats (last scan, active threats)
+- **Expanded Security Checklist**: 10 items (was 8) with category labels, larger icon containers, hover scale effects
+- **Enhanced Recent Security Events Timeline**: 8 events (was 6), colored left-border per type, gradient timeline line
+- **Enhanced Quick Actions**: ArrowUpRight hover indicator, larger icon containers
+- **Active Sessions**: Gradient avatar backgrounds, larger avatars
+- **IP Blacklist**: Active count badge
+- **Security Recommendations**: Open count badge
+- **Page Header**: Shield icon with gradient background
+
+#### 3. Audit Logs (`/src/components/admin/audit-logs.tsx`) — Deep Polish
+- **Date Range Filter**: New Select dropdown (All Time, Last Hour, Last 24 Hours, Last 7 Days, Last 30 Days)
+- **Active Filters Indicator**: Shows filter count and "Clear all" button when filters active
+- **Module Icons**: Added small icons to module badges (Auth=Shield, Products=FileText, etc.)
+- **Module Distribution Card**: New card showing event distribution by module with gradient bars
+- **Enhanced Avatar**: Larger 8x8 gradient avatars with border
+- **Enhanced Page Header**: FileText icon with gradient background
+- **Stat Cards**: Hover shadow transition
+
+#### 4. Infrastructure Monitoring (`/src/components/admin/infrastructure.tsx`) — Deep Polish
+- **Animated Uptime Score**: Count-up animation for uptime percentage
+- **Enhanced Uptime Hero**: Larger ring (40x40), glow effect, 3-column stats (Outages, Incidents, Avg Latency)
+- **Color-coded CPU/Memory bars**: Gradient fills (emerald→amber→red based on utilization)
+- **Resource Usage bars**: Gradient fills replacing plain Progress, with utilization level labels
+- **Alert Rules**: Active count badge, toggle with toast feedback
+- **Recent Incidents**: Resolution description, "All Resolved" badge
+- **Refresh button**: On Server Status card
+- **Page Header**: Server icon with gradient background, emerald tint
+
+#### 5. AI Monitoring (`/src/components/admin/ai-monitoring.tsx`) — Deep Polish
+- **Token Usage Donut**: Feature icons in legend, bordered items with hover effect
+- **Cost Tracker**: 3-column layout (Daily, Monthly, Projected), Cost by Model breakdown with gradient bars
+- **Rate Limit Visual Indicators**: Gradient progress bars, Low/Medium/High badges, severity-colored backgrounds
+- **AI Model Performance**: 4-column grid (Avg, P50, Success, Error), Healthy/Monitor badges
+- **Enhanced feature list items**: Small feature icons in donut legend
+
+#### 6. Plans Management (`/src/components/admin/plans.tsx`) — Deep Polish
+- **"Most Popular" badge**: On Professional plan card with Sparkles icon
+- **Plan Share %**: New column in plan cards showing % of total merchants
+- **Enhanced Plan Distribution**: Progress bars under each distribution item, percentage display
+- **Revenue Chart**: CartesianGrid added for better readability, ChartTooltip added
+- **Enhanced Comparison Table**: Plan icons in column headers, Price row added
+- **Enhanced Edit Plan Dialog**: Grid layout for name/price, active status section with description, gradient Save button
+
+### Files Created:
+- **Created**: `/src/components/dashboard/command-palette.tsx` (~280 lines)
+
+### Files Modified:
+- **Modified**: `/src/components/admin/security.tsx` — Major visual polish with animated score, enhanced timeline, expanded checklist
+- **Modified**: `/src/components/admin/audit-logs.tsx` — Added date range filter, module distribution, active filters indicator
+- **Modified**: `/src/components/admin/infrastructure.tsx` — Animated uptime, color-coded bars, enhanced alert/incident sections
+- **Modified**: `/src/components/admin/ai-monitoring.tsx` — Enhanced donut/cost tracker, rate limit visuals, model performance grid
+- **Modified**: `/src/components/admin/plans.tsx` — Popular badge, share %, enhanced distribution/comparison, CartesianGrid fix
+
+### Verification:
+- ✅ ESLint passes with zero errors
+- ✅ Dev server compiles successfully
+- ✅ No compilation errors
+- ✅ Command Palette already integrated in page.tsx (was pre-imported)
+- ✅ All existing functionality preserved
+
+---
+
+## Phase 7: Real-Time Chat, Admin Polish, Command Palette (Current)
+
+Task ID: phase-7-main
+Agent: Main Agent
+Task: Add WebSocket AI chat, generate remaining product images, deep admin polish, command palette
+
+### QA Testing Results:
+- ✅ Login works correctly, no onboarding wizard for existing merchants
+- ✅ Dashboard loads with welcome greeting ("Good evening, John Merchant!")
+- ✅ All data sections rendering (Revenue, Orders, Customers, Products, Charts)
+- ✅ Storefront renders with trust badges, testimonials, navigation
+- ✅ Admin overview renders correctly
+- ✅ All API routes healthy (analytics: $33,339.83, 100% growth, 12-month chart)
+- ✅ ESLint passes with zero errors
+- ✅ Dev server compiles successfully
+
+### Work Completed:
+
+#### 1. Real-Time AI Chat via WebSocket (NEW)
+
+**Chat Service Mini-Service** (`/home/z/my-project/mini-services/chat-service/`):
+- Socket.io server on port 3003
+- Handles chat:message, chat:response, chat:typing, chat:history, chat:error
+- Uses z-ai-web-dev-sdk for AI responses with ShopForge-specific system prompt
+- In-memory conversation store (max 50 per conversation)
+- Auto-cleanup of stale conversations, CORS support, fallback responses
+
+**Enhanced AI Assistant Page** (`/src/components/dashboard/ai-assistant.tsx`):
+- Real-time WebSocket connection via `io("/?XTransformPort=3003")`
+- Connection status badge: Green "Live" / Red "Offline" / Amber "HTTP Mode"
+- Typing indicator with animated bouncing dots
+- Message bubbles: User (right, primary), AI (left, muted) with gradient avatars
+- 5 Quick Action prompts (Analyze performance, Marketing strategies, etc.)
+- Markdown rendering (bold, code, lists)
+- Auto-scroll, timestamps, clear chat, connection info panel
+- HTTP fallback when WebSocket unavailable
+
+#### 2. Product Images Generation (ALL 12 COMPLETE)
+
+Generated 6 new AI product images using z-ai CLI:
+- smartlock.png, earbuds.png, charger.png, desk.png, camera.png, laptop.png
+
+All 12 products now have real AI-generated product photos.
+
+#### 3. Admin Pages Deep Polish
+
+**Security Center**: Animated Security Score circular SVG (0→87 count-up), Enhanced Threat Level banner with gradient, 10-item Security Checklist with category labels, 8-event timeline, Enhanced Quick Actions
+
+**Audit Logs**: Date Range Filter, Active Filters indicator, Module Distribution card with gradient bars, Module icons in badges, Enhanced page header
+
+**Infrastructure Monitoring**: Animated Uptime Score (0→99.97%), Enhanced Uptime Hero with 3-column stats, Color-coded CPU/Memory bars, Gradient fill resource usage, Alert Rules with toggles, Recent Incidents with resolution descriptions
+
+**AI Monitoring**: Token Usage Donut chart by feature, Cost Tracker (Daily/Monthly/Projected), Rate Limit visual indicators with gradient bars, AI Model Performance 4-column grid with Healthy/Monitor badges
+
+**Plans Management**: "Most Popular" badge, Plan Share %, Enhanced Distribution with progress bars, Revenue Chart with CartesianGrid/Tooltip, Enhanced Comparison Table with plan icons, Enhanced Edit Dialog
+
+#### 4. Command Palette (NEW)
+
+**CommandPalette** (`/src/components/dashboard/command-palette.tsx`):
+- Keyboard shortcut Cmd+K / Ctrl+K to toggle
+- shadcn/ui CommandDialog component
+- Navigation commands for all 17 dashboard + 9 admin pages
+- Action commands (Add Product, Create Discount, Export Data, Open AI, View Storefront, Switch views)
+- Recent pages tracked in localStorage (max 8)
+- Command groups: Recent, Navigation, Actions, Quick Links
+- Framer-motion AnimatePresence transitions
+- Footer with keyboard hints (↑↓ Navigate, ↵ Select, esc Close)
+
+### Current Project Stats:
+- **Total Lines of Code**: 38,206+
+- **Merchant Dashboard**: 19 pages + Command Palette
+- **Super Admin**: 9 pages with deep visual polish
+- **Storefront**: 12+ components
+- **API Routes**: 38+ routes
+- **Mini-Services**: 1 (Chat Service on port 3003)
+- **AI Features**: 4 endpoints (chat, description generator, SEO optimizer, real-time chat)
+- **Product Images**: All 12 products have real AI-generated photos
+
+### Verification Results:
+- ✅ ESLint passes with zero errors
+- ✅ Dev server compiles and runs
+- ✅ Chat service running on port 3003
+- ✅ All 12 product images exist and assigned correctly
+- ✅ All API routes responding
+- ✅ Analytics returns correct data
+
+### Unresolved Issues:
+1. Agent-browser Tooltip click interception (doesn't affect real users)
+2. Chat service needs to be started manually (`cd mini-services/chat-service && bun run dev`)
+3. No email notification integration yet
+4. No product image upload from UI yet
+
+### Priority Recommendations for Next Phase:
+1. Add email notification integration
+2. Add product image upload from UI
+3. Performance optimization (lazy loading for 38K+ LOC)
+4. Mobile responsive testing and fixes
+5. Data import (CSV import for products/customers)
+6. Multi-currency support
+7. Add more WebSocket features (live order updates, notifications)
+8. Add Stripe/payment integration for real checkout
