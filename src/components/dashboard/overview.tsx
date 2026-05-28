@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
+import { useEffect, useState, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   DollarSign,
   ShoppingCart,
@@ -14,6 +14,17 @@ import {
   ArrowUpRight,
   BarChart3,
   Eye,
+  Plus,
+  Gift,
+  ClipboardList,
+  Activity,
+  Clock,
+  Star,
+  CheckCircle2,
+  UserPlus,
+  CreditCard,
+  Sparkles,
+  PackagePlus,
 } from 'lucide-react'
 import {
   Card,
@@ -48,6 +59,9 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
+  PieChart,
+  Pie,
+  Cell,
 } from 'recharts'
 
 const chartConfig = {
@@ -128,8 +142,64 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
 }
 
+// Mock activity feed data
+const activityFeed = [
+  { id: '1', icon: ShoppingCart, iconBg: 'bg-emerald-100 text-emerald-600', title: 'New order received', description: 'Order #1248 — $149.99', time: '2 min ago' },
+  { id: '2', icon: UserPlus, iconBg: 'bg-violet-100 text-violet-600', title: 'New customer signed up', description: 'sarah.johnson@email.com', time: '15 min ago' },
+  { id: '3', icon: Star, iconBg: 'bg-amber-100 text-amber-600', title: '5-star review received', description: 'Wireless Headphones Pro', time: '1 hour ago' },
+  { id: '4', icon: CreditCard, iconBg: 'bg-emerald-100 text-emerald-600', title: 'Payment received', description: '$249.99 from Order #1247', time: '2 hours ago' },
+  { id: '5', icon: AlertTriangle, iconBg: 'bg-amber-100 text-amber-600', title: 'Low stock alert', description: 'Mechanical Keyboard — 3 left', time: '3 hours ago' },
+  { id: '6', icon: CheckCircle2, iconBg: 'bg-emerald-100 text-emerald-600', title: 'Order shipped', description: 'Order #1245 — Express delivery', time: '5 hours ago' },
+  { id: '7', icon: Gift, iconBg: 'bg-rose-100 text-rose-600', title: 'Discount code used', description: 'SUMMER20 — 20% off', time: '6 hours ago' },
+]
+
+function PerformanceScore({ score }: { score: number }) {
+  const circumference = 2 * Math.PI * 54
+  const offset = circumference - (score / 100) * circumference
+  const getColor = (s: number) => {
+    if (s >= 80) return '#10b981'
+    if (s >= 60) return '#f59e0b'
+    return '#ef4444'
+  }
+  const color = getColor(score)
+
+  return (
+    <div className="flex flex-col items-center">
+      <div className="relative h-36 w-36">
+        <svg className="h-36 w-36 -rotate-90" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="54" fill="none" stroke="hsl(var(--muted))" strokeWidth="8" />
+          <motion.circle
+            cx="60" cy="60" r="54" fill="none"
+            stroke={color}
+            strokeWidth="8"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            initial={{ strokeDashoffset: circumference }}
+            animate={{ strokeDashoffset: offset }}
+            transition={{ duration: 1.5, ease: 'easeOut' }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <motion.span
+            className="text-3xl font-bold"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+            style={{ color }}
+          >
+            {score}
+          </motion.span>
+          <span className="text-xs text-muted-foreground font-medium">out of 100</span>
+        </div>
+      </div>
+      <p className="text-sm font-semibold mt-2">Store Health</p>
+      <p className="text-xs text-muted-foreground">Based on sales, inventory & engagement</p>
+    </div>
+  )
+}
+
 export function OverviewDashboard() {
-  const { selectedMerchantId, setDashboardPage, setSelectedOrderId } = useAppStore()
+  const { selectedMerchantId, setDashboardPage, setSelectedOrderId, currentUser } = useAppStore()
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -151,6 +221,28 @@ export function OverviewDashboard() {
     fetchData()
     return () => { cancelled = true }
   }, [selectedMerchantId])
+
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours()
+    if (hour < 12) return { text: 'Good morning', message: 'Ready to crush it today?', emoji: '☀️' }
+    if (hour < 18) return { text: 'Good afternoon', message: 'Your store is performing well.', emoji: '🌤️' }
+    return { text: 'Good evening', message: "Here's your daily wrap-up.", emoji: '🌙' }
+  }, [])
+
+  const currentDate = useMemo(() => {
+    return new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+  }, [])
+
+  const performanceScore = useMemo(() => {
+    if (!data) return 75
+    let score = 50
+    if (data.stats.revenueGrowth > 0) score += 15
+    if (data.stats.activeProducts > 5) score += 10
+    if (data.lowStockProducts.length < 3) score += 10
+    if (data.stats.totalOrders > 10) score += 10
+    if (data.stats.recentCustomers > 0) score += 5
+    return Math.min(score, 98)
+  }, [data])
 
   if (loading) return <OverviewSkeleton />
   if (error) return <div className="p-6 text-destructive">Error loading dashboard: {error}</div>
@@ -203,6 +295,13 @@ export function OverviewDashboard() {
     },
   ]
 
+  const quickActions = [
+    { label: 'Add Product', icon: PackagePlus, gradient: 'from-emerald-500 to-teal-600', bg: 'from-emerald-50 to-teal-50/80', action: () => setDashboardPage('product-new') as unknown as void },
+    { label: 'Create Discount', icon: Gift, gradient: 'from-rose-500 to-pink-600', bg: 'from-rose-50 to-pink-50/80', action: () => setDashboardPage('discounts') },
+    { label: 'View Orders', icon: ClipboardList, gradient: 'from-violet-500 to-purple-600', bg: 'from-violet-50 to-purple-50/80', action: () => setDashboardPage('orders') },
+    { label: 'Check Analytics', icon: Activity, gradient: 'from-amber-500 to-orange-600', bg: 'from-amber-50 to-orange-50/80', action: () => setDashboardPage('analytics') },
+  ]
+
   return (
     <motion.div
       className="space-y-6"
@@ -210,6 +309,63 @@ export function OverviewDashboard() {
       initial="hidden"
       animate="show"
     >
+      {/* Welcome Section */}
+      <motion.div variants={itemVariants}>
+        <Card className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900" />
+          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 25% 50%, rgba(255,255,255,0.15) 0%, transparent 50%), radial-gradient(circle at 75% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)' }} />
+          <CardContent className="relative p-6 sm:p-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-white">
+                  {greeting.text}, {currentUser?.name || 'Merchant'}! {greeting.emoji}
+                </h1>
+                <p className="text-slate-300 mt-1 text-sm sm:text-base">{greeting.message}</p>
+                <div className="flex items-center gap-2 mt-3">
+                  <Clock className="h-4 w-4 text-slate-400" />
+                  <span className="text-sm text-slate-400">{currentDate}</span>
+                </div>
+              </div>
+              <div className="hidden sm:flex items-center gap-3">
+                <Badge variant="outline" className="border-emerald-500/50 text-emerald-300 bg-emerald-500/10">
+                  <Sparkles className="h-3 w-3 mr-1" />
+                  All systems operational
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Quick Action Cards */}
+      <motion.div variants={itemVariants}>
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+          {quickActions.map((action) => (
+            <motion.div
+              key={action.label}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Card
+                className={`cursor-pointer bg-gradient-to-br ${action.bg} border-0 hover:shadow-lg transition-shadow duration-300`}
+                onClick={action.action}
+              >
+                <CardContent className="p-4 sm:p-5">
+                  <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${action.gradient} flex items-center justify-center mb-3 shadow-sm`}>
+                    <action.icon className="h-5 w-5 text-white" />
+                  </div>
+                  <p className="font-semibold text-sm">{action.label}</p>
+                  <div className="flex items-center gap-1 mt-1">
+                    <span className="text-xs text-muted-foreground">Quick access</span>
+                    <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+
       {/* Stats Grid */}
       <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
@@ -269,7 +425,7 @@ export function OverviewDashboard() {
         ))}
       </div>
 
-      {/* Revenue Chart + Top Products */}
+      {/* Revenue Chart + Performance Score */}
       <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
         <motion.div className="lg:col-span-2" variants={itemVariants}>
           <Card className="overflow-hidden">
@@ -328,8 +484,14 @@ export function OverviewDashboard() {
           </Card>
         </motion.div>
 
-        <motion.div variants={itemVariants}>
-          <Card className="h-full">
+        {/* Performance Score + Top Products */}
+        <motion.div variants={itemVariants} className="space-y-4">
+          <Card>
+            <CardContent className="p-6">
+              <PerformanceScore score={performanceScore} />
+            </CardContent>
+          </Card>
+          <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-lg font-semibold">Top Products</CardTitle>
               <CardDescription>Best selling by revenue</CardDescription>
@@ -342,13 +504,13 @@ export function OverviewDashboard() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {data.topProducts.map((tp, i) => (
+                  {data.topProducts.slice(0, 4).map((tp, i) => (
                     <div key={tp.product?.id || i} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted/50 transition-colors group cursor-pointer">
                       <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${productGradients[i % productGradients.length]} text-white text-sm font-bold shadow-sm`}>
                         {i + 1}
                       </div>
                       <div className="flex-1 min-w-0 pr-2">
-                        <p className="text-sm font-medium group-hover:text-primary transition-colors" title={tp.product?.name || 'Unknown'}>{tp.product?.name || 'Unknown'}</p>
+                        <p className="text-sm font-medium group-hover:text-primary transition-colors truncate" title={tp.product?.name || 'Unknown'}>{tp.product?.name || 'Unknown'}</p>
                         <p className="text-xs text-muted-foreground">{tp.totalQuantity} sold · {tp.orderCount} orders</p>
                       </div>
                       <div className="text-right shrink-0">
@@ -363,7 +525,7 @@ export function OverviewDashboard() {
         </motion.div>
       </div>
 
-      {/* Recent Orders + Low Stock */}
+      {/* Recent Orders + Activity Feed */}
       <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
         <motion.div className="lg:col-span-2" variants={itemVariants}>
           <Card>
@@ -447,54 +609,102 @@ export function OverviewDashboard() {
           </Card>
         </motion.div>
 
+        {/* Activity Feed */}
         <motion.div variants={itemVariants}>
           <Card className="h-full">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                <div className="p-1.5 rounded-lg bg-amber-100">
-                  <AlertTriangle className="h-4 w-4 text-amber-600" />
-                </div>
-                Low Stock Alerts
-              </CardTitle>
-              <CardDescription>Products running low</CardDescription>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-primary" />
+                  Recent Activity
+                </CardTitle>
+                <Badge variant="outline" className="text-xs">{activityFeed.length} events</Badge>
+              </div>
             </CardHeader>
             <CardContent>
-              {data.lowStockProducts.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-                  <Package className="h-10 w-10 mb-2 opacity-20" />
-                  <p className="text-sm">All products well stocked</p>
-                </div>
-              ) : (
-                <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
-                  {data.lowStockProducts.map((item) => {
-                    const stockPct = Math.min((item.quantity / item.lowStockThreshold) * 100, 100)
-                    const isCritical = item.quantity <= item.lowStockThreshold / 2
-                    return (
-                      <div key={item.id} className={`p-3 rounded-xl border transition-colors ${
-                        isCritical ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'
-                      }`}>
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-sm font-medium truncate pr-2">{item.product.name}</p>
-                          <span className={`text-xs font-bold ${isCritical ? 'text-red-700' : 'text-amber-700'}`}>
-                            {item.quantity} left
-                          </span>
+              <div className="relative max-h-[400px] overflow-y-auto pr-1">
+                {/* Timeline line */}
+                <div className="absolute left-5 top-3 bottom-3 w-px bg-border" />
+                <div className="space-y-0">
+                  <AnimatePresence>
+                    {activityFeed.map((activity, i) => (
+                      <motion.div
+                        key={activity.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.05, duration: 0.3 }}
+                        className="relative flex items-start gap-3 py-3 group"
+                      >
+                        {/* Timeline dot */}
+                        <div className={`relative z-10 h-10 w-10 rounded-full ${activity.iconBg} flex items-center justify-center shrink-0 ring-4 ring-background`}>
+                          <activity.icon className="h-4 w-4" />
                         </div>
-                        {item.product.sku && (
-                          <p className="text-xs text-muted-foreground mb-2">SKU: {item.product.sku}</p>
-                        )}
-                        <Progress
-                          value={stockPct}
-                          className={`h-1.5 ${isCritical ? '[&>div]:bg-red-500' : '[&>div]:bg-amber-500'}`}
-                        />
-                      </div>
-                    )
-                  })}
+                        <div className="flex-1 min-w-0 pt-0.5">
+                          <p className="text-sm font-medium group-hover:text-primary transition-colors">{activity.title}</p>
+                          <p className="text-xs text-muted-foreground truncate">{activity.description}</p>
+                          <p className="text-[11px] text-muted-foreground/70 mt-0.5 flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {activity.time}
+                          </p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
                 </div>
-              )}
+              </div>
             </CardContent>
           </Card>
         </motion.div>
       </div>
+
+      {/* Low Stock Alerts */}
+      <motion.div variants={itemVariants}>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-amber-100">
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+              </div>
+              Low Stock Alerts
+            </CardTitle>
+            <CardDescription>Products running low</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {data.lowStockProducts.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                <Package className="h-10 w-10 mb-2 opacity-20" />
+                <p className="text-sm">All products well stocked</p>
+              </div>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {data.lowStockProducts.map((item) => {
+                  const stockPct = Math.min((item.quantity / item.lowStockThreshold) * 100, 100)
+                  const isCritical = item.quantity <= item.lowStockThreshold / 2
+                  return (
+                    <div key={item.id} className={`p-4 rounded-xl border transition-colors ${
+                      isCritical ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'
+                    }`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm font-medium truncate pr-2">{item.product.name}</p>
+                        <span className={`text-xs font-bold ${isCritical ? 'text-red-700' : 'text-amber-700'}`}>
+                          {item.quantity} left
+                        </span>
+                      </div>
+                      {item.product.sku && (
+                        <p className="text-xs text-muted-foreground mb-2">SKU: {item.product.sku}</p>
+                      )}
+                      <Progress
+                        value={stockPct}
+                        className={`h-1.5 ${isCritical ? '[&>div]:bg-red-500' : '[&>div]:bg-amber-500'}`}
+                      />
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
     </motion.div>
   )
 }
@@ -502,6 +712,23 @@ export function OverviewDashboard() {
 function OverviewSkeleton() {
   return (
     <div className="space-y-6">
+      <Card>
+        <CardContent className="p-6">
+          <Skeleton className="h-8 w-64 mb-2" />
+          <Skeleton className="h-4 w-48" />
+        </CardContent>
+      </Card>
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Card key={i}>
+            <CardContent className="p-5">
+              <Skeleton className="h-10 w-10 rounded-xl mb-3" />
+              <Skeleton className="h-4 w-24 mb-2" />
+              <Skeleton className="h-3 w-16" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i}>

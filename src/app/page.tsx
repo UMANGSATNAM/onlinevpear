@@ -167,6 +167,11 @@ function LoginScreen() {
         setCurrentView('admin')
       } else if (data.merchants?.length > 0) {
         setSelectedMerchantId(data.merchants[0].id)
+        // Mark as onboarded if merchant already has onboardedAt
+        if (data.merchants[0].onboardedAt) {
+          localStorage.setItem('shopforge_onboarded', 'true')
+          sessionStorage.setItem('shopforge_onboarded', 'true')
+        }
         // Load store for merchant
         try {
           const storeRes = await fetch(`/api/merchants/${data.merchants[0].id}`)
@@ -213,6 +218,11 @@ function LoginScreen() {
         setCurrentView('admin')
       } else if (data.merchants?.length > 0) {
         setSelectedMerchantId(data.merchants[0].id)
+        // Mark as onboarded if merchant already has onboardedAt
+        if (data.merchants[0].onboardedAt) {
+          localStorage.setItem('shopforge_onboarded', 'true')
+          sessionStorage.setItem('shopforge_onboarded', 'true')
+        }
         const storeRes = await fetch(`/api/merchants/${data.merchants[0].id}`)
         const storeData = await storeRes.json()
         if (storeData.merchant?.stores?.length > 0) {
@@ -623,10 +633,16 @@ export default function Home() {
   const [onboardingOpen, setOnboardingOpen] = useState(false)
 
   // Show onboarding wizard for new merchants on first login
+  // Only show if merchant hasn't been onboarded yet (check both sessionStorage and localStorage)
   useEffect(() => {
-    if (isAuthenticated && selectedMerchantId && !sessionStorage.getItem('shopforge_onboarded')) {
-      const timer = setTimeout(() => setOnboardingOpen(true), 1500)
-      return () => clearTimeout(timer)
+    if (isAuthenticated && selectedMerchantId) {
+      const alreadyOnboarded =
+        sessionStorage.getItem('shopforge_onboarded') ||
+        localStorage.getItem('shopforge_onboarded')
+      if (!alreadyOnboarded) {
+        const timer = setTimeout(() => setOnboardingOpen(true), 1500)
+        return () => clearTimeout(timer)
+      }
     }
   }, [isAuthenticated, selectedMerchantId])
 
@@ -1064,6 +1080,7 @@ export default function Home() {
             onClose={() => {
               setOnboardingOpen(false)
               sessionStorage.setItem('shopforge_onboarded', 'true')
+              localStorage.setItem('shopforge_onboarded', 'true')
             }}
             merchantId={selectedMerchantId || ''}
           />

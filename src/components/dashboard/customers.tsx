@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   useReactTable,
   getCoreRowModel,
@@ -21,6 +21,10 @@ import {
   Users,
   UserCheck,
   Loader2,
+  Crown,
+  UserPlus,
+  UserX,
+  Filter,
 } from 'lucide-react'
 import {
   Card,
@@ -54,6 +58,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useAppStore } from '@/lib/store'
 import { api } from '@/lib/api-client'
 import { toast } from 'sonner'
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+} from 'recharts'
 
 interface Customer {
   id: string
@@ -103,6 +113,38 @@ interface CustomersResponse {
   pagination: { page: number; limit: number; total: number; totalPages: number }
 }
 
+// Color palette for name-hash based avatars
+const avatarColors = [
+  'from-rose-500 to-pink-600',
+  'from-violet-500 to-purple-600',
+  'from-emerald-500 to-teal-600',
+  'from-amber-500 to-orange-600',
+  'from-sky-500 to-blue-600',
+  'from-fuchsia-500 to-pink-600',
+  'from-lime-500 to-green-600',
+  'from-cyan-500 to-teal-600',
+]
+
+function nameHashColor(name: string): string {
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return avatarColors[Math.abs(hash) % avatarColors.length]
+}
+
+type CustomerFilter = 'all' | 'active' | 'inactive' | 'vip' | 'new'
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.06 } },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } },
+}
+
 export function CustomersManagement() {
   const { selectedMerchantId, setSelectedCustomerId } = useAppStore()
   const [customers, setCustomers] = useState<Customer[]>([])
@@ -117,6 +159,7 @@ export function CustomersManagement() {
   const [noteText, setNoteText] = useState('')
   const [tagInput, setTagInput] = useState('')
   const [exporting, setExporting] = useState(false)
+  const [statusFilter, setStatusFilter] = useState<CustomerFilter>('all')
 
   const fetchCustomers = async () => {
     if (!selectedMerchantId) return
@@ -128,6 +171,8 @@ export function CustomersManagement() {
         limit: '10',
       }
       if (search) params.search = search
+      if (statusFilter === 'active') params.status = 'active'
+      else if (statusFilter === 'inactive') params.status = 'inactive'
       const data = await api.get<CustomersResponse>('/customers', params)
       setCustomers(data.customers)
       setTotalPages(data.pagination.totalPages)
@@ -141,7 +186,7 @@ export function CustomersManagement() {
 
   useEffect(() => {
     fetchCustomers()
-  }, [selectedMerchantId, page])
+  }, [selectedMerchantId, page, statusFilter])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -241,6 +286,46 @@ export function CustomersManagement() {
     }
   }
 
+  // Computed customer stats
+  const customerStats = useMemo(() => {
+    const totalC = total
+    const activeC = customers.filter(c => c.status === 'active').length
+    const vipC = customers.filter(c => c.totalSpent > 500).length
+    const newThisMonth = customers.filter(c => {
+      const created = new Date(c.createdAt)
+      const now = new Date()
+      return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear()
+    }).length
+    return { totalC, activeC, vipC, newThisMonth }
+  }, [customers, total])
+
+  // Segment data for pie chart
+  const segmentData = useMemo(() => {
+    const active = customers.filter(c => c.status === 'active').length
+    const inactive = customers.filter(c => c.status !== 'active').length
+    const vip = customers.filter(c => c.totalSpent > 500).length
+    const newCust = customers.filter(c => {
+      const d = new Date(c.createdAt)
+      const now = new Date()
+      return now.getTime() - d.getTime() < 30 * 24 * 60 * 60 * 1000
+    }).length
+    const returning = Math.max(0, active - newCust - vip)
+    return [
+      { name: 'New', value: newCust, color: '#10b981' },
+      { name: 'Returning', value: returning, color: '#6366f1' },
+      { name: 'VIP', value: vip, color: '#f59e0b' },
+      { name: 'Inactive', value: inactive, color: '#94a3b8' },
+    ].filter(s => s.value > 0)
+  }, [customers])
+
+  const filterChips: { key: CustomerFilter; label: string; icon: React.ElementType }[] = [
+    { key: 'all', label: 'All', icon: Users },
+    { key: 'active', label: 'Active', icon: UserCheck },
+    { key: 'inactive', label: 'Inactive', icon: UserX },
+    { key: 'vip', label: 'VIP', icon: Crown },
+    { key: 'new', label: 'New', icon: UserPlus },
+  ]
+
   const columns = useMemo<ColumnDef<Customer>[]>(
     () => [
       {
@@ -248,10 +333,13 @@ export function CustomersManagement() {
         header: 'Customer',
         cell: ({ row }) => {
           const c = row.original
+          const displayName = c.name || c.email
+          const initial = displayName.charAt(0).toUpperCase()
+          const gradient = nameHashColor(displayName)
           return (
             <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center text-sm font-medium shrink-0">
-                {c.name ? c.name.charAt(0).toUpperCase() : c.email.charAt(0).toUpperCase()}
+              <div className={`h-9 w-9 rounded-full bg-gradient-to-br ${gradient} flex items-center justify-center text-sm font-semibold text-white shrink-0 shadow-sm`}>
+                {initial}
               </div>
               <div className="min-w-0">
                 <p className="font-medium text-sm truncate">{c.name || 'No name'}</p>
@@ -278,13 +366,21 @@ export function CustomersManagement() {
       {
         accessorKey: 'status',
         header: 'Status',
-        cell: ({ row }) => (
-          <Badge variant={row.original.status === 'active' ? 'secondary' : 'outline'} className={
-            row.original.status === 'active' ? 'bg-emerald-100 text-emerald-800' : ''
-          }>
-            {row.original.status}
-          </Badge>
-        ),
+        cell: ({ row }) => {
+          const isVip = row.original.totalSpent > 500
+          return (
+            <div className="flex items-center gap-1.5">
+              {isVip && (
+                <Crown className="h-3.5 w-3.5 text-amber-500" />
+              )}
+              <Badge variant={row.original.status === 'active' ? 'secondary' : 'outline'} className={
+                row.original.status === 'active' ? 'bg-emerald-100 text-emerald-800' : ''
+              }>
+                {isVip ? 'VIP' : row.original.status}
+              </Badge>
+            </div>
+          )
+        },
       },
       {
         id: 'tags',
@@ -315,8 +411,13 @@ export function CustomersManagement() {
   })
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+      variants={containerVariants}
+    >
+      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold">Customers</h2>
           <p className="text-sm text-muted-foreground">{total} customers total</p>
@@ -337,82 +438,235 @@ export function CustomersManagement() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
+      </motion.div>
 
-      <Card>
-        <CardHeader>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by name, email, or phone..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <Skeleton className="h-9 w-9 rounded-full" />
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-4 w-16 ml-auto" />
+      {/* Customer Stats Bar */}
+      <motion.div variants={itemVariants}>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-500 to-purple-600" />
+            <CardContent className="p-5 pt-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Total Customers</p>
+                  <p className="text-2xl font-bold tracking-tight">{customerStats.totalC}</p>
                 </div>
-              ))}
-            </div>
-          ) : customers.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No customers found</p>
-            </div>
-          ) : (
-            <>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    {table.getHeaderGroups().map((hg) => (
-                      <TableRow key={hg.id}>
-                        {hg.headers.map((header) => (
-                          <TableHead key={header.id}>
-                            {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                          </TableHead>
-                        ))}
-                      </TableRow>
-                    ))}
-                  </TableHeader>
-                  <TableBody>
-                    {table.getRowModel().rows.map((row) => (
-                      <TableRow
-                        key={row.id}
-                        className="cursor-pointer hover:bg-muted/50"
-                        onClick={() => openCustomerDetail(row.original.id)}
+                <div className="bg-violet-100 rounded-xl p-2.5 group-hover:scale-110 transition-transform duration-300">
+                  <Users className="h-5 w-5 text-violet-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-600" />
+            <CardContent className="p-5 pt-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">New This Month</p>
+                  <p className="text-2xl font-bold tracking-tight">{customerStats.newThisMonth}</p>
+                </div>
+                <div className="bg-emerald-100 rounded-xl p-2.5 group-hover:scale-110 transition-transform duration-300">
+                  <UserPlus className="h-5 w-5 text-emerald-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-500 to-blue-600" />
+            <CardContent className="p-5 pt-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Active</p>
+                  <p className="text-2xl font-bold tracking-tight">{customerStats.activeC}</p>
+                </div>
+                <div className="bg-sky-100 rounded-xl p-2.5 group-hover:scale-110 transition-transform duration-300">
+                  <UserCheck className="h-5 w-5 text-sky-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-yellow-500 to-orange-500" />
+            <CardContent className="p-5 pt-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">VIP</p>
+                  <p className="text-2xl font-bold tracking-tight">{customerStats.vipC}</p>
+                </div>
+                <div className="bg-amber-100 rounded-xl p-2.5 group-hover:scale-110 transition-transform duration-300">
+                  <Crown className="h-5 w-5 text-amber-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </motion.div>
+
+      {/* Customer Segments + Filter Bar */}
+      <motion.div variants={itemVariants}>
+        <div className="grid gap-4 lg:grid-cols-4">
+          {/* Filter Chips */}
+          <div className="lg:col-span-3">
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <Filter className="h-4 w-4" />
+                    <span>Filter:</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {filterChips.map((chip) => (
+                      <motion.button
+                        key={chip.key}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => { setStatusFilter(chip.key); setPage(1) }}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                          statusFilter === chip.key
+                            ? chip.key === 'vip'
+                              ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-white shadow-sm'
+                              : 'bg-primary text-primary-foreground shadow-sm'
+                            : 'bg-muted hover:bg-muted/80 text-muted-foreground'
+                        }`}
                       >
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id}>
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          </TableCell>
-                        ))}
-                      </TableRow>
+                        <chip.icon className="h-3.5 w-3.5" />
+                        {chip.label}
+                      </motion.button>
                     ))}
-                  </TableBody>
-                </Table>
-              </div>
-              <div className="flex items-center justify-between mt-4">
-                <p className="text-sm text-muted-foreground">Page {page} of {totalPages}</p>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
+                  </div>
+                  <div className="relative flex-1 min-w-[200px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search by name, email, or phone..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="pl-9 h-9"
+                    />
+                  </div>
                 </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Customer Segments Pie Chart */}
+          <Card className="overflow-hidden">
+            <CardContent className="p-4">
+              <p className="text-sm font-semibold mb-2">Segments</p>
+              {segmentData.length > 0 ? (
+                <div className="flex items-center gap-3">
+                  <div className="h-20 w-20 shrink-0">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={segmentData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={18}
+                          outerRadius={36}
+                          paddingAngle={3}
+                          dataKey="value"
+                          strokeWidth={0}
+                        >
+                          {segmentData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="space-y-1">
+                    {segmentData.map((seg) => (
+                      <div key={seg.name} className="flex items-center gap-1.5">
+                        <div className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: seg.color }} />
+                        <span className="text-xs text-muted-foreground">{seg.name}</span>
+                        <span className="text-xs font-semibold">{seg.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground py-4 text-center">No segment data</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </motion.div>
+
+      {/* Customers Table */}
+      <motion.div variants={itemVariants}>
+        <Card>
+          <CardContent className="p-0">
+            {loading ? (
+              <div className="p-6 space-y-3">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <Skeleton className="h-9 w-9 rounded-full" />
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-4 w-16 ml-auto" />
+                  </div>
+                ))}
               </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
+            ) : customers.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="mx-auto h-24 w-24 rounded-full bg-gradient-to-br from-violet-100 to-purple-100 flex items-center justify-center mb-4">
+                  <Users className="h-10 w-10 text-violet-400" />
+                </div>
+                <h3 className="text-lg font-semibold mb-1">No customers yet</h3>
+                <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
+                  Start building your customer base. They&apos;ll appear here once they make their first purchase.
+                </p>
+                <Button variant="outline" onClick={() => fetchCustomers()}>
+                  <Users className="mr-2 h-4 w-4" /> Refresh
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      {table.getHeaderGroups().map((hg) => (
+                        <TableRow key={hg.id}>
+                          {hg.headers.map((header) => (
+                            <TableHead key={header.id} className="text-xs font-semibold uppercase tracking-wider">
+                              {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                            </TableHead>
+                          ))}
+                        </TableRow>
+                      ))}
+                    </TableHeader>
+                    <TableBody>
+                      {table.getRowModel().rows.map((row) => (
+                        <TableRow
+                          key={row.id}
+                          className="cursor-pointer hover:bg-muted/50 transition-colors group"
+                          onClick={() => openCustomerDetail(row.original.id)}
+                        >
+                          {row.getVisibleCells().map((cell) => (
+                            <TableCell key={cell.id}>
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="flex items-center justify-between p-4 border-t">
+                  <p className="text-sm text-muted-foreground">Page {page} of {totalPages}</p>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Customer Detail Dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
@@ -430,7 +684,7 @@ export function CustomersManagement() {
             <div className="space-y-6">
               {/* Customer Info */}
               <div className="flex items-start gap-4">
-                <div className="h-14 w-14 rounded-full bg-muted flex items-center justify-center text-xl font-bold shrink-0">
+                <div className={`h-14 w-14 rounded-full bg-gradient-to-br ${nameHashColor(selectedCustomer.name || selectedCustomer.email)} flex items-center justify-center text-xl font-bold text-white shrink-0 shadow-md`}>
                   {(selectedCustomer.name || selectedCustomer.email).charAt(0).toUpperCase()}
                 </div>
                 <div>
