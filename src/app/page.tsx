@@ -17,6 +17,10 @@ import { WorkflowsManagement } from '@/components/dashboard/workflows'
 import { AppsMarketplace } from '@/components/dashboard/apps'
 import { BillingSubscription } from '@/components/dashboard/billing'
 import { StoreSettings } from '@/components/dashboard/store-settings'
+import { CategoriesManagement } from '@/components/dashboard/categories'
+import { MarketingAutomation } from '@/components/dashboard/marketing'
+import { StaffManagement } from '@/components/dashboard/staff'
+import { ThemeCustomization } from '@/components/dashboard/themes'
 import { AdminOverview } from '@/components/admin/overview'
 import { MerchantManagement } from '@/components/admin/merchants'
 import { RevenueMonitoring } from '@/components/admin/revenue'
@@ -71,6 +75,10 @@ import {
   EyeOff,
   Sparkles,
   Layers,
+  FolderTree,
+  Megaphone,
+  UsersRound,
+  Palette,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -89,12 +97,16 @@ const dashboardNavItems: Array<{ page: DashboardPage; label: string; icon: React
   { page: 'products', label: 'Products', icon: <Package className="h-4 w-4" />, group: 'Main' },
   { page: 'orders', label: 'Orders', icon: <ShoppingCart className="h-4 w-4" />, group: 'Main' },
   { page: 'customers', label: 'Customers', icon: <Users className="h-4 w-4" />, group: 'Main' },
+  { page: 'categories', label: 'Categories', icon: <FolderTree className="h-4 w-4" />, group: 'Main' },
   { page: 'analytics', label: 'Analytics', icon: <BarChart3 className="h-4 w-4" />, group: 'Insights' },
   { page: 'discounts', label: 'Discounts', icon: <Tags className="h-4 w-4" />, group: 'Insights' },
   { page: 'inventory', label: 'Inventory', icon: <Warehouse className="h-4 w-4" />, group: 'Insights' },
+  { page: 'marketing', label: 'Marketing', icon: <Megaphone className="h-4 w-4" />, group: 'Insights' },
+  { page: 'themes', label: 'Themes', icon: <Palette className="h-4 w-4" />, group: 'Customize' },
   { page: 'ai-assistant', label: 'AI Assistant', icon: <Bot className="h-4 w-4" />, group: 'Tools' },
   { page: 'workflows', label: 'Workflows', icon: <GitBranch className="h-4 w-4" />, group: 'Tools' },
   { page: 'apps', label: 'Apps', icon: <Grid3X3 className="h-4 w-4" />, group: 'Tools' },
+  { page: 'staff', label: 'Staff', icon: <UsersRound className="h-4 w-4" />, group: 'Settings' },
   { page: 'billing', label: 'Billing', icon: <CreditCard className="h-4 w-4" />, group: 'Settings' },
   { page: 'store-settings', label: 'Store Settings', icon: <Settings className="h-4 w-4" />, group: 'Settings' },
 ]
@@ -382,12 +394,16 @@ function DashboardContent() {
         {dashboardPage === 'products' && <ProductsManagement />}
         {dashboardPage === 'orders' && <OrdersManagement />}
         {dashboardPage === 'customers' && <CustomersManagement />}
+        {dashboardPage === 'categories' && <CategoriesManagement />}
         {dashboardPage === 'analytics' && <AnalyticsDashboard />}
         {dashboardPage === 'discounts' && <DiscountsManagement />}
         {dashboardPage === 'inventory' && <InventoryManagement />}
+        {dashboardPage === 'marketing' && <MarketingAutomation />}
+        {dashboardPage === 'themes' && <ThemeCustomization />}
         {dashboardPage === 'ai-assistant' && <AiAssistant />}
         {dashboardPage === 'workflows' && <WorkflowsManagement />}
         {dashboardPage === 'apps' && <AppsMarketplace />}
+        {dashboardPage === 'staff' && <StaffManagement />}
         {dashboardPage === 'billing' && <BillingSubscription />}
         {dashboardPage === 'store-settings' && <StoreSettings />}
       </motion.div>

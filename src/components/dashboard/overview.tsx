@@ -11,6 +11,9 @@ import {
   TrendingDown,
   AlertTriangle,
   ArrowRight,
+  ArrowUpRight,
+  BarChart3,
+  Eye,
 } from 'lucide-react'
 import {
   Card,
@@ -30,6 +33,7 @@ import {
 } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
 import { useAppStore } from '@/lib/store'
 import { api } from '@/lib/api-client'
 import {
@@ -39,12 +43,11 @@ import {
   type ChartConfig,
 } from '@/components/ui/chart'
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
-  ResponsiveContainer,
 } from 'recharts'
 
 const chartConfig = {
@@ -95,23 +98,38 @@ interface AnalyticsData {
 }
 
 const statusColors: Record<string, string> = {
-  pending: 'bg-yellow-100 text-yellow-800',
-  confirmed: 'bg-blue-100 text-blue-800',
-  processing: 'bg-indigo-100 text-indigo-800',
-  shipped: 'bg-purple-100 text-purple-800',
-  delivered: 'bg-green-100 text-green-800',
-  cancelled: 'bg-red-100 text-red-800',
-  refunded: 'bg-gray-100 text-gray-800',
+  pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  confirmed: 'bg-blue-100 text-blue-800 border-blue-200',
+  processing: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+  shipped: 'bg-purple-100 text-purple-800 border-purple-200',
+  delivered: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+  cancelled: 'bg-red-100 text-red-800 border-red-200',
+  refunded: 'bg-gray-100 text-gray-800 border-gray-200',
 }
 
-const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.4 },
+const productGradients = [
+  'from-violet-500 to-purple-600',
+  'from-rose-500 to-pink-600',
+  'from-amber-500 to-orange-600',
+  'from-emerald-500 to-teal-600',
+  'from-sky-500 to-blue-600',
+]
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08 },
+  },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
 }
 
 export function OverviewDashboard() {
-  const { selectedMerchantId, selectedStoreId, setDashboardPage, setSelectedOrderId } = useAppStore()
+  const { selectedMerchantId, setDashboardPage, setSelectedOrderId } = useAppStore()
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -141,83 +159,108 @@ export function OverviewDashboard() {
   const stats = [
     {
       title: 'Total Revenue',
-      value: `$${data.stats.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
+      value: `$${data.stats.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       change: data.stats.revenueGrowth,
+      changeLabel: 'vs last period',
       icon: DollarSign,
-      color: 'text-emerald-600',
-      bg: 'bg-emerald-50',
+      gradient: 'from-emerald-500 to-teal-600',
+      bgGradient: 'from-emerald-50 to-teal-50',
+      iconBg: 'bg-emerald-100',
+      iconColor: 'text-emerald-600',
     },
     {
       title: 'Orders',
       value: data.stats.totalOrders.toLocaleString(),
-      change: data.stats.recentOrders > 0 ? ((data.stats.recentOrders / Math.max(data.stats.totalOrders - data.stats.recentOrders, 1)) * 100) : 0,
+      change: data.stats.recentOrders,
+      changeLabel: 'recent',
       icon: ShoppingCart,
-      color: 'text-blue-600',
-      bg: 'bg-blue-50',
+      gradient: 'from-blue-500 to-indigo-600',
+      bgGradient: 'from-blue-50 to-indigo-50',
+      iconBg: 'bg-blue-100',
+      iconColor: 'text-blue-600',
     },
     {
       title: 'Customers',
       value: data.stats.totalCustomers.toLocaleString(),
       change: data.stats.recentCustomers,
+      changeLabel: 'new this month',
       icon: Users,
-      color: 'text-violet-600',
-      bg: 'bg-violet-50',
+      gradient: 'from-violet-500 to-purple-600',
+      bgGradient: 'from-violet-50 to-purple-50',
+      iconBg: 'bg-violet-100',
+      iconColor: 'text-violet-600',
     },
     {
       title: 'Products',
       value: data.stats.totalProducts.toLocaleString(),
       change: data.stats.activeProducts,
+      changeLabel: 'active',
       icon: Package,
-      color: 'text-orange-600',
-      bg: 'bg-orange-50',
+      gradient: 'from-orange-500 to-amber-600',
+      bgGradient: 'from-orange-50 to-amber-50',
+      iconBg: 'bg-orange-100',
+      iconColor: 'text-orange-600',
     },
   ]
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, i) => (
-          <motion.div key={stat.title} {...fadeIn} transition={{ duration: 0.4, delay: i * 0.1 }}>
-            <Card className="relative overflow-hidden">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">{stat.title}</p>
-                    <p className="text-2xl font-bold">{stat.value}</p>
+    <motion.div
+      className="space-y-6"
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+    >
+      {/* Stats Grid */}
+      <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat) => (
+          <motion.div key={stat.title} variants={itemVariants}>
+            <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+              {/* Gradient accent bar */}
+              <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${stat.gradient}`} />
+              <CardContent className="p-5 pt-6">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
+                    <p className="text-2xl sm:text-3xl font-bold tracking-tight">{stat.value}</p>
                   </div>
-                  <div className={`${stat.bg} rounded-full p-3`}>
-                    <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                  <div className={`${stat.iconBg} rounded-xl p-2.5 group-hover:scale-110 transition-transform duration-300`}>
+                    <stat.icon className={`h-5 w-5 ${stat.iconColor}`} />
                   </div>
                 </div>
-                <div className="mt-3 flex items-center gap-1 text-xs">
+                <div className="mt-3 flex items-center gap-1.5">
                   {stat.title === 'Total Revenue' ? (
                     <>
                       {stat.change >= 0 ? (
-                        <TrendingUp className="h-3 w-3 text-emerald-600" />
+                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-50">
+                          <TrendingUp className="h-3 w-3 text-emerald-600" />
+                          <span className="text-xs font-semibold text-emerald-600">{stat.change.toFixed(1)}%</span>
+                        </div>
                       ) : (
-                        <TrendingDown className="h-3 w-3 text-red-600" />
+                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-red-50">
+                          <TrendingDown className="h-3 w-3 text-red-600" />
+                          <span className="text-xs font-semibold text-red-600">{Math.abs(stat.change).toFixed(1)}%</span>
+                        </div>
                       )}
-                      <span className={stat.change >= 0 ? 'text-emerald-600' : 'text-red-600'}>
-                        {Math.abs(stat.change).toFixed(1)}%
-                      </span>
-                      <span className="text-muted-foreground">vs last period</span>
+                      <span className="text-xs text-muted-foreground">{stat.changeLabel}</span>
                     </>
                   ) : stat.title === 'Orders' ? (
                     <>
-                      <TrendingUp className="h-3 w-3 text-emerald-600" />
-                      <span className="text-emerald-600">{stat.change.toFixed(1)}%</span>
-                      <span className="text-muted-foreground">recent</span>
+                      <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-blue-50">
+                        <ArrowUpRight className="h-3 w-3 text-blue-600" />
+                        <span className="text-xs font-semibold text-blue-600">{stat.change}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">{stat.changeLabel}</span>
                     </>
                   ) : stat.title === 'Customers' ? (
                     <>
-                      <TrendingUp className="h-3 w-3 text-emerald-600" />
-                      <span className="text-emerald-600">+{stat.change}</span>
-                      <span className="text-muted-foreground">recent</span>
+                      <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-violet-50">
+                        <TrendingUp className="h-3 w-3 text-violet-600" />
+                        <span className="text-xs font-semibold text-violet-600">+{stat.change}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">{stat.changeLabel}</span>
                     </>
                   ) : (
-                    <>
-                      <span className="text-muted-foreground">{stat.change} active</span>
-                    </>
+                    <span className="text-xs text-muted-foreground">{stat.change} {stat.changeLabel}</span>
                   )}
                 </div>
               </CardContent>
@@ -226,56 +269,90 @@ export function OverviewDashboard() {
         ))}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <motion.div className="lg:col-span-2" {...fadeIn} transition={{ duration: 0.4, delay: 0.3 }}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Revenue Overview</CardTitle>
-              <CardDescription>Monthly revenue for the last 12 months</CardDescription>
+      {/* Revenue Chart + Top Products */}
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
+        <motion.div className="lg:col-span-2" variants={itemVariants}>
+          <Card className="overflow-hidden">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5 text-chart-1" />
+                    Revenue Overview
+                  </CardTitle>
+                  <CardDescription className="mt-1">Monthly revenue for the last 12 months</CardDescription>
+                </div>
+                <Badge variant="outline" className="text-xs">
+                  <Eye className="h-3 w-3 mr-1" />
+                  Live
+                </Badge>
+              </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               <ChartContainer config={chartConfig} className="h-[300px] w-full">
-                <LineChart data={data.revenueChart} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="month" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
-                  <YAxis className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+                <AreaChart data={data.revenueChart} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted/50" vertical={false} />
+                  <XAxis
+                    dataKey="month"
+                    className="text-xs"
+                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    className="text-xs"
+                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                    tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
+                    tickLine={false}
+                    axisLine={false}
+                  />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Line
+                  <Area
                     type="monotone"
                     dataKey="revenue"
-                    stroke="var(--color-revenue)"
-                    strokeWidth={2}
-                    dot={{ fill: 'var(--color-revenue)', r: 4 }}
-                    activeDot={{ r: 6 }}
+                    stroke="hsl(var(--chart-1))"
+                    strokeWidth={2.5}
+                    fill="url(#revenueGradient)"
+                    dot={{ fill: 'hsl(var(--chart-1))', r: 3, strokeWidth: 0 }}
+                    activeDot={{ r: 5, strokeWidth: 2, stroke: 'white' }}
                   />
-                </LineChart>
+                </AreaChart>
               </ChartContainer>
             </CardContent>
           </Card>
         </motion.div>
 
-        <motion.div {...fadeIn} transition={{ duration: 0.4, delay: 0.4 }}>
+        <motion.div variants={itemVariants}>
           <Card className="h-full">
-            <CardHeader>
-              <CardTitle>Top Products</CardTitle>
-              <CardDescription>Best selling products by revenue</CardDescription>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-semibold">Top Products</CardTitle>
+              <CardDescription>Best selling by revenue</CardDescription>
             </CardHeader>
             <CardContent>
               {data.topProducts.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">No product data yet</p>
+                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                  <Package className="h-10 w-10 mb-2 opacity-20" />
+                  <p className="text-sm">No product data yet</p>
+                </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {data.topProducts.map((tp, i) => (
-                    <div key={tp.product?.id || i} className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-sm font-medium">
-                        #{i + 1}
+                    <div key={tp.product?.id || i} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted/50 transition-colors group cursor-pointer">
+                      <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${productGradients[i % productGradients.length]} text-white text-sm font-bold shadow-sm`}>
+                        {i + 1}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{tp.product?.name || 'Unknown'}</p>
-                        <p className="text-xs text-muted-foreground">{tp.totalQuantity} sold</p>
+                        <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">{tp.product?.name || 'Unknown'}</p>
+                        <p className="text-xs text-muted-foreground">{tp.totalQuantity} sold · {tp.orderCount} orders</p>
                       </div>
-                      <div className="text-sm font-semibold">
-                        ${tp.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      <div className="text-right">
+                        <p className="text-sm font-bold">${tp.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                       </div>
                     </div>
                   ))}
@@ -286,65 +363,79 @@ export function OverviewDashboard() {
         </motion.div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <motion.div className="lg:col-span-2" {...fadeIn} transition={{ duration: 0.4, delay: 0.5 }}>
+      {/* Recent Orders + Low Stock */}
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
+        <motion.div className="lg:col-span-2" variants={itemVariants}>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Recent Orders</CardTitle>
-                <CardDescription>Latest orders across your stores</CardDescription>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg font-semibold">Recent Orders</CardTitle>
+                  <CardDescription>Latest orders across your stores</CardDescription>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setDashboardPage('orders')}
+                  className="gap-1.5"
+                >
+                  View All
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Button>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setDashboardPage('orders')}
-              >
-                View All <ArrowRight className="ml-1 h-4 w-4" />
-              </Button>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               {data.recentOrders.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">No orders yet</p>
+                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                  <ShoppingCart className="h-10 w-10 mb-2 opacity-20" />
+                  <p className="text-sm">No orders yet</p>
+                </div>
               ) : (
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto -mx-2">
                   <Table>
                     <TableHeader>
-                      <TableRow>
-                        <TableHead>Order</TableHead>
-                        <TableHead>Customer</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Payment</TableHead>
-                        <TableHead className="text-right">Total</TableHead>
+                      <TableRow className="hover:bg-transparent">
+                        <TableHead className="text-xs font-semibold uppercase tracking-wider">Order</TableHead>
+                        <TableHead className="text-xs font-semibold uppercase tracking-wider">Customer</TableHead>
+                        <TableHead className="text-xs font-semibold uppercase tracking-wider">Status</TableHead>
+                        <TableHead className="text-xs font-semibold uppercase tracking-wider">Payment</TableHead>
+                        <TableHead className="text-xs font-semibold uppercase tracking-wider text-right">Total</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {data.recentOrders.map((order) => (
                         <TableRow
                           key={order.id}
-                          className="cursor-pointer hover:bg-muted/50"
+                          className="cursor-pointer hover:bg-muted/50 transition-colors group"
                           onClick={() => {
                             setSelectedOrderId(order.id)
                             setDashboardPage('orders')
                           }}
                         >
-                          <TableCell className="font-medium">{order.orderNumber}</TableCell>
-                          <TableCell>{order.customer?.name || order.customer?.email || 'Guest'}</TableCell>
+                          <TableCell className="font-medium text-sm">
+                            <span className="group-hover:text-primary transition-colors">{order.orderNumber}</span>
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {order.customer?.name || order.customer?.email || 'Guest'}
+                          </TableCell>
                           <TableCell>
-                            <Badge variant="secondary" className={statusColors[order.status] || ''}>
+                            <Badge variant="secondary" className={`text-[11px] px-2 py-0.5 border ${statusColors[order.status] || ''}`}>
                               {order.status}
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline" className={
+                            <Badge variant="outline" className={`text-[11px] px-2 py-0.5 ${
                               order.paymentStatus === 'paid'
-                                ? 'border-emerald-300 text-emerald-700'
-                                : 'border-yellow-300 text-yellow-700'
-                            }>
+                                ? 'border-emerald-300 text-emerald-700 bg-emerald-50'
+                                : order.paymentStatus === 'failed'
+                                ? 'border-red-300 text-red-700 bg-red-50'
+                                : 'border-yellow-300 text-yellow-700 bg-yellow-50'
+                            }`}>
                               {order.paymentStatus}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-right font-medium">
-                            ${order.total.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          <TableCell className="text-right font-semibold text-sm">
+                            ${order.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -356,41 +447,55 @@ export function OverviewDashboard() {
           </Card>
         </motion.div>
 
-        <motion.div {...fadeIn} transition={{ duration: 0.4, delay: 0.6 }}>
+        <motion.div variants={itemVariants}>
           <Card className="h-full">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-amber-500" />
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-amber-100">
+                  <AlertTriangle className="h-4 w-4 text-amber-600" />
+                </div>
                 Low Stock Alerts
               </CardTitle>
-              <CardDescription>Products running low on inventory</CardDescription>
+              <CardDescription>Products running low</CardDescription>
             </CardHeader>
             <CardContent>
               {data.lowStockProducts.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">All products are well stocked</p>
+                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                  <Package className="h-10 w-10 mb-2 opacity-20" />
+                  <p className="text-sm">All products well stocked</p>
+                </div>
               ) : (
-                <div className="space-y-3 max-h-80 overflow-y-auto">
-                  {data.lowStockProducts.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-amber-50 border border-amber-100">
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium truncate">{item.product.name}</p>
+                <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+                  {data.lowStockProducts.map((item) => {
+                    const stockPct = Math.min((item.quantity / item.lowStockThreshold) * 100, 100)
+                    const isCritical = item.quantity <= item.lowStockThreshold / 2
+                    return (
+                      <div key={item.id} className={`p-3 rounded-xl border transition-colors ${
+                        isCritical ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'
+                      }`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-sm font-medium truncate pr-2">{item.product.name}</p>
+                          <span className={`text-xs font-bold ${isCritical ? 'text-red-700' : 'text-amber-700'}`}>
+                            {item.quantity} left
+                          </span>
+                        </div>
                         {item.product.sku && (
-                          <p className="text-xs text-muted-foreground">SKU: {item.product.sku}</p>
+                          <p className="text-xs text-muted-foreground mb-2">SKU: {item.product.sku}</p>
                         )}
+                        <Progress
+                          value={stockPct}
+                          className={`h-1.5 ${isCritical ? '[&>div]:bg-red-500' : '[&>div]:bg-amber-500'}`}
+                        />
                       </div>
-                      <div className="text-right ml-3">
-                        <p className="text-sm font-bold text-amber-700">{item.quantity}</p>
-                        <p className="text-xs text-muted-foreground">of {item.lowStockThreshold}</p>
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </CardContent>
           </Card>
         </motion.div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
@@ -401,9 +506,14 @@ function OverviewSkeleton() {
         {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i}>
             <CardContent className="p-6">
-              <Skeleton className="h-4 w-24 mb-2" />
-              <Skeleton className="h-8 w-32 mb-3" />
-              <Skeleton className="h-3 w-20" />
+              <div className="flex items-start justify-between">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-8 w-32" />
+                </div>
+                <Skeleton className="h-10 w-10 rounded-xl" />
+              </div>
+              <Skeleton className="h-4 w-28 mt-3" />
             </CardContent>
           </Card>
         ))}
@@ -411,11 +521,11 @@ function OverviewSkeleton() {
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-6 w-48" />
             <Skeleton className="h-4 w-64" />
           </CardHeader>
           <CardContent>
-            <Skeleton className="h-[300px] w-full" />
+            <Skeleton className="h-[300px] w-full rounded-lg" />
           </CardContent>
         </Card>
         <Card>
@@ -425,10 +535,10 @@ function OverviewSkeleton() {
           <CardContent className="space-y-4">
             {Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="flex items-center gap-3">
-                <Skeleton className="h-10 w-10 rounded-lg" />
+                <Skeleton className="h-10 w-10 rounded-xl" />
                 <div className="flex-1">
-                  <Skeleton className="h-4 w-24 mb-1" />
-                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-4 w-28 mb-1.5" />
+                  <Skeleton className="h-3 w-20" />
                 </div>
                 <Skeleton className="h-4 w-16" />
               </div>
