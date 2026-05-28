@@ -45,11 +45,12 @@ interface StoreLayoutProps {
   children: React.ReactNode
 }
 
-const navLinks: Array<{ page: StorefrontPage; label: string }> = [
+const navLinks: Array<{ page: StorefrontPage; label: string; icon?: React.ReactNode }> = [
   { page: 'home', label: 'Home' },
-  { page: 'category', label: 'Products' },
+  { page: 'products', label: 'Products' },
   { page: 'search', label: 'Search' },
   { page: 'blog', label: 'Blog' },
+  { page: 'wishlist', label: 'Wishlist', icon: <Heart className="h-4 w-4" /> },
   { page: 'account', label: 'Account' },
 ]
 
@@ -157,6 +158,15 @@ export function StoreLayout({ store, cartItemCount, children }: StoreLayoutProps
                       </li>
                       <li>
                         <button
+                          onClick={() => handleNavClick('wishlist')}
+                          className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm font-medium text-rose-500 hover:bg-rose-50 transition-colors"
+                        >
+                          <Heart className="h-4 w-4" />
+                          Wishlist
+                        </button>
+                      </li>
+                      <li>
+                        <button
                           onClick={() => handleNavClick('account')}
                           className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
                         >
@@ -246,7 +256,7 @@ export function StoreLayout({ store, cartItemCount, children }: StoreLayoutProps
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => handleNavClick('account')}
+                onClick={() => handleNavClick('wishlist')}
                 className="hidden sm:flex h-9 w-9"
               >
                 <Heart className="h-4 w-4" />

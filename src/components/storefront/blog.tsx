@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useEffect, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   Search,
   Calendar,
@@ -9,14 +9,35 @@ import {
   ArrowRight,
   Tag,
   Clock,
+  BookOpen,
+  TrendingUp,
+  Mail,
+  Share2,
+  Twitter,
+  Facebook,
+  Linkedin,
+  Link2,
+  Sparkles,
+  ChevronRight,
+  PenLine,
+  Lightbulb,
+  BarChart3,
+  Palette,
+  Cpu,
+  Megaphone,
+  Package,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Separator } from '@/components/ui/separator'
+import { toast } from 'sonner'
 import { useAppStore } from '@/lib/store'
 
+// --- Types ---
 interface BlogPost {
   id: string
   title: string
@@ -31,23 +52,283 @@ interface BlogPost {
   createdAt: string
 }
 
-const blogGradients = [
-  'from-rose-400 to-pink-300',
-  'from-violet-400 to-purple-300',
-  'from-emerald-400 to-teal-300',
-  'from-amber-400 to-orange-300',
-  'from-sky-400 to-cyan-300',
-  'from-fuchsia-400 to-pink-300',
+interface MockBlogPost {
+  id: string
+  title: string
+  excerpt: string
+  category: string
+  author: string
+  authorInitials: string
+  publishedAt: string
+  readingTime: number
+  tags: string[]
+  featured: boolean
+  gradientIndex: number
+}
+
+// --- Category config ---
+const categories = [
+  { id: 'all', label: 'All', icon: BookOpen },
+  { id: 'Business', label: 'Business', icon: BarChart3 },
+  { id: 'Marketing', label: 'Marketing', icon: Megaphone },
+  { id: 'Product', label: 'Product', icon: Package },
+  { id: 'Technology', label: 'Technology', icon: Cpu },
+  { id: 'Design', label: 'Design', icon: Palette },
+  { id: 'AI & Automation', label: 'AI & Automation', icon: Lightbulb },
 ]
 
+const categoryColors: Record<string, string> = {
+  Business: 'bg-emerald-100 text-emerald-700',
+  Marketing: 'bg-sky-100 text-sky-700',
+  Product: 'bg-violet-100 text-violet-700',
+  Technology: 'bg-orange-100 text-orange-700',
+  Design: 'bg-fuchsia-100 text-fuchsia-700',
+  'AI & Automation': 'bg-amber-100 text-amber-700',
+}
+
+const categoryIconColors: Record<string, string> = {
+  Business: 'from-emerald-500 to-teal-400',
+  Marketing: 'from-sky-500 to-blue-400',
+  Product: 'from-violet-500 to-purple-400',
+  Technology: 'from-orange-500 to-red-400',
+  Design: 'from-fuchsia-500 to-pink-400',
+  'AI & Automation': 'from-amber-500 to-yellow-400',
+}
+
+const blogGradients = [
+  'from-rose-400 via-pink-400 to-orange-300',
+  'from-violet-400 via-purple-400 to-indigo-300',
+  'from-emerald-400 via-teal-400 to-cyan-300',
+  'from-amber-400 via-orange-400 to-yellow-300',
+  'from-sky-400 via-blue-400 to-cyan-300',
+  'from-fuchsia-400 via-pink-400 to-rose-300',
+  'from-lime-400 via-green-400 to-emerald-300',
+  'from-red-400 via-rose-400 to-pink-300',
+  'from-indigo-400 via-blue-400 to-sky-300',
+  'from-teal-400 via-cyan-400 to-sky-300',
+]
+
+// --- Mock Data ---
+const mockPosts: MockBlogPost[] = [
+  {
+    id: 'mock-1',
+    title: '10 Ways AI is Transforming Ecommerce in 2025',
+    excerpt: 'From personalized recommendations to automated inventory management, artificial intelligence is reshaping how online stores operate. Discover the top AI trends that every merchant should know about to stay competitive in the evolving digital marketplace.',
+    category: 'AI & Automation',
+    author: 'Sarah Chen',
+    authorInitials: 'SC',
+    publishedAt: '2025-02-28',
+    readingTime: 8,
+    tags: ['AI', 'Ecommerce', 'Automation', 'Trends'],
+    featured: true,
+    gradientIndex: 0,
+  },
+  {
+    id: 'mock-2',
+    title: 'The Complete Guide to Product Photography',
+    excerpt: 'Great product photos can increase conversion rates by up to 30%. Learn professional techniques for lighting, composition, and editing that will make your products stand out without expensive equipment.',
+    category: 'Product',
+    author: 'Mike Torres',
+    authorInitials: 'MT',
+    publishedAt: '2025-02-25',
+    readingTime: 12,
+    tags: ['Photography', 'Product', 'Tips'],
+    featured: false,
+    gradientIndex: 1,
+  },
+  {
+    id: 'mock-3',
+    title: 'How to Reduce Cart Abandonment by 40%',
+    excerpt: 'Cart abandonment costs ecommerce businesses billions annually. Here are proven strategies to recover lost sales, from optimized checkout flows to strategic email retargeting campaigns.',
+    category: 'Business',
+    author: 'Lisa Park',
+    authorInitials: 'LP',
+    publishedAt: '2025-02-22',
+    readingTime: 6,
+    tags: ['Cart Abandonment', 'Conversion', 'Business'],
+    featured: false,
+    gradientIndex: 2,
+  },
+  {
+    id: 'mock-4',
+    title: 'Social Media Marketing Strategies That Actually Work',
+    excerpt: 'Stop wasting time on social media tactics that don\'t deliver results. These data-driven strategies have helped thousands of merchants grow their audience and drive real sales.',
+    category: 'Marketing',
+    author: 'James Wilson',
+    authorInitials: 'JW',
+    publishedAt: '2025-02-18',
+    readingTime: 10,
+    tags: ['Social Media', 'Marketing', 'Growth'],
+    featured: false,
+    gradientIndex: 3,
+  },
+  {
+    id: 'mock-5',
+    title: 'Understanding Your Store Analytics',
+    excerpt: 'Numbers tell a story — if you know how to read them. This deep dive into ecommerce analytics will help you identify the metrics that truly matter for growing your business.',
+    category: 'Business',
+    author: 'Emily Nguyen',
+    authorInitials: 'EN',
+    publishedAt: '2025-02-15',
+    readingTime: 7,
+    tags: ['Analytics', 'Data', 'Business'],
+    featured: false,
+    gradientIndex: 4,
+  },
+  {
+    id: 'mock-6',
+    title: 'Building Customer Loyalty in the Digital Age',
+    excerpt: 'Acquiring new customers is expensive. Learn how to build lasting relationships with your existing audience through loyalty programs, personalization, and exceptional service.',
+    category: 'Marketing',
+    author: 'David Kim',
+    authorInitials: 'DK',
+    publishedAt: '2025-02-12',
+    readingTime: 9,
+    tags: ['Loyalty', 'Retention', 'Marketing'],
+    featured: false,
+    gradientIndex: 5,
+  },
+  {
+    id: 'mock-7',
+    title: 'Shipping Optimization for Small Businesses',
+    excerpt: 'Shipping costs can make or break your profit margins. Discover strategies for negotiating rates, choosing carriers, and implementing smart packaging that saves money without sacrificing delivery speed.',
+    category: 'Business',
+    author: 'Rachel Adams',
+    authorInitials: 'RA',
+    publishedAt: '2025-02-08',
+    readingTime: 6,
+    tags: ['Shipping', 'Logistics', 'Small Business'],
+    featured: false,
+    gradientIndex: 6,
+  },
+  {
+    id: 'mock-8',
+    title: 'The Psychology of Pricing',
+    excerpt: 'Why do customers perceive $9.99 as significantly cheaper than $10? The science behind pricing strategies reveals surprising insights about human decision-making and how to leverage them.',
+    category: 'Product',
+    author: 'Tom Martinez',
+    authorInitials: 'TM',
+    publishedAt: '2025-02-05',
+    readingTime: 5,
+    tags: ['Pricing', 'Psychology', 'Product'],
+    featured: false,
+    gradientIndex: 7,
+  },
+  {
+    id: 'mock-9',
+    title: 'Design Systems That Scale With Your Brand',
+    excerpt: 'A well-crafted design system ensures consistency across every customer touchpoint. Learn how to build and maintain a design system that grows with your ecommerce business.',
+    category: 'Design',
+    author: 'Aisha Patel',
+    authorInitials: 'AP',
+    publishedAt: '2025-02-01',
+    readingTime: 11,
+    tags: ['Design', 'Branding', 'Systems'],
+    featured: false,
+    gradientIndex: 8,
+  },
+  {
+    id: 'mock-10',
+    title: 'Headless Commerce: The Future of Online Retail',
+    excerpt: 'Decoupling your front-end from your back-end gives you unmatched flexibility. Explore the benefits, challenges, and real-world examples of headless commerce architectures.',
+    category: 'Technology',
+    author: 'Chris Lee',
+    authorInitials: 'CL',
+    publishedAt: '2025-01-28',
+    readingTime: 8,
+    tags: ['Headless', 'Technology', 'Architecture'],
+    featured: false,
+    gradientIndex: 9,
+  },
+]
+
+const popularTags = ['AI', 'Marketing', 'Ecommerce', 'Design', 'Growth', 'Tips', 'Analytics', 'Pricing', 'Shipping', 'Product']
+
+// --- Animation Variants ---
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.06 },
+  },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+}
+
+// --- Helper Functions ---
+function formatDate(date: string) {
+  return new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
+function estimateReadingTime(content: string): number {
+  const wordsPerMinute = 200
+  const words = content.split(/\s+/).length
+  return Math.max(1, Math.ceil(words / wordsPerMinute))
+}
+
+function getCategoryIcon(category: string) {
+  const cat = categories.find((c) => c.id === category)
+  return cat ? cat.icon : BookOpen
+}
+
+// --- Social Share Button ---
+function ShareButtons({ title, className }: { title: string; className?: string }) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      setCopied(true)
+      toast.success('Link copied to clipboard!')
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
+
+  return (
+    <div className={`flex items-center gap-1 ${className || ''}`}>
+      <button
+        onClick={(e) => { e.stopPropagation(); handleCopyLink() }}
+        className="h-7 w-7 rounded-full bg-muted/80 hover:bg-muted flex items-center justify-center transition-colors"
+        title={copied ? 'Copied!' : 'Copy link'}
+      >
+        <Link2 className="h-3.5 w-3.5 text-muted-foreground" />
+      </button>
+      <button
+        onClick={(e) => e.stopPropagation()}
+        className="h-7 w-7 rounded-full bg-muted/80 hover:bg-sky-100 flex items-center justify-center transition-colors"
+        title="Share on Twitter"
+      >
+        <Twitter className="h-3.5 w-3.5 text-muted-foreground" />
+      </button>
+      <button
+        onClick={(e) => e.stopPropagation()}
+        className="h-7 w-7 rounded-full bg-muted/80 hover:bg-blue-100 flex items-center justify-center transition-colors"
+        title="Share on Facebook"
+      >
+        <Facebook className="h-3.5 w-3.5 text-muted-foreground" />
+      </button>
+    </div>
+  )
+}
+
+// --- Main Component ---
 export function BlogPage() {
   const { selectedStoreId } = useAppStore()
   const [posts, setPosts] = useState<BlogPost[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedTag, setSelectedTag] = useState<string | null>(null)
-  const [allTags, setAllTags] = useState<string[]>([])
+  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [visibleCount, setVisibleCount] = useState(6)
+  const [email, setEmail] = useState('')
+  const [subscribed, setSubscribed] = useState(false)
 
+  // Fetch published blogs from API
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
@@ -61,20 +342,6 @@ export function BlogPage() {
           const data = await res.json()
           const publishedPosts = data.blogs || []
           setPosts(publishedPosts)
-
-          // Extract all tags
-          const tags = new Set<string>()
-          publishedPosts.forEach((post: BlogPost) => {
-            if (post.tags) {
-              try {
-                const parsed = JSON.parse(post.tags)
-                if (Array.isArray(parsed)) parsed.forEach((t: string) => tags.add(t))
-              } catch {
-                // ignore
-              }
-            }
-          })
-          setAllTags(Array.from(tags))
         }
       } catch (err) {
         console.error('Failed to fetch blogs:', err)
@@ -85,44 +352,82 @@ export function BlogPage() {
     fetchBlogs()
   }, [selectedStoreId])
 
-  // Filter posts
-  const filteredPosts = posts.filter((post) => {
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase()
-      if (!post.title.toLowerCase().includes(q) && !(post.excerpt || '').toLowerCase().includes(q)) {
-        return false
+  // Build combined post list: API posts + mock data
+  const allPosts: MockBlogPost[] = useMemo(() => {
+    const apiPosts: MockBlogPost[] = posts.map((post, i) => {
+      const parsedTags: string[] = (() => {
+        try { return JSON.parse(post.tags || '[]') } catch { return [] }
+      })()
+      const cat = parsedTags[0] || 'Business'
+      const authorName = post.author || 'ShopForge Team'
+      const initials = authorName.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase()
+      return {
+        id: post.id,
+        title: post.title,
+        excerpt: post.excerpt || post.content?.substring(0, 180) || '',
+        category: categories.some((c) => c.id === cat) ? cat : 'Business',
+        author: authorName,
+        authorInitials: initials,
+        publishedAt: post.publishedAt || post.createdAt,
+        readingTime: post.content ? estimateReadingTime(post.content) : 5,
+        tags: parsedTags.length > 0 ? parsedTags : [cat],
+        featured: i === 0,
+        gradientIndex: i % blogGradients.length,
       }
-    }
-    if (selectedTag) {
-      try {
-        const tags = JSON.parse(post.tags || '[]')
-        if (!tags.includes(selectedTag)) return false
-      } catch {
-        return false
-      }
-    }
-    return true
-  })
-
-  const featuredPost = filteredPosts[0]
-  const remainingPosts = filteredPosts.slice(1)
-
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
     })
+
+    // If we have API posts, use them; otherwise use mock data
+    if (apiPosts.length > 0) return apiPosts
+    return mockPosts
+  }, [posts])
+
+  // Filter posts
+  const filteredPosts = useMemo(() => {
+    return allPosts.filter((post) => {
+      if (selectedCategory !== 'all' && post.category !== selectedCategory) return false
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase()
+        if (
+          !post.title.toLowerCase().includes(q) &&
+          !post.excerpt.toLowerCase().includes(q) &&
+          !post.tags.some((t) => t.toLowerCase().includes(q))
+        ) {
+          return false
+        }
+      }
+      return true
+    })
+  }, [allPosts, selectedCategory, searchQuery])
+
+  const featuredPost = filteredPosts.find((p) => p.featured) || filteredPosts[0]
+  const gridPosts = filteredPosts.filter((p) => p.id !== featuredPost?.id)
+  const visibleGridPosts = gridPosts.slice(0, visibleCount)
+  const hasMore = gridPosts.length > visibleCount
+
+  // Collect all tags from visible posts
+  const allTags = useMemo(() => {
+    const tags = new Set<string>()
+    filteredPosts.forEach((p) => p.tags.forEach((t) => tags.add(t)))
+    return Array.from(tags)
+  }, [filteredPosts])
+
+  const handleSubscribe = () => {
+    if (!email || !email.includes('@')) {
+      toast.error('Please enter a valid email address')
+      return
+    }
+    setSubscribed(true)
+    toast.success('Thanks for subscribing! 🎉')
   }
 
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        <Skeleton className="h-60 w-full rounded-2xl mb-8" />
         <Skeleton className="h-10 w-48 mb-8" />
-        <Skeleton className="h-80 rounded-xl mb-8" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-64 rounded-xl" />
+            <Skeleton key={i} className="h-72 rounded-xl" />
           ))}
         </div>
       </div>
@@ -130,174 +435,436 @@ export function BlogPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2">Our Blog</h1>
-        <p className="text-muted-foreground">Stay updated with the latest news, tips, and stories.</p>
-      </div>
-
-      {/* Search & Filter */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-8">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search articles..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+    <div className="max-w-7xl mx-auto">
+      {/* ====== Hero Banner ====== */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-rose-900 to-slate-900 px-4 sm:px-6 py-16 sm:py-24"
+      >
+        {/* Decorative elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <motion.div
+            animate={{ y: [0, -15, 0], x: [0, 8, 0] }}
+            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute top-10 left-[10%] w-64 h-64 bg-rose-500/20 rounded-full blur-3xl"
+          />
+          <motion.div
+            animate={{ y: [0, 12, 0], x: [0, -10, 0] }}
+            transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute bottom-10 right-[15%] w-80 h-80 bg-orange-500/15 rounded-full blur-3xl"
+          />
+          <motion.div
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl"
           />
         </div>
-        {allTags.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={!selectedTag ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setSelectedTag(null)}
-              className={!selectedTag ? 'bg-rose-500 hover:bg-rose-600' : ''}
-            >
-              All
-            </Button>
-            {allTags.map((tag) => (
-              <Button
-                key={tag}
-                variant={selectedTag === tag ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
-                className={selectedTag === tag ? 'bg-rose-500 hover:bg-rose-600' : ''}
+
+        <div className="relative max-w-3xl mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Badge className="bg-white/10 backdrop-blur-sm text-white border-white/20 mb-4 px-3 py-1">
+              <PenLine className="h-3 w-3 mr-1.5" />
+              Insights & Resources
+            </Badge>
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-4"
+          >
+            The{' '}
+            <span className="bg-gradient-to-r from-rose-400 via-orange-400 to-amber-400 bg-clip-text text-transparent">
+              ShopForge
+            </span>{' '}
+            Blog
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="text-lg text-white/70 mb-8"
+          >
+            Insights, tips, and trends for modern merchants
+          </motion.p>
+
+          {/* Search Input */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="relative max-w-lg mx-auto mb-8"
+          >
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40" />
+            <Input
+              placeholder="Search articles, topics, authors..."
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setVisibleCount(6) }}
+              className="pl-12 h-12 bg-white/10 backdrop-blur-md border-white/20 text-white placeholder:text-white/40 focus:border-rose-400/50 focus:ring-rose-400/30 rounded-xl text-base"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40 hover:text-white/70 transition-colors"
               >
-                {tag}
-              </Button>
-            ))}
-          </div>
-        )}
-      </div>
+                ✕
+              </button>
+            )}
+          </motion.div>
 
-      {filteredPosts.length === 0 ? (
-        <div className="text-center py-16">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-            <Clock className="h-8 w-8 text-muted-foreground" />
-          </div>
-          <h3 className="text-lg font-medium mb-2">No articles found</h3>
-          <p className="text-muted-foreground text-sm">
-            {searchQuery ? 'Try a different search term.' : 'Check back later for new articles.'}
-          </p>
-        </div>
-      ) : (
-        <>
-          {/* Featured Post */}
-          {featuredPost && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-            >
-              <Card className="overflow-hidden cursor-pointer group mb-10 border-0 shadow-sm hover:shadow-lg transition-all">
-                <div className="grid grid-cols-1 lg:grid-cols-2">
-                  <div className={`aspect-video lg:aspect-auto bg-gradient-to-br ${blogGradients[0]} flex items-center justify-center`}>
-                    <span className="text-white/30 text-5xl font-bold">
-                      {featuredPost.title.substring(0, 2).toUpperCase()}
-                    </span>
-                  </div>
-                  <div className="p-6 sm:p-8 flex flex-col justify-center">
-                    <div className="flex items-center gap-3 mb-3">
-                      <Badge variant="secondary" className="text-xs">Featured</Badge>
-                      {featuredPost.publishedAt && (
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {formatDate(featuredPost.publishedAt)}
-                        </span>
-                      )}
-                    </div>
-                    <h2 className="text-2xl font-bold mb-3 group-hover:text-rose-500 transition-colors">
-                      {featuredPost.title}
-                    </h2>
-                    {featuredPost.excerpt && (
-                      <p className="text-muted-foreground mb-4 line-clamp-3">{featuredPost.excerpt}</p>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {featuredPost.author && (
-                          <span className="text-sm text-muted-foreground flex items-center gap-1">
-                            <User className="h-3 w-3" />
-                            {featuredPost.author}
-                          </span>
-                        )}
-                      </div>
-                      <Button variant="ghost" size="sm" className="text-rose-500">
-                        Read More
-                        <ArrowRight className="ml-1 h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </motion.div>
-          )}
-
-          {/* Blog Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {remainingPosts.map((post, index) => {
-              const parsedTags: string[] = (() => {
-                try { return JSON.parse(post.tags || '[]') } catch { return [] }
-              })()
-
+          {/* Category Pills */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="flex flex-wrap justify-center gap-2"
+          >
+            {categories.map((cat) => {
+              const Icon = cat.icon
               return (
-                <motion.div
-                  key={post.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                <button
+                  key={cat.id}
+                  onClick={() => { setSelectedCategory(cat.id); setVisibleCount(6) }}
+                  className={`
+                    inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium transition-all duration-200
+                    ${selectedCategory === cat.id
+                      ? 'bg-white text-slate-900 shadow-lg shadow-white/20'
+                      : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white backdrop-blur-sm border border-white/10'
+                    }
+                  `}
                 >
-                  <Card className="overflow-hidden cursor-pointer group border-0 shadow-sm hover:shadow-md transition-all h-full flex flex-col">
-                    <div className={`aspect-video bg-gradient-to-br ${blogGradients[(index + 1) % blogGradients.length]} flex items-center justify-center`}>
-                      <span className="text-white/30 text-3xl font-bold">
-                        {post.title.substring(0, 2).toUpperCase()}
-                      </span>
-                    </div>
-                    <div className="p-4 sm:p-5 flex-1 flex flex-col">
-                      <div className="flex items-center gap-2 mb-2">
-                        {post.publishedAt && (
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {formatDate(post.publishedAt)}
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="font-bold mb-2 group-hover:text-rose-500 transition-colors line-clamp-2">
-                        {post.title}
-                      </h3>
-                      {post.excerpt && (
-                        <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1">
-                          {post.excerpt}
-                        </p>
-                      )}
-                      <div className="flex items-center justify-between mt-auto">
-                        {parsedTags.length > 0 && (
-                          <div className="flex gap-1">
-                            {parsedTags.slice(0, 2).map((tag) => (
-                              <Badge key={tag} variant="secondary" className="text-xs">
-                                <Tag className="h-2.5 w-2.5 mr-1" />
-                                {tag}
-                              </Badge>
-                            ))}
-                          </div>
-                        )}
-                        {post.author && (
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <User className="h-3 w-3" />
-                            {post.author}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                </motion.div>
+                  <Icon className="h-3.5 w-3.5" />
+                  {cat.label}
+                </button>
               )
             })}
-          </div>
-        </>
-      )}
+          </motion.div>
+        </div>
+      </motion.div>
+
+      <div className="px-4 sm:px-6 py-8 sm:py-12">
+        {/* ====== Results Info ====== */}
+        {searchQuery && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center justify-between mb-6"
+          >
+            <p className="text-sm text-muted-foreground">
+              {filteredPosts.length} result{filteredPosts.length !== 1 ? 's' : ''} for &quot;{searchQuery}&quot;
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => { setSearchQuery(''); setSelectedCategory('all') }}
+              className="text-rose-500"
+            >
+              Clear search
+            </Button>
+          </motion.div>
+        )}
+
+        {filteredPosts.length === 0 ? (
+          /* ====== Empty State ====== */
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-20"
+          >
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-rose-100 to-orange-100 flex items-center justify-center">
+              <BookOpen className="h-10 w-10 text-rose-400" />
+            </div>
+            <h3 className="text-xl font-bold mb-2">No articles found</h3>
+            <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
+              {searchQuery
+                ? 'Try a different search term or browse categories above.'
+                : 'Check back later for new articles.'}
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => { setSearchQuery(''); setSelectedCategory('all') }}
+              className="border-rose-200 text-rose-500 hover:bg-rose-50"
+            >
+              Reset Filters
+            </Button>
+          </motion.div>
+        ) : (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {/* ====== Featured Post ====== */}
+            {featuredPost && (
+              <motion.div variants={itemVariants} className="mb-12">
+                <Card className="overflow-hidden cursor-pointer group border-0 shadow-md hover:shadow-xl transition-all duration-300">
+                  <div className="grid grid-cols-1 lg:grid-cols-2">
+                    {/* Image */}
+                    <div className="relative aspect-video lg:aspect-auto min-h-[260px] overflow-hidden">
+                      <div className={`absolute inset-0 bg-gradient-to-br ${blogGradients[featuredPost.gradientIndex]} transition-transform duration-700 group-hover:scale-105`} />
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        {(() => {
+                          const CatIcon = getCategoryIcon(featuredPost.category)
+                          return <CatIcon className="h-20 w-20 text-white/20" />
+                        })()}
+                      </div>
+                      {/* Featured badge */}
+                      <div className="absolute top-4 left-4 z-10">
+                        <Badge className="bg-gradient-to-r from-rose-500 to-orange-500 text-white border-0 shadow-lg">
+                          <Sparkles className="h-3 w-3 mr-1" />
+                          Featured
+                        </Badge>
+                      </div>
+                      {/* Category badge */}
+                      <div className="absolute top-4 right-4 z-10">
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${categoryColors[featuredPost.category] || 'bg-gray-100 text-gray-700'}`}>
+                          {featuredPost.category}
+                        </span>
+                      </div>
+                    </div>
+                    {/* Content */}
+                    <div className="p-6 sm:p-8 lg:p-10 flex flex-col justify-center">
+                      <div className="flex items-center gap-3 mb-4">
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Calendar className="h-3.5 w-3.5" />
+                          {formatDate(featuredPost.publishedAt)}
+                        </span>
+                        <Separator orientation="vertical" className="h-4" />
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Clock className="h-3.5 w-3.5" />
+                          {featuredPost.readingTime} min read
+                        </span>
+                      </div>
+                      <h2 className="text-2xl sm:text-3xl font-bold mb-4 group-hover:text-rose-500 transition-colors leading-tight">
+                        {featuredPost.title}
+                      </h2>
+                      <p className="text-muted-foreground mb-6 line-clamp-3 leading-relaxed">
+                        {featuredPost.excerpt}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarFallback className="bg-gradient-to-br from-rose-100 to-orange-100 text-rose-600 text-sm font-semibold">
+                              {featuredPost.authorInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="text-sm font-medium">{featuredPost.author}</p>
+                            <p className="text-xs text-muted-foreground">Author</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <ShareButtons title={featuredPost.title} />
+                          <Button variant="ghost" className="text-rose-500 group/btn">
+                            Read More
+                            <ArrowRight className="ml-1 h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* ====== Popular Tags ====== */}
+            {allTags.length > 0 && (
+              <motion.div variants={itemVariants} className="mb-8">
+                <div className="flex items-center gap-2 mb-3">
+                  <TrendingUp className="h-4 w-4 text-rose-500" />
+                  <h3 className="text-sm font-semibold">Popular Topics</h3>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {allTags.slice(0, 12).map((tag) => (
+                    <button
+                      key={tag}
+                      onClick={() => { setSearchQuery(tag); setVisibleCount(6) }}
+                      className="px-3 py-1.5 rounded-full text-xs font-medium bg-muted/80 hover:bg-rose-100 hover:text-rose-700 transition-colors"
+                    >
+                      <Tag className="h-3 w-3 inline mr-1" />
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* ====== Post Grid ====== */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {visibleGridPosts.map((post, index) => {
+                const CatIcon = getCategoryIcon(post.category)
+                return (
+                  <motion.div
+                    key={post.id}
+                    variants={itemVariants}
+                  >
+                    <Card className="overflow-hidden cursor-pointer group border-0 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
+                      {/* Image */}
+                      <div className="relative aspect-video overflow-hidden">
+                        <div className={`absolute inset-0 bg-gradient-to-br ${blogGradients[post.gradientIndex]} transition-transform duration-500 group-hover:scale-110`} />
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <CatIcon className="h-12 w-12 text-white/20" />
+                        </div>
+                        {/* Category overlay */}
+                        <div className="absolute top-3 left-3 z-10">
+                          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold ${categoryColors[post.category] || 'bg-gray-100 text-gray-700'}`}>
+                            {post.category}
+                          </span>
+                        </div>
+                        {/* Reading time */}
+                        <div className="absolute top-3 right-3 z-10">
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium bg-black/40 backdrop-blur-sm text-white">
+                            <Clock className="h-3 w-3" />
+                            {post.readingTime} min
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-5 flex-1 flex flex-col">
+                        {/* Date */}
+                        <div className="flex items-center gap-2 mb-3">
+                          <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">
+                            {formatDate(post.publishedAt)}
+                          </span>
+                        </div>
+
+                        {/* Title */}
+                        <h3 className="font-bold text-base mb-2 group-hover:text-rose-500 transition-colors line-clamp-2 leading-snug">
+                          {post.title}
+                        </h3>
+
+                        {/* Excerpt */}
+                        <p className="text-sm text-muted-foreground line-clamp-3 mb-4 flex-1 leading-relaxed">
+                          {post.excerpt}
+                        </p>
+
+                        {/* Bottom Row */}
+                        <div className="flex items-center justify-between pt-3 border-t">
+                          {/* Author */}
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-7 w-7">
+                              <AvatarFallback className="text-[10px] font-semibold bg-gradient-to-br from-rose-100 to-orange-100 text-rose-600">
+                                {post.authorInitials}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="text-xs font-medium text-muted-foreground">{post.author}</span>
+                          </div>
+
+                          {/* Read More */}
+                          <span className="text-xs font-medium text-rose-500 flex items-center gap-0.5 group-hover:gap-1.5 transition-all">
+                            Read More
+                            <ChevronRight className="h-3.5 w-3.5" />
+                          </span>
+                        </div>
+
+                        {/* Hover share buttons */}
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity mt-3">
+                          <ShareButtons title={post.title} />
+                        </div>
+                      </div>
+                    </Card>
+                  </motion.div>
+                )
+              })}
+            </div>
+
+            {/* ====== Load More ====== */}
+            {hasMore && (
+              <motion.div variants={itemVariants} className="flex justify-center mt-10">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => setVisibleCount((c) => c + 6)}
+                  className="min-w-[200px] border-rose-200 text-rose-500 hover:bg-rose-50 hover:border-rose-300"
+                >
+                  Load More Articles
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </motion.div>
+            )}
+          </motion.div>
+        )}
+
+        {/* ====== Newsletter CTA ====== */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.5 }}
+          className="mt-16 sm:mt-20"
+        >
+          <Card className="overflow-hidden border-0 shadow-lg">
+            <div className="relative bg-gradient-to-br from-rose-50 via-orange-50 to-amber-50 px-6 sm:px-12 py-12 sm:py-16">
+              {/* Decorative blobs */}
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <motion.div
+                  animate={{ y: [0, -10, 0] }}
+                  transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+                  className="absolute -top-10 -left-10 w-40 h-40 bg-rose-300/20 rounded-full blur-3xl"
+                />
+                <motion.div
+                  animate={{ y: [0, 10, 0] }}
+                  transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+                  className="absolute -bottom-10 -right-10 w-48 h-48 bg-orange-300/20 rounded-full blur-3xl"
+                />
+              </div>
+
+              <div className="relative max-w-xl mx-auto text-center">
+                <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 mb-6 shadow-sm">
+                  <Mail className="h-4 w-4 text-rose-500" />
+                  <span className="text-sm font-medium">Newsletter</span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-bold mb-3">Stay in the loop</h2>
+                <p className="text-muted-foreground mb-8">
+                  Get the latest articles, insights, and ecommerce tips delivered straight to your inbox. No spam, ever.
+                </p>
+
+                {subscribed ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-6 py-3 rounded-full font-medium"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    You&apos;re subscribed! Check your inbox.
+                  </motion.div>
+                ) : (
+                  <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                    <div className="relative flex-1">
+                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="email"
+                        placeholder="Enter your email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSubscribe()}
+                        className="pl-10 h-11 bg-white/80 backdrop-blur-sm border-white/50 focus:border-rose-300 focus:ring-rose-200"
+                      />
+                    </div>
+                    <Button
+                      onClick={handleSubscribe}
+                      className="bg-rose-500 hover:bg-rose-600 h-11 px-6 shadow-md hover:shadow-lg transition-all"
+                    >
+                      Subscribe
+                      <ArrowRight className="ml-1.5 h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </Card>
+        </motion.div>
+      </div>
     </div>
   )
 }

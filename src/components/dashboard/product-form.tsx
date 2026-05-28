@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { z } from 'zod/v4'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -13,6 +13,8 @@ import {
   Trash2,
   Loader2,
   ImagePlus,
+  RefreshCw,
+  Wand2,
 } from 'lucide-react'
 import {
   Card,
@@ -36,6 +38,11 @@ import {
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { useAppStore } from '@/lib/store'
 import { api } from '@/lib/api-client'
 import { toast } from 'sonner'
@@ -115,6 +122,7 @@ export function ProductForm() {
   const [saving, setSaving] = useState(false)
   const [aiLoading, setAiLoading] = useState<string | null>(null)
   const [categories, setCategories] = useState<Category[]>([])
+  const [descriptionGenerated, setDescriptionGenerated] = useState(false)
 
   const form = useForm<ProductForm>({
     resolver: zodResolver(productSchema),
@@ -215,31 +223,55 @@ export function ProductForm() {
     form.setValue('slug', slug)
   }
 
-  const handleAiGenerate = async (feature: string, field: string) => {
-    setAiLoading(feature)
+  const handleAiGenerateDescription = async () => {
+    const productName = form.getValues('name')
+    if (!productName) {
+      toast.error('Please enter a product name first')
+      return
+    }
+    setAiLoading('product_desc')
     try {
-      const name = form.getValues('name')
+      const categoryId = form.getValues('categoryId')
+      const categoryName = categories.find((c) => c.id === categoryId)?.name || ''
+      const tags = form.getValues('tags')
+
+      const res = await api.post<{ description: string }>('/ai/generate-description', {
+        productName,
+        category: categoryName,
+        features: tags,
+      })
+      form.setValue('description', res.description)
+      setDescriptionGenerated(true)
+      toast.success('AI generated product description')
+    } catch {
+      toast.error('AI generation failed. Please try again.')
+    } finally {
+      setAiLoading(null)
+    }
+  }
+
+  const handleAiGenerateSEO = async () => {
+    const productName = form.getValues('name')
+    if (!productName) {
+      toast.error('Please enter a product name first')
+      return
+    }
+    setAiLoading('seo')
+    try {
       const desc = form.getValues('description')
       const res = await api.post<{ result: string }>('/ai', {
-        feature,
-        prompt: feature === 'product_desc'
-          ? `Generate a compelling product description for: ${name}. ${desc ? `Current description: ${desc}` : ''}`
-          : `Generate SEO meta title and description for product: ${name}. ${desc ? `Description: ${desc}` : ''}`,
+        feature: 'seo',
+        prompt: `Generate SEO meta title and description for product: ${productName}. ${desc ? `Description: ${desc}` : ''}`,
         merchantId: selectedMerchantId,
       })
-      if (feature === 'product_desc') {
-        form.setValue('description', res.result)
-      } else {
-        // Try to parse the SEO result
-        const lines = res.result.split('\n').filter(Boolean)
-        const titleLine = lines.find((l) => l.toLowerCase().includes('title'))
-        const descLine = lines.find((l) => l.toLowerCase().includes('description'))
-        if (titleLine) form.setValue('metaTitle', titleLine.replace(/^.*?:\s*/, '').replace(/\*\*/g, '').trim())
-        if (descLine) form.setValue('metaDescription', descLine.replace(/^.*?:\s*/, '').replace(/\*\*/g, '').trim())
-      }
-      toast.success('AI generation complete')
+      const lines = res.result.split('\n').filter(Boolean)
+      const titleLine = lines.find((l) => l.toLowerCase().includes('title'))
+      const descLine = lines.find((l) => l.toLowerCase().includes('description'))
+      if (titleLine) form.setValue('metaTitle', titleLine.replace(/^.*?:\s*/, '').replace(/\*\*/g, '').trim())
+      if (descLine) form.setValue('metaDescription', descLine.replace(/^.*?:\s*/, '').replace(/\*\*/g, '').trim())
+      toast.success('AI generated SEO content')
     } catch {
-      toast.error('AI generation failed')
+      toast.error('AI SEO generation failed')
     } finally {
       setAiLoading(null)
     }
@@ -324,6 +356,7 @@ export function ProductForm() {
           <div className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
+                <div className="h-1 w-16 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500" />
                 <CardTitle>Basic Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -351,27 +384,92 @@ export function ProductForm() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="description">Description</Label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleAiGenerate('product_desc', 'description')}
-                      disabled={aiLoading === 'product_desc'}
-                    >
-                      {aiLoading === 'product_desc' ? (
-                        <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                      ) : (
-                        <Sparkles className="mr-1 h-3 w-3" />
-                      )}
-                      AI Generate
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <AnimatePresence>
+                        {descriptionGenerated && !aiLoading && (
+                          <motion.div
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -10 }}
+                          >
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={handleAiGenerateDescription}
+                                  className="text-muted-foreground hover:text-foreground"
+                                >
+                                  <RefreshCw className="mr-1 h-3 w-3" />
+                                  Regenerate
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                Generate a different description
+                              </TooltipContent>
+                            </Tooltip>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleAiGenerateDescription}
+                            disabled={aiLoading === 'product_desc'}
+                            className="bg-gradient-to-r from-violet-500/10 to-fuchsia-500/10 border-violet-200 hover:from-violet-500/20 hover:to-fuchsia-500/20"
+                          >
+                            {aiLoading === 'product_desc' ? (
+                              <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                            ) : (
+                              <Wand2 className="mr-1 h-3 w-3 text-violet-500" />
+                            )}
+                            AI Generate
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          Let AI write an engaging product description
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
                   </div>
-                  <Textarea
-                    id="description"
-                    {...form.register('description')}
-                    placeholder="Write a compelling product description..."
-                    rows={5}
-                  />
+                  <div className="relative">
+                    <Textarea
+                      id="description"
+                      {...form.register('description')}
+                      placeholder="Write a compelling product description..."
+                      rows={5}
+                      className={descriptionGenerated ? 'border-violet-200 bg-violet-50/30' : ''}
+                    />
+                    <AnimatePresence>
+                      {aiLoading === 'product_desc' && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-md backdrop-blur-sm"
+                        >
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Loader2 className="h-4 w-4 animate-spin text-violet-500" />
+                            <span>AI is writing your description...</span>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                  {descriptionGenerated && form.watch('description') && (
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-xs text-violet-500 flex items-center gap-1"
+                    >
+                      <Sparkles className="h-3 w-3" />
+                      AI-generated description
+                    </motion.p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="shortDesc">Short Description</Label>
@@ -387,6 +485,7 @@ export function ProductForm() {
 
             <Card>
               <CardHeader>
+                <div className="h-1 w-16 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500" />
                 <CardTitle>Pricing</CardTitle>
               </CardHeader>
               <CardContent>
@@ -412,28 +511,50 @@ export function ProductForm() {
 
             <Card>
               <CardHeader>
+                <div className="h-1 w-16 rounded-full bg-gradient-to-r from-amber-500 to-orange-500" />
                 <CardTitle>SEO</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex justify-end">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleAiGenerate('seo', 'seo')}
-                    disabled={aiLoading === 'seo'}
-                  >
-                    {aiLoading === 'seo' ? (
-                      <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                    ) : (
-                      <Sparkles className="mr-1 h-3 w-3" />
-                    )}
-                    AI Generate SEO
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleAiGenerateSEO}
+                        disabled={aiLoading === 'seo'}
+                        className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-amber-200 hover:from-amber-500/20 hover:to-orange-500/20"
+                      >
+                        {aiLoading === 'seo' ? (
+                          <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                        ) : (
+                          <Sparkles className="mr-1 h-3 w-3 text-amber-500" />
+                        )}
+                        AI Generate SEO
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Let AI optimize your SEO meta tags
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="metaTitle">Meta Title</Label>
                   <Input id="metaTitle" {...form.register('metaTitle')} placeholder="SEO title" />
+                  <div className="flex justify-between">
+                    <p className="text-xs text-muted-foreground">
+                      {(form.watch('metaTitle') || '').length}/60 characters
+                    </p>
+                    <span className={`text-xs font-medium ${
+                      (form.watch('metaTitle') || '').length > 60 ? 'text-red-500' :
+                      (form.watch('metaTitle') || '').length >= 30 ? 'text-emerald-500' :
+                      'text-amber-500'
+                    }`}>
+                      {(form.watch('metaTitle') || '').length > 60 ? 'Too long' :
+                       (form.watch('metaTitle') || '').length >= 30 ? 'Good' : 'Short'}
+                    </span>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="metaDescription">Meta Description</Label>
@@ -443,6 +564,19 @@ export function ProductForm() {
                     placeholder="SEO description..."
                     rows={3}
                   />
+                  <div className="flex justify-between">
+                    <p className="text-xs text-muted-foreground">
+                      {(form.watch('metaDescription') || '').length}/160 characters
+                    </p>
+                    <span className={`text-xs font-medium ${
+                      (form.watch('metaDescription') || '').length > 160 ? 'text-red-500' :
+                      (form.watch('metaDescription') || '').length >= 120 ? 'text-emerald-500' :
+                      'text-amber-500'
+                    }`}>
+                      {(form.watch('metaDescription') || '').length > 160 ? 'Too long' :
+                       (form.watch('metaDescription') || '').length >= 120 ? 'Good' : 'Short'}
+                    </span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -450,7 +584,10 @@ export function ProductForm() {
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>Variants</CardTitle>
+                  <div>
+                    <div className="h-1 w-16 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 mb-2" />
+                    <CardTitle>Variants</CardTitle>
+                  </div>
                   <Button
                     type="button"
                     variant="outline"

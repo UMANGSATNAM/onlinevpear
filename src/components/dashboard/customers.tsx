@@ -17,6 +17,10 @@ import {
   Tag,
   X,
   Plus,
+  Download,
+  Users,
+  UserCheck,
+  Loader2,
 } from 'lucide-react'
 import {
   Card,
@@ -46,6 +50,7 @@ import {
 } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useAppStore } from '@/lib/store'
 import { api } from '@/lib/api-client'
 import { toast } from 'sonner'
@@ -111,6 +116,7 @@ export function CustomersManagement() {
   const [detailOpen, setDetailOpen] = useState(false)
   const [noteText, setNoteText] = useState('')
   const [tagInput, setTagInput] = useState('')
+  const [exporting, setExporting] = useState(false)
 
   const fetchCustomers = async () => {
     if (!selectedMerchantId) return
@@ -198,6 +204,35 @@ export function CustomersManagement() {
     }
   }
 
+  const handleExportCustomers = async (filter: 'all' | 'active' = 'all') => {
+    if (!selectedMerchantId) return
+    setExporting(true)
+    try {
+      const params = new URLSearchParams({
+        type: 'customers',
+        merchantId: selectedMerchantId,
+        format: 'csv',
+        filter,
+      })
+      const response = await fetch(`/api/export?${params.toString()}`)
+      if (!response.ok) throw new Error('Export failed')
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      const disposition = response.headers.get('Content-Disposition')
+      const match = disposition?.match(/filename="(.+)"/)
+      a.download = match?.[1] || 'customers-export.csv'
+      a.click()
+      URL.revokeObjectURL(url)
+      toast.success(`${filter === 'all' ? 'All customers' : 'Active customers'} exported successfully`)
+    } catch {
+      toast.error('Failed to export customers')
+    } finally {
+      setExporting(false)
+    }
+  }
+
   const parseTags = (tagsStr: string): string[] => {
     try {
       return JSON.parse(tagsStr || '[]')
@@ -281,9 +316,27 @@ export function CustomersManagement() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">Customers</h2>
-        <p className="text-sm text-muted-foreground">{total} customers total</p>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold">Customers</h2>
+          <p className="text-sm text-muted-foreground">{total} customers total</p>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" disabled={exporting}>
+              {exporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+              Export
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => handleExportCustomers('all')}>
+              <Users className="mr-2 h-4 w-4" /> Export All Customers
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleExportCustomers('active')}>
+              <UserCheck className="mr-2 h-4 w-4" /> Export Active Only
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <Card>

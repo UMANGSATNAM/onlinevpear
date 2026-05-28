@@ -50,6 +50,8 @@ export type StorefrontPage =
   | "account"
   | "search"
   | "blog"
+  | "wishlist"
+  | "products"
 
 interface AppState {
   // View system

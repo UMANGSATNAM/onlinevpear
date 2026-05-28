@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ArrowLeft,
@@ -20,6 +20,17 @@ import {
   Wallet,
   Smartphone,
   MapPin,
+  Gift,
+  PartyPopper,
+  Share2,
+  Twitter,
+  Facebook,
+  Link2,
+  ChevronDown,
+  CheckCheck,
+  AlertCircle,
+  Calendar,
+  ShoppingBag,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -29,6 +40,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { useAppStore } from '@/lib/store'
 import { formatPrice } from '@/components/storefront/product-grid'
 import { toast } from 'sonner'
@@ -61,7 +75,6 @@ const steps: Array<{ id: CheckoutStep; label: string; icon: React.ReactNode }> =
   { id: 'confirmation', label: 'Review', icon: <Check className="h-4 w-4" /> },
 ]
 
-// Default shipping methods for fallback
 const defaultShippingMethods = [
   { id: 'standard', name: 'Standard Shipping', price: 0, estimatedDays: '5-7 business days', freeAbove: 100 },
   { id: 'express', name: 'Express Shipping', price: 19.99, estimatedDays: '2-3 business days' },
@@ -75,7 +88,6 @@ const itemGradients = [
   'from-amber-400 to-yellow-300',
 ]
 
-// Address suggestions for autocomplete
 const addressSuggestions = [
   '123 Main St, New York, NY 10001',
   '456 Oak Ave, Los Angeles, CA 90001',
@@ -83,6 +95,56 @@ const addressSuggestions = [
   '321 Elm Blvd, Houston, TX 77001',
   '654 Maple Dr, Phoenix, AZ 85001',
 ]
+
+// Confetti particle component (CSS-based)
+function ConfettiAnimation() {
+  const particles = useMemo(() =>
+    Array.from({ length: 50 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      delay: Math.random() * 0.8,
+      duration: 2 + Math.random() * 2,
+      size: 4 + Math.random() * 8,
+      color: ['#f43f5e', '#fb923c', '#a78bfa', '#34d399', '#fbbf24', '#38bdf8', '#f472b6'][i % 7],
+      rotation: Math.random() * 360,
+      drift: (Math.random() - 0.5) * 100,
+    }))
+  , [])
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+      {particles.map((p) => (
+        <div
+          key={p.id}
+          className="absolute animate-confetti-fall"
+          style={{
+            left: `${p.x}%`,
+            top: '-5%',
+            width: `${p.size}px`,
+            height: `${p.size}px`,
+            backgroundColor: p.color,
+            borderRadius: p.size > 8 ? '50%' : '2px',
+            transform: `rotate(${p.rotation}deg)`,
+            animationDelay: `${p.delay}s`,
+            animationDuration: `${p.duration}s`,
+            '--drift': `${p.drift}px`,
+          } as React.CSSProperties}
+        />
+      ))}
+      <style jsx>{`
+        @keyframes confetti-fall {
+          0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; }
+          100% { transform: translateY(100vh) translateX(var(--drift)) rotate(720deg); opacity: 0; }
+        }
+        .animate-confetti-fall {
+          animation-name: confetti-fall;
+          animation-timing-function: ease-in;
+          animation-fill-mode: forwards;
+        }
+      `}</style>
+    </div>
+  )
+}
 
 export function CheckoutPage() {
   const { setStorefrontPage } = useAppStore()
@@ -100,8 +162,20 @@ export function CheckoutPage() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>('credit_card')
   const [discountCode, setDiscountCode] = useState('')
   const [applyingDiscount, setApplyingDiscount] = useState(false)
+  const [discountApplied, setDiscountApplied] = useState(false)
+  const [discountAmount, setDiscountAmount] = useState(0)
   const [addressSuggestionOpen, setAddressSuggestionOpen] = useState(false)
   const [addressSuggestions_filtered, setAddressSuggestionsFiltered] = useState<string[]>([])
+
+  // Gift options
+  const [giftOptionsOpen, setGiftOptionsOpen] = useState(false)
+  const [isGift, setIsGift] = useState(false)
+  const [giftMessage, setGiftMessage] = useState('')
+  const [giftWrapping, setGiftWrapping] = useState(false)
+  const giftWrappingPrice = 4.99
+
+  // Form validation
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
   // Form state
   const [contactInfo, setContactInfo] = useState({ email: '', phone: '' })
@@ -122,6 +196,12 @@ export function CheckoutPage() {
     cvv: '',
     cardName: '',
   })
+
+  // Confetti state
+  const [showConfetti, setShowConfetti] = useState(false)
+
+  // Generated order number
+  const [orderNumber] = useState(() => `SF-${Date.now().toString().slice(-8)}`)
 
   const sessionId = typeof window !== 'undefined' ? sessionStorage.getItem('shopforge_session_id') : null
 
@@ -176,7 +256,6 @@ export function CheckoutPage() {
     fetchShipping()
   }, [fetchCart, fetchShipping])
 
-  // Address autocomplete
   const handleAddressInput = (value: string) => {
     setShippingAddress({ ...shippingAddress, address1: value })
     if (value.length > 3) {
@@ -204,14 +283,35 @@ export function CheckoutPage() {
 
   const stepIndex = steps.findIndex((s) => s.id === currentStep)
 
+  // Form validation
+  const validateInformation = (): boolean => {
+    const errors: Record<string, string> = {}
+    if (!contactInfo.email) errors.email = 'Email is required'
+    else if (!/\S+@\S+\.\S+/.test(contactInfo.email)) errors.email = 'Invalid email address'
+    if (!shippingAddress.firstName) errors.firstName = 'First name is required'
+    if (!shippingAddress.lastName) errors.lastName = 'Last name is required'
+    if (!shippingAddress.address1) errors.address1 = 'Address is required'
+    if (!shippingAddress.city) errors.city = 'City is required'
+    setFormErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
+  const validatePayment = (): boolean => {
+    if (selectedPaymentMethod !== 'credit_card') return true
+    const errors: Record<string, string> = {}
+    if (!paymentInfo.cardNumber) errors.cardNumber = 'Card number is required'
+    if (!paymentInfo.cardName) errors.cardName = 'Name on card is required'
+    if (!paymentInfo.expiry) errors.expiry = 'Expiry date is required'
+    if (!paymentInfo.cvv) errors.cvv = 'CVV is required'
+    setFormErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
   const handleNext = () => {
+    setFormErrors({})
     if (currentStep === 'information') {
-      if (!contactInfo.email) {
-        toast.error('Please enter your email')
-        return
-      }
-      if (!shippingAddress.firstName || !shippingAddress.lastName || !shippingAddress.address1 || !shippingAddress.city) {
-        toast.error('Please fill in all required address fields')
+      if (!validateInformation()) {
+        toast.error('Please fill in all required fields')
         return
       }
       setCurrentStep('shipping')
@@ -222,11 +322,9 @@ export function CheckoutPage() {
       }
       setCurrentStep('payment')
     } else if (currentStep === 'payment') {
-      if (selectedPaymentMethod === 'credit_card') {
-        if (!paymentInfo.cardNumber || !paymentInfo.expiry || !paymentInfo.cvv || !paymentInfo.cardName) {
-          toast.error('Please fill in all payment details')
-          return
-        }
+      if (!validatePayment()) {
+        toast.error('Please fill in all payment details')
+        return
       }
       setCurrentStep('confirmation')
     } else if (currentStep === 'confirmation') {
@@ -271,6 +369,8 @@ export function CheckoutPage() {
 
       if (orderRes.ok) {
         setOrderPlaced(true)
+        setShowConfetti(true)
+        setTimeout(() => setShowConfetti(false), 4000)
       } else {
         toast.error('Failed to place order')
       }
@@ -281,13 +381,27 @@ export function CheckoutPage() {
     }
   }
 
-  // Get selected shipping price
   const getSelectedShippingPrice = () => {
     const method = shippingMethods.find((m) => m.id === selectedShipping)
     if (!method) return 0
     if (method.freeAbove && cartSubtotal >= method.freeAbove) return 0
     return method.price
   }
+
+  // Estimated delivery date
+  const getEstimatedDelivery = () => {
+    const method = shippingMethods.find((m) => m.id === selectedShipping)
+    const days = method?.estimatedDays?.includes('2-3') ? 3 : method?.estimatedDays?.includes('Next') ? 1 : 7
+    const date = new Date()
+    date.setDate(date.getDate() + days)
+    return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+  }
+
+  // Validation styling helper
+  const getInputClass = (fieldName: string) =>
+    formErrors[fieldName]
+      ? 'border-red-400 focus-visible:border-red-500 focus-visible:ring-red-200'
+      : ''
 
   if (loading) {
     return (
@@ -317,6 +431,9 @@ export function CheckoutPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+      {/* Confetti */}
+      {showConfetti && <ConfettiAnimation />}
+
       {/* Secure Checkout Badge */}
       {!orderPlaced && (
       <div className="flex items-center justify-between mb-6">
@@ -326,7 +443,6 @@ export function CheckoutPage() {
           </div>
           <span className="text-sm font-semibold text-emerald-700">Secure Checkout</span>
         </div>
-        {/* Trust Badges */}
         <div className="hidden sm:flex items-center gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <Shield className="h-3.5 w-3.5 text-emerald-500" />
@@ -402,9 +518,15 @@ export function CheckoutPage() {
                       type="email"
                       placeholder="you@example.com"
                       value={contactInfo.email}
-                      onChange={(e) => setContactInfo({ ...contactInfo, email: e.target.value })}
+                      onChange={(e) => { setContactInfo({ ...contactInfo, email: e.target.value }); if (formErrors.email) setFormErrors({ ...formErrors, email: '' }) }}
+                      className={getInputClass('email')}
                       required
                     />
+                    {formErrors.email && (
+                      <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" /> {formErrors.email}
+                      </motion.p>
+                    )}
                   </div>
                   <div>
                     <Label htmlFor="phone">Phone number</Label>
@@ -426,9 +548,11 @@ export function CheckoutPage() {
                       id="firstName"
                       placeholder="John"
                       value={shippingAddress.firstName}
-                      onChange={(e) => setShippingAddress({ ...shippingAddress, firstName: e.target.value })}
+                      onChange={(e) => { setShippingAddress({ ...shippingAddress, firstName: e.target.value }); if (formErrors.firstName) setFormErrors({ ...formErrors, firstName: '' }) }}
+                      className={getInputClass('firstName')}
                       required
                     />
+                    {formErrors.firstName && <p className="text-xs text-red-500 mt-1">{formErrors.firstName}</p>}
                   </div>
                   <div>
                     <Label htmlFor="lastName">Last name *</Label>
@@ -436,9 +560,11 @@ export function CheckoutPage() {
                       id="lastName"
                       placeholder="Doe"
                       value={shippingAddress.lastName}
-                      onChange={(e) => setShippingAddress({ ...shippingAddress, lastName: e.target.value })}
+                      onChange={(e) => { setShippingAddress({ ...shippingAddress, lastName: e.target.value }); if (formErrors.lastName) setFormErrors({ ...formErrors, lastName: '' }) }}
+                      className={getInputClass('lastName')}
                       required
                     />
+                    {formErrors.lastName && <p className="text-xs text-red-500 mt-1">{formErrors.lastName}</p>}
                   </div>
                   <div className="col-span-2 relative">
                     <Label htmlFor="address1">Address *</Label>
@@ -448,18 +574,18 @@ export function CheckoutPage() {
                         id="address1"
                         placeholder="123 Main St"
                         value={shippingAddress.address1}
-                        onChange={(e) => handleAddressInput(e.target.value)}
+                        onChange={(e) => { handleAddressInput(e.target.value); if (formErrors.address1) setFormErrors({ ...formErrors, address1: '' }) }}
                         onFocus={() => {
                           if (shippingAddress.address1.length > 3 && addressSuggestions_filtered.length > 0) {
                             setAddressSuggestionOpen(true)
                           }
                         }}
                         onBlur={() => setTimeout(() => setAddressSuggestionOpen(false), 200)}
-                        className="pl-9"
+                        className={`pl-9 ${getInputClass('address1')}`}
                         required
                       />
                     </div>
-                    {/* Address Autocomplete Suggestions */}
+                    {formErrors.address1 && <p className="text-xs text-red-500 mt-1">{formErrors.address1}</p>}
                     <AnimatePresence>
                       {addressSuggestionOpen && (
                         <motion.div
@@ -497,9 +623,11 @@ export function CheckoutPage() {
                       id="city"
                       placeholder="New York"
                       value={shippingAddress.city}
-                      onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })}
+                      onChange={(e) => { setShippingAddress({ ...shippingAddress, city: e.target.value }); if (formErrors.city) setFormErrors({ ...formErrors, city: '' }) }}
+                      className={getInputClass('city')}
                       required
                     />
+                    {formErrors.city && <p className="text-xs text-red-500 mt-1">{formErrors.city}</p>}
                   </div>
                   <div>
                     <Label htmlFor="state">State</Label>
@@ -528,6 +656,70 @@ export function CheckoutPage() {
                       onChange={(e) => setShippingAddress({ ...shippingAddress, country: e.target.value })}
                     />
                   </div>
+                </div>
+
+                {/* Gift Options (in shipping step) */}
+                <div className="mt-8">
+                  <Collapsible open={giftOptionsOpen} onOpenChange={setGiftOptionsOpen}>
+                    <CollapsibleTrigger asChild>
+                      <button className="flex items-center gap-2 text-sm font-semibold text-rose-600 hover:text-rose-700 transition-colors w-full">
+                        <Gift className="h-4 w-4" />
+                        Gift Options
+                        <ChevronDown className={`h-4 w-4 transition-transform ${giftOptionsOpen ? 'rotate-180' : ''}`} />
+                      </button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <Card className="p-5 mt-3 bg-rose-50/50 border-rose-100">
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-sm font-medium">This is a gift</p>
+                                <p className="text-xs text-muted-foreground">Hide prices on the packing slip</p>
+                              </div>
+                              <Switch checked={isGift} onCheckedChange={setIsGift} />
+                            </div>
+                            {isGift && (
+                              <motion.div
+                                initial={{ opacity: 0, y: -8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="space-y-4"
+                              >
+                                <div>
+                                  <Label className="text-sm">Gift Message (optional)</Label>
+                                  <Textarea
+                                    placeholder="Write a message for the recipient..."
+                                    value={giftMessage}
+                                    onChange={(e) => setGiftMessage(e.target.value)}
+                                    maxLength={300}
+                                    className="mt-1 resize-none"
+                                    rows={3}
+                                  />
+                                  <p className="text-xs text-muted-foreground mt-1">{giftMessage.length}/300 characters</p>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="text-sm font-medium">Gift Wrapping</p>
+                                    <p className="text-xs text-muted-foreground">Beautiful gift wrap with ribbon</p>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-sm font-medium text-rose-500">{formatPrice(giftWrappingPrice)}</span>
+                                    <Switch checked={giftWrapping} onCheckedChange={setGiftWrapping} />
+                                  </div>
+                                </div>
+                              </motion.div>
+                            )}
+                          </div>
+                        </Card>
+                      </motion.div>
+                    </CollapsibleContent>
+                  </Collapsible>
                 </div>
               </motion.div>
             )}
@@ -589,7 +781,6 @@ export function CheckoutPage() {
 
                 {/* Payment Method Selection */}
                 <div className="space-y-3 mb-6">
-                  {/* Credit Card */}
                   <Card
                     className={`p-4 cursor-pointer transition-all ${
                       selectedPaymentMethod === 'credit_card' ? 'border-2 border-rose-500 shadow-sm' : 'hover:border-gray-300'
@@ -620,7 +811,6 @@ export function CheckoutPage() {
                     </div>
                   </Card>
 
-                  {/* PayPal */}
                   <Card
                     className={`p-4 cursor-pointer transition-all ${
                       selectedPaymentMethod === 'paypal' ? 'border-2 border-rose-500 shadow-sm' : 'hover:border-gray-300'
@@ -641,7 +831,6 @@ export function CheckoutPage() {
                     </div>
                   </Card>
 
-                  {/* Apple Pay */}
                   <Card
                     className={`p-4 cursor-pointer transition-all ${
                       selectedPaymentMethod === 'apple_pay' ? 'border-2 border-rose-500 shadow-sm' : 'hover:border-gray-300'
@@ -687,10 +876,11 @@ export function CheckoutPage() {
                                 id="cardNumber"
                                 placeholder="1234 5678 9012 3456"
                                 value={paymentInfo.cardNumber}
-                                onChange={(e) => setPaymentInfo({ ...paymentInfo, cardNumber: e.target.value })}
-                                className="pl-9"
+                                onChange={(e) => { setPaymentInfo({ ...paymentInfo, cardNumber: e.target.value }); if (formErrors.cardNumber) setFormErrors({ ...formErrors, cardNumber: '' }) }}
+                                className={`pl-9 ${getInputClass('cardNumber')}`}
                               />
                             </div>
+                            {formErrors.cardNumber && <p className="text-xs text-red-500 mt-1">{formErrors.cardNumber}</p>}
                           </div>
                           <div>
                             <Label htmlFor="cardName">Name on card</Label>
@@ -698,8 +888,10 @@ export function CheckoutPage() {
                               id="cardName"
                               placeholder="John Doe"
                               value={paymentInfo.cardName}
-                              onChange={(e) => setPaymentInfo({ ...paymentInfo, cardName: e.target.value })}
+                              onChange={(e) => { setPaymentInfo({ ...paymentInfo, cardName: e.target.value }); if (formErrors.cardName) setFormErrors({ ...formErrors, cardName: '' }) }}
+                              className={getInputClass('cardName')}
                             />
+                            {formErrors.cardName && <p className="text-xs text-red-500 mt-1">{formErrors.cardName}</p>}
                           </div>
                           <div className="grid grid-cols-2 gap-4">
                             <div>
@@ -708,8 +900,10 @@ export function CheckoutPage() {
                                 id="expiry"
                                 placeholder="MM/YY"
                                 value={paymentInfo.expiry}
-                                onChange={(e) => setPaymentInfo({ ...paymentInfo, expiry: e.target.value })}
+                                onChange={(e) => { setPaymentInfo({ ...paymentInfo, expiry: e.target.value }); if (formErrors.expiry) setFormErrors({ ...formErrors, expiry: '' }) }}
+                                className={getInputClass('expiry')}
                               />
+                              {formErrors.expiry && <p className="text-xs text-red-500 mt-1">{formErrors.expiry}</p>}
                             </div>
                             <div>
                               <Label htmlFor="cvv">CVV</Label>
@@ -718,10 +912,12 @@ export function CheckoutPage() {
                                   id="cvv"
                                   placeholder="123"
                                   value={paymentInfo.cvv}
-                                  onChange={(e) => setPaymentInfo({ ...paymentInfo, cvv: e.target.value })}
+                                  onChange={(e) => { setPaymentInfo({ ...paymentInfo, cvv: e.target.value }); if (formErrors.cvv) setFormErrors({ ...formErrors, cvv: '' }) }}
+                                  className={getInputClass('cvv')}
                                 />
                                 <Shield className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                               </div>
+                              {formErrors.cvv && <p className="text-xs text-red-500 mt-1">{formErrors.cvv}</p>}
                             </div>
                           </div>
                         </div>
@@ -771,31 +967,68 @@ export function CheckoutPage() {
                     Discount Code
                   </h3>
                   <div className="flex gap-2">
-                    <Input
-                      placeholder="Enter discount code"
-                      value={discountCode}
-                      onChange={(e) => setDiscountCode(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        if (!discountCode.trim()) return
-                        setApplyingDiscount(true)
-                        setTimeout(() => {
-                          setApplyingDiscount(false)
-                          toast.error('Invalid discount code')
-                        }, 1000)
-                      }}
-                      disabled={applyingDiscount || !discountCode.trim()}
-                    >
-                      {applyingDiscount ? (
-                        <span className="h-4 w-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-                      ) : (
-                        'Apply'
+                    <div className="flex-1 relative">
+                      <Input
+                        placeholder="Enter discount code"
+                        value={discountCode}
+                        onChange={(e) => { setDiscountCode(e.target.value); if (discountApplied) { setDiscountApplied(false); setDiscountAmount(0) } }}
+                        className={discountApplied ? 'border-emerald-400 pr-9' : ''}
+                        disabled={discountApplied}
+                      />
+                      {discountApplied && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <CheckCheck className="h-4 w-4 text-emerald-500" />
+                        </div>
                       )}
-                    </Button>
+                    </div>
+                    {discountApplied ? (
+                      <Button
+                        variant="outline"
+                        className="text-red-500 border-red-200 hover:bg-red-50"
+                        onClick={() => {
+                          setDiscountApplied(false)
+                          setDiscountAmount(0)
+                          setDiscountCode('')
+                          toast.info('Discount removed')
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          if (!discountCode.trim()) return
+                          setApplyingDiscount(true)
+                          // Simulate applying a discount code — use "SAVE10" for demo
+                          setTimeout(() => {
+                            setApplyingDiscount(false)
+                            if (discountCode.toUpperCase() === 'SAVE10') {
+                              const disc = Math.round(cartSubtotal * 0.1 * 100) / 100
+                              setDiscountAmount(disc)
+                              setDiscountApplied(true)
+                              toast.success(`Discount applied! You save ${formatPrice(disc)}`)
+                            } else {
+                              toast.error('Invalid discount code. Try "SAVE10" for 10% off!')
+                            }
+                          }, 1000)
+                        }}
+                        disabled={applyingDiscount || !discountCode.trim()}
+                      >
+                        {applyingDiscount ? (
+                          <span className="h-4 w-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                        ) : (
+                          'Apply'
+                        )}
+                      </Button>
+                    )}
                   </div>
+                  {discountApplied && discountAmount > 0 && (
+                    <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 mt-2 text-sm text-emerald-600">
+                      <CheckCheck className="h-4 w-4" />
+                      <span>Code &quot;{discountCode}&quot; applied — {formatPrice(discountAmount)} off!</span>
+                    </motion.div>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -804,7 +1037,6 @@ export function CheckoutPage() {
               <motion.div key="confirmation-review" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.3 }}>
                 <h2 className="text-xl font-bold mb-6">Review Your Order</h2>
 
-                {/* Shipping Address Review */}
                 <Card className="p-5 mb-4">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-semibold text-sm flex items-center gap-2">
@@ -823,7 +1055,6 @@ export function CheckoutPage() {
                   </p>
                 </Card>
 
-                {/* Shipping Method Review */}
                 <Card className="p-5 mb-4">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-semibold text-sm flex items-center gap-2">
@@ -845,7 +1076,6 @@ export function CheckoutPage() {
                   </p>
                 </Card>
 
-                {/* Payment Method Review */}
                 <Card className="p-5 mb-4">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-semibold text-sm flex items-center gap-2">
@@ -863,7 +1093,24 @@ export function CheckoutPage() {
                   </p>
                 </Card>
 
-                {/* Order Items */}
+                {/* Gift Info Review */}
+                {isGift && (
+                  <Card className="p-5 mb-4 bg-rose-50/50 border-rose-100">
+                    <h3 className="font-semibold text-sm flex items-center gap-2 mb-2">
+                      <Gift className="h-4 w-4 text-rose-500" />
+                      Gift Options
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Gift wrapping: {giftWrapping ? `Yes (+${formatPrice(giftWrappingPrice)})` : 'No'}
+                    </p>
+                    {giftMessage && (
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Message: &quot;{giftMessage}&quot;
+                      </p>
+                    )}
+                  </Card>
+                )}
+
                 <Card className="p-5">
                   <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
                     <Package className="h-4 w-4 text-rose-500" />
@@ -891,35 +1138,133 @@ export function CheckoutPage() {
               </motion.div>
             )}
 
+            {/* ============ ENHANCED ORDER SUCCESS SCREEN ============ */}
             {currentStep === 'confirmation' && orderPlaced && (
               <motion.div key="order-success" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}>
-                <div className="text-center py-8">
+                <div className="text-center py-4">
+                  {/* Animated Success Icon */}
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ type: 'spring', duration: 0.6, delay: 0.2 }}
-                    className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-6"
+                    className="w-24 h-24 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-200"
                   >
-                    <Check className="h-10 w-10 text-emerald-600" />
+                    <Check className="h-12 w-12 text-white" />
                   </motion.div>
-                  <h2 className="text-2xl font-bold mb-2">Order Confirmed!</h2>
-                  <p className="text-muted-foreground mb-2">
-                    Thank you for your purchase. Your order has been placed successfully.
-                  </p>
-                  <p className="text-sm text-muted-foreground mb-8">
-                    Order number: <span className="font-medium text-foreground">SF-{Date.now().toString().slice(-8)}</span>
-                  </p>
-                  <p className="text-sm text-muted-foreground mb-8">
-                    A confirmation email has been sent to <span className="font-medium text-foreground">{contactInfo.email}</span>
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                    <Button onClick={() => setStorefrontPage('home')} className="bg-rose-500 hover:bg-rose-600">
-                      Continue Shopping
-                    </Button>
-                    <Button variant="outline" onClick={() => setStorefrontPage('account')}>
-                      View Orders
-                    </Button>
-                  </div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    <h2 className="text-2xl font-bold mb-2">Order Confirmed!</h2>
+                    <p className="text-muted-foreground mb-1">
+                      Thank you for your purchase. Your order has been placed successfully.
+                    </p>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Order number: <span className="font-semibold text-foreground">{orderNumber}</span>
+                    </p>
+                    <p className="text-sm text-muted-foreground mb-8">
+                      A confirmation email has been sent to <span className="font-medium text-foreground">{contactInfo.email}</span>
+                    </p>
+                  </motion.div>
+
+                  {/* Estimated Delivery */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
+                  >
+                    <Card className="p-5 mb-6 bg-emerald-50 border-emerald-100 max-w-md mx-auto">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                          <Calendar className="h-5 w-5 text-emerald-600" />
+                        </div>
+                        <div className="text-left">
+                          <p className="text-sm font-semibold text-emerald-800">Estimated Delivery</p>
+                          <p className="text-sm text-emerald-700">{getEstimatedDelivery()}</p>
+                        </div>
+                      </div>
+                    </Card>
+                  </motion.div>
+
+                  {/* Order Summary Recap */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.7 }}
+                  >
+                    <Card className="p-5 mb-6 max-w-md mx-auto text-left">
+                      <h3 className="font-semibold text-sm mb-3">Order Summary</h3>
+                      <div className="space-y-2">
+                        {cartItems.slice(0, 3).map((item, index) => (
+                          <div key={`${item.productId}-recap`} className="flex justify-between text-sm">
+                            <span className="text-muted-foreground line-clamp-1 pr-2">
+                              {item.product?.name || 'Product'} × {item.quantity}
+                            </span>
+                            <span className="font-medium whitespace-nowrap">{formatPrice(item.price * item.quantity)}</span>
+                          </div>
+                        ))}
+                        {cartItems.length > 3 && (
+                          <p className="text-xs text-muted-foreground">+ {cartItems.length - 3} more items</p>
+                        )}
+                        <Separator />
+                        <div className="flex justify-between font-bold">
+                          <span>Total</span>
+                          <span>{formatPrice(cartTotal)}</span>
+                        </div>
+                      </div>
+                    </Card>
+                  </motion.div>
+
+                  {/* Action Buttons */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8 }}
+                  >
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
+                      <Button onClick={() => setStorefrontPage('home')} className="bg-rose-500 hover:bg-rose-600">
+                        <ShoppingBag className="mr-2 h-4 w-4" />
+                        Continue Shopping
+                      </Button>
+                      <Button variant="outline" onClick={() => setStorefrontPage('account')}>
+                        <Package className="mr-2 h-4 w-4" />
+                        View Orders
+                      </Button>
+                    </div>
+
+                    {/* Social Sharing */}
+                    <div className="border-t pt-5 max-w-md mx-auto">
+                      <p className="text-xs text-muted-foreground mb-3">Share your purchase</p>
+                      <div className="flex items-center justify-center gap-3">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-9 w-9 rounded-full"
+                          onClick={() => { navigator.clipboard.writeText(window.location.href); toast.success('Link copied!') }}
+                        >
+                          <Link2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-9 w-9 rounded-full"
+                          onClick={() => toast.info('Sharing to Twitter...')}
+                        >
+                          <Twitter className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-9 w-9 rounded-full"
+                          onClick={() => toast.info('Sharing to Facebook...')}
+                        >
+                          <Facebook className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
                 </div>
               </motion.div>
             )}
@@ -964,7 +1309,7 @@ export function CheckoutPage() {
             </div>
           )}
 
-          {/* Place Order Button (on confirmation step, before order placed) */}
+          {/* Place Order Button */}
           {currentStep === 'confirmation' && !orderPlaced && (
             <div className="mt-8 space-y-4">
               <div className="flex justify-between">
@@ -989,7 +1334,7 @@ export function CheckoutPage() {
                 ) : (
                   <span className="flex items-center gap-2">
                     <Lock className="h-5 w-5" />
-                    Place Secure Order — {formatPrice(cartTotal)}
+                    Place Secure Order — {formatPrice(cartTotal + (giftWrapping ? giftWrappingPrice : 0) - (discountApplied ? discountAmount : 0))}
                   </span>
                 )}
               </Button>
@@ -1012,7 +1357,7 @@ export function CheckoutPage() {
 
         </div>
 
-        {/* Order Summary Sidebar */}
+        {/* Order Summary Sidebar - STICKY */}
         {currentStep !== 'confirmation' && !orderPlaced && (
           <div className="lg:col-span-2">
             <Card className="p-6 sticky top-24">
@@ -1056,7 +1401,23 @@ export function CheckoutPage() {
                   <span className="text-muted-foreground">Tax</span>
                   <span>{formatPrice(cartTax)}</span>
                 </div>
-                {cartDiscount > 0 && (
+                {giftWrapping && isGift && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      <Gift className="h-3 w-3" /> Gift Wrap
+                    </span>
+                    <span>{formatPrice(giftWrappingPrice)}</span>
+                  </div>
+                )}
+                {discountApplied && discountAmount > 0 && (
+                  <div className="flex justify-between text-emerald-600">
+                    <span className="flex items-center gap-1">
+                      <CheckCheck className="h-3 w-3" /> Discount ({discountCode})
+                    </span>
+                    <span>-{formatPrice(discountAmount)}</span>
+                  </div>
+                )}
+                {cartDiscount > 0 && !discountApplied && (
                   <div className="flex justify-between text-emerald-600">
                     <span>Discount</span>
                     <span>-{formatPrice(cartDiscount)}</span>
@@ -1068,7 +1429,7 @@ export function CheckoutPage() {
 
               <div className="flex justify-between font-bold text-lg">
                 <span>Total</span>
-                <span>{formatPrice(cartTotal)}</span>
+                <span>{formatPrice(cartTotal + (giftWrapping && isGift ? giftWrappingPrice : 0) - (discountApplied ? discountAmount : 0))}</span>
               </div>
 
               {/* Trust Badges in Sidebar */}

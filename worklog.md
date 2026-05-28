@@ -769,3 +769,955 @@ Task: Add order status timeline to the order detail page in the ShopForge mercha
 - ✅ ESLint passes with zero errors
 - ✅ Dev server compiles successfully
 - ✅ No compilation errors
+
+---
+
+Task ID: 2
+Agent: Login & Sidebar Styling Agent
+Task: Significantly improve the styling of the Login page and Dashboard Sidebar
+
+### Work Completed:
+
+#### 1. Login Screen Improvements
+
+**a) Animated Background:**
+- Replaced simple gradient blobs with dramatic dark animated gradient background (slate/navy with `background-size: 400% 400%` and `loginGradient` 15s animation)
+- Added 3 floating animated gradient blobs (primary, emerald, rose/violet) with CSS keyframe animations (`loginFloat1/2/3`)
+- Added subtle grid pattern overlay using CSS `linear-gradient` with `backgroundSize: 60px 60px` at `opacity-[0.03]`
+
+**b) Login Card Enhancement:**
+- Added glass-morphism effect: `bg-white/80 backdrop-blur-xl shadow-2xl`
+- Added animated glow border wrapper using `bg-gradient-to-r from-primary/40 via-emerald-400/30 to-primary/40` with `login-border-glow` pulsing keyframe
+- Widened card from `max-w-md` to `max-w-lg` on desktop
+
+**c) Logo Animation:**
+- Added pulsing glow effect around logo icon using `blur-xl` div with `login-logo-glow` CSS keyframe that alternates box-shadow intensity
+- Logo uses `bg-gradient-to-br from-primary to-primary/80` with `shadow-lg shadow-primary/25`
+
+**d) Quick Access Buttons Redesign:**
+- Redesigned as sleek gradient cards with glass morphism (`backdrop-blur-md`, gradient backgrounds, `border-white/20`)
+- Gradient icon containers (primary gradient for merchant, rose gradient for admin)
+- Framer-motion `whileHover={{ scale: 1.03, y: -2 }}` and `whileTap={{ scale: 0.98 }}`
+- Hover gradient overlay reveal effect (`opacity-0 group-hover:opacity-100`)
+
+**e) Feature Icons:**
+- Added gradient backgrounds: AI-Powered (violet→purple), Multi-tenant (cyan→teal), Enterprise Scale (amber→orange)
+- Icons changed to white on gradient backgrounds
+
+**f) "Don't have an account?" link:**
+- Added at bottom of card with "Sign up for free" button (visual only)
+
+**g) Additional enhancements:**
+- "Forgot password?" link next to password label
+- Sign In button with gradient background and shadow effects
+- Text/subtitle changed to white for dark background contrast
+- Input fields with `bg-white/60 backdrop-blur-sm border-white/20` glass effect
+- Staggered motion animations on title, subtitle, and card entry
+
+#### 2. Sidebar Improvements
+
+**a) Sidebar Header:**
+- Added gradient background (`from-primary/8 via-primary/4 to-transparent` or rose variant for admin)
+- Added subtle glow behind logo icon using `blur-xl opacity-30` div
+- Enhanced logo shadow with `shadow-md shadow-primary/20` or `shadow-rose-500/20`
+
+**b) Nav Item Hover Effects:**
+- Added smooth left-border slide-in effect on hover — 3px bar transitions from `h-0` to `h-4` with color change
+- Added `group-hover:scale-110` transform on icon hover
+
+**c) Active Nav Indicator:**
+- Left-border accent: 3px gradient bar using `motion.div` with `layoutId="activeNavBorder"` for animated transitions between active items
+- Gradient background: `bg-gradient-to-r from-primary/10 via-primary/5 to-transparent`
+
+**d) View Switcher Enhancement:**
+- Added animated sliding toggle indicator using `motion.div` with `layoutId="viewSwitcher"`
+- Spring animation (`stiffness: 500, damping: 35`) for smooth position transitions
+- Admin mode shows rose-tinted indicator, dashboard shows default
+
+**e) Sidebar Footer:**
+- Replaced plain border-t with gradient separator (`bg-gradient-to-r from-transparent via-border to-transparent`)
+- Avatar with gradient ring using nested divs with `p-[2px] bg-gradient-to-br from-primary via-primary/60 to-emerald-500`
+- Added `hover:text-destructive` on logout button
+
+**f) View Storefront Button:**
+- Emerald gradient background intensifying on hover
+- Left accent bar (3px emerald gradient)
+- Animated ArrowRight icon that slides in from left on hover
+- Framer-motion whileHover/whileTap scale effects
+
+**g) Group Headers:**
+- Added small colored dots next to group headers: Main (primary), Insights (amber), Customize (violet), Tools (cyan), Settings (slate), Platform (rose), Monitoring (emerald), Control (orange)
+
+### Files Modified:
+- **Modified**: `/src/app/page.tsx` — LoginScreen function and Home function sidebar section
+
+### Verification:
+- ✅ ESLint passes with zero errors
+- ✅ Dev server compiles successfully
+- ✅ No compilation errors
+- ✅ All existing functionality preserved (login, navigation, state management, notifications, onboarding)
+
+---
+
+Task ID: 3-4
+Agent: Storefront Features Agent
+Task: Create Wishlist Page and Enhanced Product Grid Page for the ShopForge storefront
+
+### Work Completed:
+
+#### 1. Wishlist Page (`/src/components/storefront/wishlist.tsx`) — Comprehensive wishlist management page
+
+**Features Implemented:**
+
+- **Page Header**: Heart icon with gradient background, "My Wishlist" title, item count badge with rose gradient, subtitle showing total items saved
+- **Sort Options**: Recently Added, Price Low-High, Price High-Low, Name A-Z (via Select component)
+- **Share Wishlist Button**: Copies URL to clipboard with toast notification, styled with rose accent border
+- **Bulk Actions Bar**: Appears when items are selected with Select All checkbox, "Add Selected to Cart" button, "Remove Selected" button, rose gradient background
+- **Select All**: Checkbox row to select/deselect all items
+
+**Wishlist Item Cards (responsive grid: 1/2/3/4 columns):**
+- Product image area with gradient placeholder and product initials
+- Sale badge with discount percentage (red-to-rose gradient)
+- Remove button (top-right heart icon, always filled red, with hover scale animation)
+- Select checkbox (top-left, appears below badge, with rose styling when checked)
+- Quick View overlay on hover with "View Details" button
+- Category label (uppercase tracking-wider)
+- Product name with hover:text-rose-500
+- Star rating display with half-star support
+- Price with compare-at-price strikethrough
+- Stock status indicator (In Stock/amber, Low Stock/amber, Out of Stock/red) with icon
+- Add to Cart button with loading spinner, disabled when out of stock
+- Date added to wishlist with relative time ("2 days ago", "1 week ago", etc.)
+
+**Additional Features:**
+- Empty state with heart illustration, 0-count badge, decorative dots, "Browse Products" CTA button
+- "You Might Also Like" suggestions section with 4 product cards, gradient accent line, "View All" arrow
+- Local storage persistence via `shopforge_wishlist` key with automatic sync
+- Loads from API on first visit, falls back to sample data if API unavailable
+- Framer-motion staggered animations on mount (containerVariants/itemVariants)
+- AnimatePresence with exit animations for item removal
+- Rose/pink accent colors throughout (gradients, badges, buttons, borders)
+- Loading skeleton state
+
+#### 2. Enhanced Product Grid Page (`/src/components/storefront/product-grid-page.tsx`) — Standalone product browsing page
+
+**Features Implemented:**
+
+**Layout:**
+- Breadcrumb navigation (Home > All Products)
+- Page header with "All Products" title and filtered result count
+- Sidebar filters (collapsible on mobile via Sheet/Drawer)
+- Product grid with pagination
+
+**Sidebar Filters:**
+- **Categories**: Checkbox list with product counts (from API data)
+- **Price Range**: Slider with Min/Max numeric inputs
+- **Rating**: Star rating filter buttons (4+, 3+, 2+, 1+) with visual star display
+- **Availability**: In Stock / Out of Stock / Pre-order buttons with active state highlighting
+- **Active Filter Tags**: Removable badge tags showing active filters with "Clear All" button
+- **Clear All Filters**: Rose-accented button that resets all filters
+
+**Product Cards (Grid View):**
+- Product image with hover zoom effect (group-hover:scale-110)
+- "New" badge (emerald-to-teal gradient with Sparkles icon)
+- "Sale" badge (red-to-rose gradient with "-X% OFF")
+- Wishlist heart button (top-right, fill animation toggle)
+- Out of stock overlay
+- Quick "Add to Cart" button on hover with loading spinner
+- Star rating with review count
+- Price with original price strikethrough
+- Color swatches row (extracted from variant options)
+- Category label (uppercase tracking-wider)
+
+**Product Cards (List View):**
+- Horizontal card layout with image on left
+- Full product name, description, rating, review count
+- View Details and Add to Cart buttons side by side
+- Wishlist heart toggle
+
+**Features:**
+- Grid/List view toggle with rose active state
+- Sort by: Featured, Newest, Price Low-High, Price High-Low, Best Selling, Highest Rated
+- Pagination with page numbers (max 5 visible) and prev/next buttons
+- Mobile filter Sheet with filter count badge
+- 12 items per page with automatic page reset on filter change
+- Framer-motion staggered grid animations
+- Empty state when no products match filters
+- Loading skeleton state
+- Sticky sidebar on desktop
+
+#### 3. Integration Work
+
+**Updated `/src/lib/store.ts`:**
+- Added 'wishlist' and 'products' to `StorefrontPage` type union
+
+**Updated `/src/app/page.tsx`:**
+- Added imports for `WishlistPage` and `ProductGridPage`
+- Added routes in `StorefrontContent`: `storefrontPage === 'wishlist'` → `<WishlistPage />`, `storefrontPage === 'products'` → `<ProductGridPage />`
+
+**Updated `/src/components/storefront/store-layout.tsx`:**
+- Changed navLinks type to include optional `icon` property
+- Changed "Products" link to point to 'products' page (was 'category')
+- Added "Wishlist" nav link with Heart icon to navLinks array
+- Updated header wishlist button to navigate to 'wishlist' page (was 'account')
+- Added dedicated "Wishlist" entry in mobile menu sidebar with Heart icon and rose-500 color
+
+### Files Created:
+- **Created**: `/src/components/storefront/wishlist.tsx` (~470 lines)
+- **Created**: `/src/components/storefront/product-grid-page.tsx` (~580 lines)
+
+### Files Modified:
+- **Modified**: `/src/lib/store.ts` — Added 'wishlist' and 'products' to StorefrontPage type
+- **Modified**: `/src/app/page.tsx` — Added WishlistPage and ProductGridPage imports and routes
+- **Modified**: `/src/components/storefront/store-layout.tsx` — Added Wishlist nav link, updated Products nav, updated header wishlist button, added mobile wishlist menu item
+
+### Verification:
+- ✅ ESLint passes with zero errors
+- ✅ Dev server compiles successfully
+- ✅ No compilation errors
+- ✅ All existing functionality preserved (navigation, cart, checkout, product detail, search, blog, account)
+
+---
+
+Task ID: 7
+Agent: Dashboard & Admin Polish Agent
+Task: Add significant visual polish and micro-interactions to key dashboard and admin pages
+
+### Work Completed:
+
+#### 1. Products Page Enhancement (`/src/components/dashboard/products.tsx`)
+- **Stats Bar**: 4-card stats strip (Total, Active, Draft, Archived) with colored icons and hover effects
+- **Glassmorphism Filter Bar**: Frosted glass effect with backdrop-blur-xl, gradient overlay, animated filter chips with color-coded active states
+- **View Toggle**: Grid/List toggle with LayoutGrid/List icons, smooth switching
+- **Product Card Grid**: New grid view with gradient image placeholders, sale badges (-X% OFF), stock indicators, hover quick actions (Edit/Duplicate/Archive/Delete) with tooltips, scale hover animation
+- **Gradient Add Product Button**: Emerald-to-teal gradient with animated sparkle icon
+- **Hover-Reveal Quick Actions**: Table rows show Edit/Duplicate/Archive/Delete on group-hover with tooltips
+- **Empty State**: Illustrated with PackageOpen icon, sparkle animation, contextual clear-filter messaging
+- **Price Badges**: Gradient text for prices, strikethrough for compare prices
+- **Enhanced Stock Indicators**: Color-coded icons (PackageCheck green, AlertTriangle amber/red)
+
+#### 2. Orders Page Enhancement (`/src/components/dashboard/orders.tsx`)
+- **Stats Cards**: 5 mini stat cards (Total Orders, Pending, Processing, Delivered Today, Revenue) with gradient backgrounds
+- **Animated Status Badges**: Clock pulse for pending, Loader2 spin for processing, CheckCheck for delivered
+- **Sliding Tab Indicator**: Custom tab bar with framer-motion spring-animated underline that slides between filter tabs
+- **Quick Status Update**: Enhanced Popover with icon-labeled status options and current indicator
+- **Priority Indicators**: High-value orders (≥$500) get amber left border + gold "High Value" badge; old pending (>2 days) get orange border + "Aging" badge
+- **Batch Actions**: Checkbox selection column, bulk "Mark as Shipped" and "Export" buttons with confirmation dialogs
+- **Animated Confirmations**: Spring-animated modals with gradient icon headers
+
+#### 3. Analytics Page Enhancement (`/src/components/dashboard/analytics.tsx`)
+- **Date Range Picker**: Popover with preset options (7d, 30d, 90d, 1y, Custom)
+- **KPI Cards with Sparklines**: Custom SVG sparkline mini-charts, gradient backgrounds, accent bars, pill-shaped change indicators
+- **Chart Type Toggle**: Area/Bar/Line toggle with icons and smooth AnimatePresence transitions
+- **Comparison Mode**: Toggle adds previous period overlay (dashed line/area, semi-transparent bars)
+- **Export Buttons**: CSV/PDF with loading spinner states
+- **Metrics Summary Row**: Avg Order Value, Repeat Rate, Active Products, Revenue Growth with trend arrows
+
+#### 4. Admin Overview Enhancement (`/src/components/admin/overview.tsx`)
+- **LIVE Badges**: Red pulsing "LIVE" badges on System Health, Activity Feed, and chart headers
+- **SVG Progress Rings**: Animated circular progress indicators with smooth stroke-dashoffset animation replacing linear bars
+- **Activity Feed**: Real-time event list with animated slide-in entry, icon-coded events (signup, order, payment, alert, upgrade), relative timestamps
+- **Quick Actions Panel**: 4 buttons (Suspend Merchant, Send Notification, Run Backup, Clear Cache) with loading spinners and toast feedback
+- **Enhanced Layout**: 3-column grid for Health/Feed/Actions, animated table rows for recent merchants section
+
+### Verification:
+- ✅ ESLint passes with zero errors
+- ✅ Dev server compiles successfully
+- ✅ No new npm packages added
+- ✅ All components remain 'use client'
+- ✅ All existing functionality preserved
+
+### Files Modified:
+- `/src/components/dashboard/products.tsx`
+- `/src/components/dashboard/orders.tsx`
+- `/src/components/dashboard/analytics.tsx`
+- `/src/components/admin/overview.tsx`
+
+---
+
+Task ID: 7-8
+Agent: Customer Detail & Data Export Agent
+Task: Create Customer Detail view with order history and Data Export API + UI for merchants
+
+### Work Completed:
+
+#### 1. Customer Detail Component (`/src/components/dashboard/customer-detail.tsx`) — NEW
+
+A comprehensive customer detail view that shows when a merchant clicks on a customer in the Customers page.
+
+**Layout:**
+- Back button to return to customers list
+- Customer header with avatar (gradient), name, email, phone, status badge, join date
+- Tags section with inline add/remove functionality
+- Quick action buttons (Send Email, Add Note)
+
+**Stats Row (4 cards with gradient accent bars):**
+- Total Spent — emerald gradient
+- Total Orders — sky gradient
+- Avg Order Value — violet gradient
+- Lifetime Value (calculated as totalSpent × 1.2) — rose gradient
+
+**Tabbed Interface (4 tabs):**
+- **Order History Table**: All orders by this customer with date, order ID, status (color-coded badges), total, items count. Clickable rows navigate to order detail via `setSelectedOrderId`. Max height with scroll overflow and custom scrollbar.
+- **Activity Timeline**: Visual timeline of customer interactions with icons, color-coded event types (account created, order placed, order shipped, order delivered, order cancelled, review posted, note added), relative timestamps, staggered framer-motion animations.
+- **Notes**: Textarea to add/save notes via API (`PUT /customers/[id]`), display current note with last updated timestamp, empty state.
+- **Addresses**: Grid of saved shipping/billing addresses parsed from JSON, copy-to-clipboard button, address type badges, default badge, empty state.
+
+**Features:**
+- Uses `selectedCustomerId` from `useAppStore`
+- Fetches customer data from `/api/customers/[id]` (already includes orders, reviews, wishlistItems)
+- Framer-motion staggered animations (containerVariants/itemVariants)
+- Gradient accent bars on stat cards
+- Color-coded order status badges
+- Empty states for each section with descriptive icons and text
+- Skeleton loading state
+- Customer not found state with back button
+
+#### 2. Data Export API (`/src/app/api/export/route.ts`) — NEW
+
+GET endpoint that generates CSV data for different entity types.
+
+**Supported Queries:**
+- `GET /api/export?type=orders&storeId=xxx&format=csv` — Export orders
+- `GET /api/export?type=products&storeId=xxx&format=csv&filter=active` — Export products (optional filter: all or active)
+- `GET /api/export?type=customers&merchantId=xxx&format=csv&filter=active` — Export customers (optional filter: all or active)
+
+**CSV Generation:**
+- Orders: Order #, Date, Customer Name, Customer Email, Status, Payment Status, Fulfillment Status, Subtotal, Tax, Shipping, Discount, Total, Currency, Items Count, Tracking Number
+- Products: Name, SKU, Status, Type, Price, Compare Price, Category, Total Stock, Reserved Stock, Variant Count, Created Date
+- Customers: Name, Email, Phone, Status, Total Orders, Total Spent, Avg Order Value, Last Order Date, Join Date, Store, Tags
+
+**Features:**
+- Proper CSV escaping (commas, quotes, newlines)
+- Date formatting
+- Currency formatting
+- Returns with `Content-Disposition: attachment; filename="..."` header
+- Date-stamped filenames (e.g., `orders-export-2025-01-15.csv`)
+- Supports both storeId and merchantId filtering
+- Active-only filter for products and customers
+
+#### 3. Export Buttons UI
+
+**Orders Component (`/src/components/dashboard/orders.tsx`):**
+- Replaced simple "Export All" button with DropdownMenu export button
+- Options: "Export as CSV" (full export via API), "Export Current View"
+- Loading spinner during export
+- Uses `/api/export?type=orders&storeId=...` endpoint
+- Removed old client-side CSV generation in favor of server-side API
+
+**Products Component (`/src/components/dashboard/products.tsx`):**
+- Added Export DropdownMenu button in header area (next to "Add Product")
+- Options: "Export All Products", "Export Active Only"
+- Loading spinner during export
+- Uses `/api/export?type=products&storeId=...&filter=...` endpoint
+
+**Customers Component (`/src/components/dashboard/customers.tsx`):**
+- Added Export DropdownMenu button in header area
+- Options: "Export All Customers", "Export Active Only"
+- Loading spinner during export
+- Uses `/api/export?type=customers&merchantId=...&filter=...` endpoint
+
+#### 4. Integration
+
+**`/src/app/page.tsx`:**
+- Added `CustomerDetail` import from `@/components/dashboard/customer-detail`
+- Added customer detail route: when `selectedCustomerId` is set and `dashboardPage` is 'customers', show `CustomerDetail` instead of `CustomersManagement`
+- Same pattern as `selectedOrderId` → `OrderDetail` and `selectedProductId` → `ProductForm`
+
+**`/src/lib/store.ts`:**
+- `selectedCustomerId` and `setSelectedCustomerId` were already present in the store (no changes needed)
+
+### Files Created:
+- **Created**: `/src/components/dashboard/customer-detail.tsx` (~520 lines)
+- **Created**: `/src/app/api/export/route.ts` (~140 lines)
+
+### Files Modified:
+- **Modified**: `/src/components/dashboard/orders.tsx` — Added DropdownMenu export button, added exporting state, replaced handleExport with handleExportAPI
+- **Modified**: `/src/components/dashboard/products.tsx` — Added DropdownMenu export button, added exporting state, handleExportProducts function, Download/Loader2 imports
+- **Modified**: `/src/components/dashboard/customers.tsx` — Added DropdownMenu export button, added exporting state, handleExportCustomers function, Download/Users/UserCheck/Loader2 imports
+- **Modified**: `/src/app/page.tsx` — Added CustomerDetail import, customer detail route in DashboardContent
+
+### Verification:
+- ✅ ESLint passes with zero errors
+- ✅ Dev server compiles successfully
+- ✅ No compilation errors
+- ✅ All existing functionality preserved
+
+
+---
+
+Task ID: 6
+Agent: Storefront Polish Agent
+Task: Enhance Storefront Account Page and polish Checkout Page
+
+### Work Completed:
+
+#### 1. Account Page Complete Overhaul (`/src/components/storefront/account.tsx`)
+
+**Profile Header with Gradient Background:**
+- Full-width gradient header (rose-500 → pink-500 → orange-400) with radial gradient overlay
+- Avatar circle with user initials derived from profile name
+- Gold Member badge, member-since date
+- Sign Out button with glassmorphism style (bg-white/10, backdrop-blur)
+
+**Tab Navigation with Animated Underline:**
+- 5 tabs: Profile, Orders, Addresses, Wishlist, Payments
+- Each tab has icon + label + count badge
+- Animated underline using framer-motion `layoutId="tab-underline"` with spring transition
+- Horizontal scrollable tab bar with border-bottom
+
+**Profile Tab:**
+- Profile Information card: Editable name, email, phone with icon-prefixed inputs, Save button with loading spinner
+- Change Password card: Current password, new password, confirm password with validation error display (passwords must match, min 8 chars)
+- Email Notification Preferences card: 3 toggle switches (Order Updates, Promotions & Deals, Newsletter) with colored icon badges and descriptions
+- Danger Zone card: Delete account with red styling and warning icon
+
+**Orders Tab:**
+- Status filter pills (All, Processing, Shipped, Delivered, Cancelled) with rose-500 active state
+- Order count display
+- Order cards with: gradient accent bar per status, product thumbnail, order number, status badge, date, item count, 4-step visual tracking progress bar (Order Placed → Processing → Shipped → Delivered), price, View Details / Track Order buttons
+- Empty state with ShoppingBag icon and "Start Shopping" CTA
+- Staggered framer-motion animations
+
+**Addresses Tab:**
+- Grid of address cards (1-2-3 columns responsive) with Home icon, name, full address, phone, edit/delete buttons
+- Default shipping/billing indicator badges (rose-500 corner badge)
+- "Add New Address" card with dashed border
+- Address Dialog (Dialog component): Full form with name, address line 1/2, city, state, zip, country (Select dropdown: US/CA/GB/AU), phone
+- Edit and Add modes share the same dialog
+
+**Wishlist Tab:**
+- Item count display
+- "View Full Wishlist" link
+- 4-column product grid with: gradient thumbnail, heart icon overlay, hover "Add to Cart" button, product name (clickable to product page), price, star rating
+
+**Payment Methods Tab:**
+- Saved card cards: Visa/Mastercard brand gradient, last 4 digits, expiry date, default badge, Set Default / Delete buttons
+- Delete confirmation dialog with red warning
+- "Add Payment Method" dashed card placeholder
+- "Add Payment Method" header button
+
+#### 2. Checkout Page Visual Polish (`/src/components/storefront/checkout.tsx`)
+
+**Gift Options Section:**
+- Collapsible "Gift Options" trigger with Gift icon and chevron rotation
+- "This is a gift" toggle (Switch component) — hides prices on packing slip
+- Gift Message textarea (300 character limit with counter), shown when gift toggle is on
+- Gift Wrapping option ($4.99) with Switch toggle
+- Rose-50 background card with rose-100 border for visual distinction
+
+**Coupon Code Enhancement:**
+- Green checkmark (CheckCheck icon) appears in input when discount is applied
+- "SAVE10" demo code applies 10% discount with success toast
+- Applied discount shows green success message below input with code and savings amount
+- "Remove" button replaces "Apply" when discount is active
+- Discount shown in order summary sidebar with CheckCheck icon and emerald-600 color
+- Gift wrap line item appears in sidebar when gift wrapping is selected
+
+**Form Validation Visuals:**
+- Red border styling on invalid fields (border-red-400, focus-visible:border-red-500, focus-visible:ring-red-200)
+- Animated error messages below fields using framer-motion (opacity: 0→1, y: -4→0)
+- AlertCircle icon prefix on email error message
+- validateInformation() checks: email format, first name, last name, address, city
+- validatePayment() checks: card number, card name, expiry, CVV
+- Errors clear on field change
+
+**Sticky Order Summary Sidebar:**
+- `sticky top-24` on the order summary card so it stays visible while scrolling checkout form
+- Already existed in previous version, confirmed preserved
+
+**Enhanced Thank You / Order Success Screen:**
+- CSS-based confetti animation (50 particles with randomized properties): colors, sizes, rotation, drift, fall duration
+- Animated success icon with emerald gradient background and shadow
+- Staggered content reveal (delay: 0.2s → 0.8s)
+- Estimated delivery date card (emerald-50 bg) with Calendar icon
+- Order Summary recap card (first 3 items + total, "+ N more items" for overflow)
+- "Continue Shopping" button (rose-500) and "View Orders" button (outline)
+- Social sharing section: Copy link, Twitter, Facebook buttons with toast feedback
+- Confetti auto-dismisses after 4 seconds
+
+**Progress Animation:**
+- Existing step transitions use AnimatePresence with x: -20→0→20 directional slide
+- All step transitions preserved and working
+
+### Files Modified:
+- **Modified**: `/src/components/storefront/account.tsx` (~680 lines) — Complete overhaul from sidebar+content to tab-based interface
+- **Modified**: `/src/components/storefront/checkout.tsx` (~1280 lines) — Added gift options, coupon enhancements, form validation, confetti, enhanced success screen
+
+### Verification:
+- ✅ ESLint passes with zero errors (fixed missing ShoppingBag import)
+- ✅ Dev server compiles successfully
+- ✅ All existing functionality preserved (login/register, checkout flow, order placement)
+
+
+---
+
+Task ID: 9
+Agent: AI Features & Store Settings Agent
+Task: Add AI-powered features (product description generator, SEO optimizer) and enhance store settings with new tabs
+
+### Work Completed:
+
+#### 1. AI Product Description Generator
+
+**New API Route**: `/src/app/api/ai/generate-description/route.ts`
+- POST endpoint accepting `{ productName, category, features? }`
+- Uses z-ai-web-dev-sdk with specialized system prompt for product description writing
+- Generates engaging, SEO-friendly descriptions under 200 words with bullet points
+- Fallback descriptions if AI fails
+- Proper error handling with lazy SDK initialization
+
+**Enhanced Product Form**: `/src/components/dashboard/product-form.tsx`
+- Added "AI Generate" button with gradient styling (violet/fuchsia theme) next to description textarea
+- Tooltip on button: "Let AI write an engaging product description"
+- Loading overlay while generating: "AI is writing your description..." with backdrop blur
+- "Regenerate" button appears after first generation (RefreshCw icon + tooltip)
+- "AI-generated description" badge with sparkle icon shown after generation
+- Uses dedicated `/api/ai/generate-description` endpoint (not generic `/api/ai`)
+- Passes product name, category name, and tags to the API
+- Also enhanced SEO section with character count indicators (color-coded red/amber/emerald)
+
+#### 2. Store Settings Enhancement (Complete Rewrite)
+
+**Completely Rewritten**: `/src/components/dashboard/store-settings.tsx`
+
+New 5-tab structure (was previously 5 tabs: general, domain, regional, seo, notifications):
+
+**General Tab:**
+- Store name, contact email, contact phone, timezone
+- Store description textarea
+- Logo upload area with gradient placeholder + upload icon
+- Regional settings (currency, language)
+- Domain settings (custom domain, subdomain)
+
+**Appearance Tab (NEW):**
+- Primary color picker: 8 predefined color swatches (Rose, Emerald, Amber, Violet, Cyan, Fuchsia, Slate, Lime) + custom color input
+- Font family selector (8 system fonts: Inter, Roboto, Poppins, Playfair Display, Montserrat, Lato, Open Sans)
+- Logo position selector (Left, Center, Right)
+- Homepage layout selector (Default, Full-width, Compact)
+- Live preview panel showing miniature storefront with real-time color/layout updates
+- Preview includes header, hero section, and product grid
+
+**Notifications Tab (NEW):**
+- Notification channels: Email toggle, SMS toggle (with gradient icon backgrounds)
+- Order notifications: New Order, Order Shipped, Order Delivered, Low Stock (each with icon + description)
+- Customer notifications: New Signup, Review Posted (each with icon + description)
+- Marketing notifications: Campaign Completed, Discount Expiring (each with icon + description)
+- All toggles with descriptive text and color-coded category icons
+
+**SEO Tab (ENHANCED):**
+- Meta title with character counter (60 max) + AI optimize button
+- Meta description with character counter (160 max) + AI optimize button
+- SeoScoreIndicator component: animated progress bar (red=poor, yellow=fair, green=good)
+- "AI Optimize All" button at top of section
+- Individual AI optimize buttons per field (Sparkles icon with tooltips)
+- Keywords input
+- Social media preview (Open Graph): OG title, OG description, OG image upload placeholder, preview card
+- Robots.txt editor (monospace textarea)
+- Sitemap toggle with description
+
+**Legal Tab (NEW):**
+- Privacy Policy editor (markdown textarea with character count)
+- Terms of Service editor (markdown textarea with character count)
+- Refund Policy editor (markdown textarea with character count)
+- Cookie Policy editor (markdown textarea with character count)
+- All with file icon labels and separators
+
+Key design features:
+- Per-tab save buttons with loading states (not global)
+- Gradient accent bars on section headers (unique color per section)
+- Icons for each notification toggle and legal page
+- Responsive design with sm: breakpoints
+
+#### 3. AI SEO Optimizer
+
+**New API Route**: `/src/app/api/ai/seo-optimize/route.ts`
+- POST endpoint accepting `{ storeName, storeDescription, type }`
+- Type: 'title', 'description', or 'both'
+- Uses z-ai-web-dev-sdk with SEO expert system prompt
+- Returns `{ metaTitle, metaDescription }` with character limit enforcement
+- JSON parsing with text fallback extraction
+- Fallback values if AI fails
+
+**Integration in SEO tab:**
+- "AI Optimize All" button (amber/orange gradient styling)
+- Individual AI optimize buttons next to meta title and meta description (Sparkles icons)
+- SeoScoreIndicator visual component: animated progress bar + label (Poor/Fair/Good)
+- Loading states per field
+- Color-coded border on inputs (green for good length, red for too long)
+
+### Files Created:
+- `/src/app/api/ai/generate-description/route.ts`
+- `/src/app/api/ai/seo-optimize/route.ts`
+
+### Files Modified:
+- `/src/components/dashboard/product-form.tsx` - Enhanced with AI description generation, tooltips, regenerate
+- `/src/components/dashboard/store-settings.tsx` - Complete rewrite with 5 tabs (General, Appearance, Notifications, SEO, Legal) + AI SEO optimizer
+
+### Verification:
+- ✅ ESLint passes with zero errors
+- ✅ Dev server compiles successfully
+- ✅ No compilation errors
+- ✅ All existing functionality preserved
+
+---
+
+Task ID: 9b
+Agent: Storefront Blog & Search Polish Agent
+Task: Complete overhaul of the storefront Blog page and Search page with significant visual and UX improvements
+
+### Work Completed:
+
+#### 1. Blog Page Complete Overhaul (`/src/components/storefront/blog.tsx`) — Major Redesign
+
+**Hero Banner:**
+- Dark gradient background (slate-900 via rose-900 to slate-900) with animated decorative blobs
+- "The ShopForge Blog" title with 3-stop gradient text (rose-400 via orange-400 to amber-400)
+- Subtitle "Insights, tips, and trends for modern merchants"
+- Glass morphism search input with backdrop blur and clear button
+- Horizontal category pills (All, Business, Marketing, Product, Technology, Design, AI & Automation) with icons and active state styling
+- "Insights & Resources" badge with PenLine icon
+- Staggered entry animations via framer-motion
+
+**Featured Post Card:**
+- Full-width 2-column layout (image + content)
+- Large gradient image area with category icon overlay
+- "Featured" gradient badge (rose-500 to orange-500) with Sparkles icon
+- Color-coded category badge
+- Reading time estimate with Clock icon
+- Calendar date display
+- Full excerpt text with line-clamp-3
+- Author row with Avatar component (gradient fallback with initials), name, and "Author" label
+- Social share buttons (copy link, Twitter, Facebook) with hover states
+- "Read More" button with ArrowRight hover animation
+- Group hover: title color change, image scale
+
+**Category Filter:**
+- 7 categories with unique icons: All (BookOpen), Business (BarChart3), Marketing (Megaphone), Product (Package), Technology (Cpu), Design (Palette), AI & Automation (Lightbulb)
+- Color-coded category badges per post: Business=emerald, Marketing=sky, Product=violet, Technology=orange, Design=fuchsia, AI & Automation=amber
+- Category icon overlays on gradient image placeholders
+
+**Post Grid:**
+- 3-column responsive grid (1/2/3 on sm/md/lg)
+- Blog post cards with gradient image area and category icon overlay
+- Category badge + reading time overlay on image
+- Calendar date display
+- Title with 2-line clamp and hover color change
+- Excerpt with 3-line clamp
+- Author row with Avatar (gradient initials) + name
+- "Read More" with ChevronRight hover animation
+- Hover: card lifts (-translate-y-1), shadow increases, image zooms
+- Hidden share buttons revealed on hover
+
+**Mock Data (10 posts):**
+- "10 Ways AI is Transforming Ecommerce in 2025"
+- "The Complete Guide to Product Photography"
+- "How to Reduce Cart Abandonment by 40%"
+- "Social Media Marketing Strategies That Actually Work"
+- "Understanding Your Store Analytics"
+- "Building Customer Loyalty in the Digital Age"
+- "Shipping Optimization for Small Businesses"
+- "The Psychology of Pricing"
+- "Design Systems That Scale With Your Brand"
+- "Headless Commerce: The Future of Online Retail"
+
+**Popular Tags Section:**
+- TrendingUp icon header
+- Clickable tag chips that filter posts by search query
+- Tag icon prefix on each chip
+- Hover state with rose color highlight
+
+**Newsletter CTA Section:**
+- Gradient background (rose-50 via orange-50 to amber-50)
+- Animated decorative blobs
+- "Newsletter" badge with Mail icon
+- "Stay in the loop" heading
+- Email input with Mail icon and Enter key support
+- Subscribe button with ArrowRight
+- Subscribed state with emerald badge and Sparkles icon
+- whileInView scroll-triggered animation
+
+**Additional Features:**
+- "Load More" button (6 posts per batch)
+- Search/filter functionality across title, excerpt, and tags
+- Reading time estimation helper function
+- API integration maintained (falls back to mock data when no API posts)
+- Social share buttons with copy-link-to-clipboard and toast feedback
+- Empty state with gradient icon circle and reset filters button
+- Framer-motion staggered animations (containerVariants/itemVariants)
+
+#### 2. Search Page Enhancement (`/src/components/storefront/search.tsx`) — Comprehensive UX Overhaul
+
+**Search Input with Glass Morphism:**
+- Large 14px-height input with glass morphism (bg-white/70, backdrop-blur-lg)
+- 2px rose-100 border with rose-300 focus state and rose-100 ring
+- Animated search icon (pulse when loading)
+- Clear button inside input
+- Submit button with Loader2 spinner during search
+- Rounded-2xl with shadow-lg shadow-rose-100/30
+
+**Autocomplete Suggestions:**
+- Appears when 2+ characters typed
+- Filters from mock suggestions list
+- Highlight matching text with rose-200/60 background
+- ArrowRight icon on each suggestion
+- Click to search, outside click to dismiss
+- AnimatePresence for smooth dropdown animation
+- Glass morphism dropdown (bg-white/95, backdrop-blur-lg)
+
+**Recent Searches:**
+- Persisted in localStorage via useRecentSearches hook
+- Lazy state initialization (avoids setState in effect lint error)
+- Clock icon prefix
+- "Clear all" button
+- Click to search
+
+**Popular Searches:**
+- 8 items with emoji icons in 2x4 grid
+- whileHover scale animation
+- Border and shadow on hover
+- Click to search
+
+**Browse Categories:**
+- Hash icon prefix with rose color
+- Gradient background pills (from-rose-50 to-orange-50)
+- Click navigates to category page
+
+**Tabbed Search Results (Products / Blog / Categories):**
+- Tabs component with icons and count badges
+- Products tab: Product cards with gradient placeholders, highlighted matching text, star ratings, prices, sale badges, sort bar (Relevance/Price↑/Price↓/Newest)
+- Blog tab: Blog post cards with gradient thumbnail, category badge, date, reading time, author avatar, highlighted matching text, hover arrow animation
+- Categories tab: Category cards with gradient backgrounds, highlighted matching text, browse badge, "All Categories" section with gradient buttons
+- AnimatePresence for smooth tab transitions
+- Staggered framer-motion animations per tab
+
+**Visual Enhancements:**
+- Result count badge per tab in header (products/articles/categories)
+- Mobile filter toggle with active indicator badge
+- Desktop filter sidebar in sticky Card component
+- Sort bar with pill-style buttons (active=rose-100)
+- Empty state with gradient icon circle, helpful suggestions, and action buttons
+- Popular search suggestion chips in empty state
+
+**Technical Details:**
+- useRecentSearches custom hook with lazy state initialization
+- useMemo for filtered products, blog results, category results, and suggestions
+- highlightMatch helper with regex-safe query and <mark> elements
+- All animations use framer-motion (containerVariants/itemVariants, AnimatePresence, whileHover)
+- Toast feedback via sonner for link copy
+- Maintains existing API integration and filter functionality
+- FilterContent component shared between Sheet (mobile) and sidebar (desktop)
+
+### Files Modified:
+- **Modified**: `/src/components/storefront/blog.tsx` (~480 lines, complete rewrite)
+- **Modified**: `/src/components/storefront/search.tsx` (~530 lines, complete rewrite)
+
+### Verification:
+- ✅ ESLint passes with zero errors
+- ✅ Dev server compiles successfully
+- ✅ No compilation errors
+- ✅ All existing functionality preserved (API integration, cart operations, navigation)
+
+---
+
+## Phase 5: Major Feature Expansion & Deep Styling Polish (Current)
+
+Task ID: phase-5-main
+Agent: Main Agent
+Task: Comprehensive QA testing, bug fixes, extensive styling polish, and major new feature additions across all 3 systems
+
+### QA Testing Results:
+- ✅ Login works correctly (form submission with Enter key, quick access buttons)
+- ✅ Merchant Dashboard loads with correct data (Revenue $33,339.83, 100% growth, 30 orders, 15 customers, 12 products)
+- ✅ Revenue chart shows 12 months of data with growth trend
+- ✅ Top products showing full names (not truncated)
+- ✅ Low stock alerts showing 3 items with progress bars
+- ✅ Storefront renders correctly with hero, products, categories, collections
+- ✅ Storefront navigation works (Home, Products, Search, Blog, Wishlist, Account)
+- ✅ All API routes responding correctly (35+ routes)
+- ✅ ESLint passes with zero errors
+- ✅ Dev server compiles successfully
+- 🐛 Agent-browser Tooltip click interception issue (known, doesn't affect real users)
+- 🐛 Onboarding wizard dialog doesn't dismiss easily via agent-browser (Escape key works)
+
+### Work Completed:
+
+#### 1. Login Page Complete Redesign
+- **Animated Background**: Dark animated gradient (slate/navy) with 3 floating animated gradient blobs and subtle grid pattern overlay
+- **Glass-morphism Card**: `bg-white/80 backdrop-blur-xl` with animated glow border that pulses, widened to `max-w-lg`
+- **Logo Glow**: Pulsing glow effect around logo icon with CSS keyframe animation
+- **Quick Access Buttons**: Redesigned as gradient glass cards with framer-motion whileHover/whileTap scale effects and hover overlay reveals
+- **Feature Icons**: Gradient backgrounds (violet→purple, cyan→teal, amber→orange) with white icons
+- **"Don't have an account?"** link added with "Sign up for free" button
+- **"Forgot password?"** link added in password field
+- **Glass-effect inputs** with gradient sign-in button
+- **Staggered entry animations** for all elements
+
+#### 2. Dashboard Sidebar Complete Redesign
+- **Sidebar Header**: Gradient background with subtle glow behind logo icon
+- **Nav Hover Effects**: Left-border slide-in (3px bar grows on hover) + icon scale on hover
+- **Active Nav Indicator**: Animated 3px left-border accent using `motion.div` with `layoutId` + gradient background fading left-to-right
+- **View Switcher**: Animated sliding toggle indicator with spring animation that slides between Dashboard/Admin
+- **Sidebar Footer**: Gradient separator line + avatar with gradient ring
+- **View Storefront Button**: Emerald gradient with animated arrow icon that slides in on hover
+- **Group Headers**: Color-coded dots (primary, amber, violet, cyan, slate, rose, emerald, orange) next to each section name
+
+#### 3. New Storefront Pages
+
+**Wishlist Page** (`/src/components/storefront/wishlist.tsx`):
+- Page header with heart icon, item count badge, share button
+- Sort options: Recently Added, Price Low-High, Price High-Low, Name A-Z
+- Wishlist item cards with gradient placeholders, sale badges, star ratings, stock indicators
+- Bulk actions: Select all, Add Selected to Cart, Remove Selected
+- Empty state with illustration and "Browse Products" CTA
+- "You Might Also Like" suggestions section
+- LocalStorage persistence for wishlist items
+- Framer-motion staggered animations with exit animations
+
+**Enhanced Product Grid Page** (`/src/components/storefront/product-grid-page.tsx`):
+- Breadcrumb navigation (Home > All Products)
+- Sidebar filters: Categories (checkboxes with counts), Price Range, Rating, Availability
+- Active filter tags with "Clear All"
+- Grid/List view toggle with smooth switching
+- Sort options: Featured, Newest, Price, Best Selling, Highest Rated
+- Pagination with page numbers
+- Product cards with New/Sale badges, wishlist hearts, hover zoom, quick Add to Cart, color swatches
+- Mobile filter sidebar as Sheet/Drawer
+
+#### 4. Dashboard Pages Enhancement
+
+**Products Page** (`/src/components/dashboard/products.tsx`):
+- Stats bar showing Total, Active, Draft, Archived counts with colored icons
+- Glassmorphism filter bar with frosted glass effect and animated filter chips
+- Grid/List view toggle with smooth switching
+- Product card grid with gradient image placeholders, sale badges, hover-reveal quick actions
+- Gradient "Add Product" button with animated sparkle icon
+- Illustrated empty state
+
+**Orders Page** (`/src/components/dashboard/orders.tsx`):
+- 5 Stats cards (Total Orders, Pending, Processing, Delivered Today, Revenue)
+- Animated status badges: pulsing Clock for pending, spinning Loader for processing, checkmark for delivered
+- Sliding tab indicator with spring animation
+- Priority indicators: gold "High Value" badge for ≥$500, amber "Aging" badge for old pending
+- Batch actions with checkbox selection and bulk operations
+
+**Analytics Page** (`/src/components/dashboard/analytics.tsx`):
+- Date range picker with presets (7d, 30d, 90d, 1y, Custom)
+- Sparkline mini-charts inside each KPI card using custom SVG component
+- Chart type toggle (Area/Bar/Line) with smooth AnimatePresence transitions
+- Comparison mode with previous period overlay
+- Export buttons (CSV/PDF) with loading states
+- Metrics summary row: Avg Order Value, Repeat Rate, Active Products, Revenue Growth
+
+**Admin Overview** (`/src/components/admin/overview.tsx`):
+- LIVE badges with red pulsing indicators on monitoring sections
+- SVG progress rings with animated circular progress indicators
+- Activity feed with animated slide-in entries and icon-coded events
+- Quick actions panel: Suspend Merchant, Send Notification, Run Backup, Clear Cache
+
+#### 5. Customer Detail View (NEW)
+
+**Customer Detail** (`/src/components/dashboard/customer-detail.tsx`):
+- Header card with gradient avatar, name, email, phone, status badge, join date
+- Quick action buttons (Email, Note)
+- Stats row: Total Spent, Total Orders, Avg Order Value, Lifetime Value
+- Tabbed interface: Orders, Activity Timeline, Notes, Addresses
+- Order history with clickable rows and color-coded status badges
+- Visual activity timeline with color-coded icons
+- Notes management with add/save functionality
+- Address management with grid layout and copy-to-clipboard
+
+#### 6. Data Export Feature (NEW)
+
+**Export API** (`/src/app/api/export/route.ts`):
+- GET /api/export?type=orders&storeId=xxx — Full orders CSV export
+- GET /api/export?type=products&storeId=xxx&filter=active — Products CSV export
+- GET /api/export?type=customers&merchantId=xxx&filter=active — Customers CSV export
+- Proper CSV escaping, date/currency formatting, Content-Disposition headers
+
+**Export UI Buttons**: Added to Orders, Products, and Customers pages with loading spinners and toast notifications
+
+#### 7. AI-Powered Features (NEW)
+
+**AI Product Description Generator**:
+- New API: `/src/app/api/ai/generate-description/route.ts` — Uses z-ai-web-dev-sdk
+- "AI Generate" button in product form with violet gradient styling
+- Loading overlay with "AI is writing your description..."
+- "Regenerate" button after first generation
+- SEO section with character count indicators
+
+**AI SEO Optimizer**:
+- New API: `/src/app/api/ai/seo-optimize/route.ts` — Generates optimized meta titles/descriptions
+- "AI Optimize All" button + per-field AI optimize buttons in SEO settings
+- Animated SeoScoreIndicator (red/yellow/green based on character count)
+- Both AI APIs verified working via curl testing
+
+#### 8. Store Settings Complete Rewrite (NEW)
+
+5 comprehensive tabs replacing the previous basic layout:
+- **General**: Store info, contact, logo upload area, timezone, currency, domain
+- **Appearance**: 8-color palette + custom picker, font family, logo position, homepage layout, live preview panel
+- **Notifications**: Email/SMS channels, order/customer/marketing notification toggles with icons
+- **SEO**: Meta tags with AI optimize, social media preview, robots.txt, sitemap toggle
+- **Legal**: Privacy Policy, Terms of Service, Refund Policy, Cookie Policy (markdown editors)
+
+#### 9. Storefront Account Page Complete Overhaul
+
+- Profile header with gradient background, avatar, Gold Member badge
+- 5-tab interface: Profile, Orders, Addresses, Wishlist, Payments
+- Profile: Editable fields, change password, notification preferences
+- Orders: Status filter pills, order cards with tracking progress, empty state
+- Addresses: Grid of address cards, add/edit dialog
+- Wishlist: Product grid with heart overlay, hover "Add to Cart"
+- Payments: Saved card display with brand gradients, delete confirmation
+
+#### 10. Checkout Page Polish
+
+- Gift Options: Collapsible section with "This is a gift" toggle, gift message, gift wrapping
+- Coupon Enhancement: "SAVE10" demo code with green checkmark feedback and discount display
+- Form Validation: Red borders on invalid fields, animated error messages
+- CSS Confetti Animation: 50-particle confetti on order success
+- Enhanced Success Screen: Estimated delivery, order recap, social sharing buttons
+
+#### 11. Blog & Search Page Overhaul
+
+**Blog Page**: Complete redesign with hero banner, featured post card, category filter pills, 10 mock blog posts, popular tags, newsletter CTA, load more pagination, framer-motion animations
+
+**Search Page**: Glass morphism search input, autocomplete suggestions with highlighted text, recent searches (localStorage), popular searches, tabbed results (Products/Blog/Categories), empty state with suggestions
+
+### Current Project Stats:
+- **Total Lines of Code**: 32,848+
+- **Merchant Dashboard**: 19 pages (Overview, Products, Orders, Customers, Categories, Analytics, Discounts, Inventory, Marketing, Reviews, Themes, AI Assistant, Workflows, Apps, Staff, Billing, Store Settings, + Customer Detail)
+- **Super Admin**: 9 pages with enhanced styling
+- **Storefront**: 12 components (Home, Product Grid Page, Product Detail, Category, Cart, Checkout, Search, Blog, Account, Wishlist, Store Layout, + new Wishlist + Product Grid Page)
+- **API Routes**: 38+ routes (auth, merchant, storefront, admin, notifications, export, AI)
+- **Database**: 30+ models with 500+ seed records
+- **AI Features**: 3 endpoints (chat, description generator, SEO optimizer)
+
+### Verification Results:
+- ✅ ESLint passes with zero errors
+- ✅ Dev server compiles and runs without issues
+- ✅ All API routes responding (analytics, export, AI description, AI SEO)
+- ✅ AI Product Description Generator returns quality descriptions
+- ✅ AI SEO Optimizer generates optimized meta tags
+- ✅ CSV Export API generates proper downloadable CSV files
+- ✅ Login, Dashboard, Storefront, Admin all render correctly
+- ✅ Navigation between all views works
+- ✅ All existing functionality preserved
+
+### Unresolved Issues:
+1. **Agent-browser Tooltip click interception**: Nav buttons inside Tooltip wrappers don't respond to agent-browser clicks. Workaround: use eval with direct DOM click. Doesn't affect real users.
+2. **Onboarding wizard shows every session**: Currently tracks via sessionStorage. Should check merchant.onboardedAt field in DB.
+3. **Some product images**: A few products still use seed data paths that don't have real images (charger, camera, desk). 6 out of 12 have AI-generated images.
+
+### Priority Recommendations for Next Phase:
+1. Generate remaining product images using image-generation skill
+2. Add WebSocket real-time features (order updates, chat)
+3. Implement DB-tracked onboarding (check merchant.onboardedAt)
+4. Add product image upload functionality
+5. Mobile responsive testing and fixes
+6. Performance optimization (lazy loading, code splitting)
+7. Add more AI features (auto product description for bulk, SEO audit)
+8. Add email notification integration
+9. Add store analytics dashboard with more chart types
+10. Add multi-currency support

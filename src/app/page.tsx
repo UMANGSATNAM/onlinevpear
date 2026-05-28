@@ -22,6 +22,7 @@ import { MarketingAutomation } from '@/components/dashboard/marketing'
 import { StaffManagement } from '@/components/dashboard/staff'
 import { ThemeCustomization } from '@/components/dashboard/themes'
 import { ReviewsManagement } from '@/components/dashboard/reviews'
+import { CustomerDetail } from '@/components/dashboard/customer-detail'
 import { NotificationsPanel } from '@/components/dashboard/notifications-panel'
 import { OnboardingWizard } from '@/components/dashboard/onboarding-wizard'
 import { AdminOverview } from '@/components/admin/overview'
@@ -42,6 +43,8 @@ import { SearchPage } from '@/components/storefront/search'
 import { CategoryPage } from '@/components/storefront/category'
 import { BlogPage } from '@/components/storefront/blog'
 import { AccountPage } from '@/components/storefront/account'
+import { WishlistPage } from '@/components/storefront/wishlist'
+import { ProductGridPage } from '@/components/storefront/product-grid-page'
 import {
   LayoutDashboard,
   Package,
@@ -225,18 +228,76 @@ function LoginScreen() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-100 p-4">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden p-4">
+      {/* Animated gradient background */}
+      <style>{`
+        @keyframes loginGradient {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        @keyframes loginFloat1 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.05); }
+          66% { transform: translate(-20px, 20px) scale(0.95); }
+        }
+        @keyframes loginFloat2 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(-40px, 30px) scale(1.08); }
+          66% { transform: translate(25px, -30px) scale(0.92); }
+        }
+        @keyframes loginFloat3 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(20px, 40px) scale(0.96); }
+          66% { transform: translate(-30px, -20px) scale(1.04); }
+        }
+        @keyframes loginPulse {
+          0%, 100% { opacity: 0.4; transform: scale(1); }
+          50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        @keyframes logoGlow {
+          0%, 100% { box-shadow: 0 0 20px rgba(var(--primary-rgb, 59, 130, 246), 0.3); }
+          50% { box-shadow: 0 0 40px rgba(var(--primary-rgb, 59, 130, 246), 0.5), 0 0 80px rgba(var(--primary-rgb, 59, 130, 246), 0.2); }
+        }
+        @keyframes borderGlow {
+          0%, 100% { opacity: 0.5; }
+          50% { opacity: 1; }
+        }
+        .login-bg {
+          background: linear-gradient(-45deg, #0f172a, #1e293b, #0f172a, #1a1a2e);
+          background-size: 400% 400%;
+          animation: loginGradient 15s ease infinite;
+        }
+        .login-blob-1 { animation: loginFloat1 8s ease-in-out infinite; }
+        .login-blob-2 { animation: loginFloat2 10s ease-in-out infinite; }
+        .login-blob-3 { animation: loginFloat3 12s ease-in-out infinite; }
+        .login-logo-glow { animation: logoGlow 3s ease-in-out infinite; }
+        .login-border-glow { animation: borderGlow 3s ease-in-out infinite; }
+      `}</style>
+
+      <div className="login-bg absolute inset-0" />
+
+      {/* Animated gradient blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-emerald-500/5 blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-rose-500/3 blur-3xl" />
+        <div className="login-blob-1 absolute -top-32 -right-32 w-96 h-96 rounded-full bg-gradient-to-br from-primary/20 via-primary/10 to-transparent blur-3xl" />
+        <div className="login-blob-2 absolute -bottom-32 -left-32 w-96 h-96 rounded-full bg-gradient-to-tr from-emerald-500/20 via-emerald-500/10 to-transparent blur-3xl" />
+        <div className="login-blob-3 absolute top-1/3 left-1/3 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-rose-500/10 via-violet-500/5 to-transparent blur-3xl" />
       </div>
+
+      {/* Grid pattern overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.03]"
+        style={{
+          backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
+          backgroundSize: '60px 60px',
+        }}
+      />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md relative z-10"
+        className="w-full max-w-lg relative z-10"
       >
         {/* Logo & Title */}
         <div className="text-center mb-8">
@@ -244,128 +305,185 @@ function LoginScreen() {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 200, damping: 20, delay: 0.1 }}
-            className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-primary shadow-lg shadow-primary/25 mb-4"
+            className="relative inline-block mb-4"
           >
-            <Store className="h-8 w-8 text-primary-foreground" />
+            {/* Glow ring behind logo */}
+            <div className="absolute inset-0 rounded-2xl bg-primary/30 blur-xl login-logo-glow" />
+            <div className="relative inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 shadow-lg shadow-primary/25">
+              <Store className="h-8 w-8 text-primary-foreground" />
+            </div>
           </motion.div>
-          <h1 className="text-3xl font-bold tracking-tight">ShopForge</h1>
-          <p className="text-muted-foreground mt-2">AI-Powered Ecommerce Platform</p>
+          <motion.h1
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="text-3xl font-bold tracking-tight text-white"
+          >
+            ShopForge
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="text-white/60 mt-2"
+          >
+            AI-Powered Ecommerce Platform
+          </motion.p>
         </div>
 
-        {/* Login Card */}
-        <Card className="border-0 shadow-xl shadow-black/5">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl">Welcome back</CardTitle>
-            <CardDescription>Sign in to your account to continue</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Email</label>
-                <Input
-                  type="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="h-11"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Password</label>
-                <div className="relative">
+        {/* Login Card with glass-morphism and animated glow border */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="relative"
+        >
+          {/* Animated glow border */}
+          <div className="absolute -inset-[1px] rounded-xl bg-gradient-to-r from-primary/40 via-emerald-400/30 to-primary/40 login-border-glow" />
+
+          <Card className="relative border-0 bg-white/80 backdrop-blur-xl shadow-2xl shadow-black/20">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl">Welcome back</CardTitle>
+              <CardDescription>Sign in to your account to continue</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Email</label>
                   <Input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="h-11 pr-10"
+                    className="h-11 bg-white/60 backdrop-blur-sm border-white/20 focus:border-primary/50 transition-colors"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Password</label>
+                    <button type="button" className="text-xs text-primary hover:underline">Forgot password?</button>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="h-11 pr-10 bg-white/60 backdrop-blur-sm border-white/20 focus:border-primary/50 transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2"
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
+                    {error}
+                  </motion.div>
+                )}
+
+                <Button type="submit" className="w-full h-11 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/30" disabled={loading}>
+                  {loading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      Signing in...
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      Sign In <ArrowRight className="h-4 w-4" />
+                    </div>
+                  )}
+                </Button>
+              </form>
+
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/10" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white/80 backdrop-blur-sm px-3 text-muted-foreground/70">Quick Access</span>
                 </div>
               </div>
 
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: -5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2"
+              <div className="grid grid-cols-2 gap-3">
+                <motion.button
+                  whileHover={{ scale: 1.03, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="button"
+                  onClick={() => handleQuickLogin('merchant')}
+                  disabled={loading}
+                  className="relative overflow-hidden rounded-xl p-4 text-left border border-white/20 bg-gradient-to-br from-primary/5 via-white/40 to-primary/10 backdrop-blur-md hover:border-primary/30 transition-all duration-300 group disabled:opacity-50"
                 >
-                  {error}
-                </motion.div>
-              )}
-
-              <Button type="submit" className="w-full h-11" disabled={loading}>
-                {loading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    Signing in...
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="relative">
+                    <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-sm shadow-primary/20 mb-2">
+                      <Store className="h-5 w-5 text-primary-foreground" />
+                    </div>
+                    <span className="text-sm font-semibold block">Merchant</span>
+                    <span className="text-[10px] text-muted-foreground">merchant@example.com</span>
                   </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    Sign In <ArrowRight className="h-4 w-4" />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.03, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="button"
+                  onClick={() => handleQuickLogin('admin')}
+                  disabled={loading}
+                  className="relative overflow-hidden rounded-xl p-4 text-left border border-white/20 bg-gradient-to-br from-rose-500/5 via-white/40 to-rose-500/10 backdrop-blur-md hover:border-rose-300/30 transition-all duration-300 group disabled:opacity-50"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-rose-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="relative">
+                    <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-rose-500 to-rose-600 flex items-center justify-center shadow-sm shadow-rose-500/20 mb-2">
+                      <Shield className="h-5 w-5 text-white" />
+                    </div>
+                    <span className="text-sm font-semibold block">Super Admin</span>
+                    <span className="text-[10px] text-muted-foreground">admin@shopforge.io</span>
                   </div>
-                )}
-              </Button>
-            </form>
-
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t" />
+                </motion.button>
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">Quick Access</span>
+
+              {/* Don't have an account? link */}
+              <div className="mt-6 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Don&apos;t have an account?{' '}
+                  <button type="button" className="text-primary font-semibold hover:underline underline-offset-2 transition-all">
+                    Sign up for free
+                  </button>
+                </p>
               </div>
-            </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                variant="outline"
-                className="h-auto py-3 flex-col gap-1.5"
-                onClick={() => handleQuickLogin('merchant')}
-                disabled={loading}
-              >
-                <Store className="h-5 w-5 text-primary" />
-                <span className="text-xs font-medium">Merchant</span>
-                <span className="text-[10px] text-muted-foreground">merchant@example.com</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="h-auto py-3 flex-col gap-1.5"
-                onClick={() => handleQuickLogin('admin')}
-                disabled={loading}
-              >
-                <Shield className="h-5 w-5 text-rose-600" />
-                <span className="text-xs font-medium">Super Admin</span>
-                <span className="text-[10px] text-muted-foreground">admin@shopforge.io</span>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Features */}
+        {/* Features with gradient icon backgrounds */}
         <div className="mt-8 grid grid-cols-3 gap-4 text-center">
           {[
-            { icon: <Sparkles className="h-4 w-4" />, label: 'AI-Powered' },
-            { icon: <Layers className="h-4 w-4" />, label: 'Multi-tenant' },
-            { icon: <Zap className="h-4 w-4" />, label: 'Enterprise Scale' },
+            { icon: <Sparkles className="h-4 w-4 text-white" />, label: 'AI-Powered', gradient: 'from-violet-500 to-purple-600' },
+            { icon: <Layers className="h-4 w-4 text-white" />, label: 'Multi-tenant', gradient: 'from-cyan-500 to-teal-600' },
+            { icon: <Zap className="h-4 w-4 text-white" />, label: 'Enterprise Scale', gradient: 'from-amber-500 to-orange-600' },
           ].map((feature, i) => (
             <motion.div
               key={feature.label}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 + i * 0.1 }}
-              className="flex flex-col items-center gap-1.5 text-muted-foreground"
+              className="flex flex-col items-center gap-2"
             >
-              {feature.icon}
-              <span className="text-xs">{feature.label}</span>
+              <div className={`h-9 w-9 rounded-lg bg-gradient-to-br ${feature.gradient} flex items-center justify-center shadow-sm` }>
+                {feature.icon}
+              </div>
+              <span className="text-xs text-white/60">{feature.label}</span>
             </motion.div>
           ))}
         </div>
@@ -376,10 +494,14 @@ function LoginScreen() {
 
 // Content Routers
 function DashboardContent() {
-  const { dashboardPage, selectedOrderId, selectedProductId } = useAppStore()
+  const { dashboardPage, selectedOrderId, selectedProductId, selectedCustomerId } = useAppStore()
 
   if (dashboardPage === 'orders' && selectedOrderId) {
     return <OrderDetail />
+  }
+
+  if (dashboardPage === 'customers' && selectedCustomerId) {
+    return <CustomerDetail />
   }
 
   if (dashboardPage === 'product-new' || (dashboardPage === 'products' && selectedProductId)) {
@@ -463,6 +585,8 @@ function StorefrontContent() {
         {storefrontPage === 'search' && <SearchPage />}
         {storefrontPage === 'blog' && <BlogPage />}
         {storefrontPage === 'account' && <AccountPage />}
+        {storefrontPage === 'wishlist' && <WishlistPage />}
+        {storefrontPage === 'products' && <ProductGridPage />}
       </motion.div>
     </AnimatePresence>
   )
@@ -597,6 +721,18 @@ export default function Home() {
 
   const currentNavLabel = activeNavItems.find((n) => n.page === activePage)?.label || (isAdmin ? 'Admin' : 'Dashboard')
 
+  // Group header color dots mapping
+  const groupHeaderColors: Record<string, { dot: string; icon: React.ReactNode }> = {
+    'Main': { dot: 'bg-primary', icon: <LayoutDashboard className="h-2.5 w-2.5" /> },
+    'Insights': { dot: 'bg-amber-500', icon: <BarChart3 className="h-2.5 w-2.5" /> },
+    'Customize': { dot: 'bg-violet-500', icon: <Palette className="h-2.5 w-2.5" /> },
+    'Tools': { dot: 'bg-cyan-500', icon: <Zap className="h-2.5 w-2.5" /> },
+    'Settings': { dot: 'bg-slate-400', icon: <Settings className="h-2.5 w-2.5" /> },
+    'Platform': { dot: 'bg-rose-500', icon: <Shield className="h-2.5 w-2.5" /> },
+    'Monitoring': { dot: 'bg-emerald-500', icon: <Server className="h-2.5 w-2.5" /> },
+    'Control': { dot: 'bg-orange-500', icon: <Flag className="h-2.5 w-2.5" /> },
+  }
+
   return (
     <TooltipProvider>
       <div className="flex h-screen bg-background">
@@ -607,11 +743,23 @@ export default function Home() {
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           )}
         >
-          {/* Sidebar Header */}
-          <div className="flex items-center gap-3 px-5 py-4 border-b shrink-0">
+          {/* Sidebar Header with gradient background */}
+          <div className={cn(
+            "relative flex items-center gap-3 px-5 py-4 border-b shrink-0 overflow-hidden",
+            isAdmin
+              ? 'bg-gradient-to-r from-rose-500/8 via-rose-500/4 to-transparent'
+              : 'bg-gradient-to-r from-primary/8 via-primary/4 to-transparent'
+          )}>
+            {/* Subtle glow behind logo */}
             <div className={cn(
-              "h-9 w-9 rounded-xl flex items-center justify-center shadow-sm",
-              isAdmin ? 'bg-gradient-to-br from-rose-500 to-rose-600' : 'bg-gradient-to-br from-primary to-primary/80'
+              "absolute -left-2 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full blur-xl opacity-30",
+              isAdmin ? 'bg-rose-500' : 'bg-primary'
+            )} />
+            <div className={cn(
+              "relative h-9 w-9 rounded-xl flex items-center justify-center shadow-md",
+              isAdmin
+                ? 'bg-gradient-to-br from-rose-500 to-rose-600 shadow-rose-500/20'
+                : 'bg-gradient-to-br from-primary to-primary/80 shadow-primary/20'
             )}>
               {isAdmin ? (
                 <Shield className="h-4.5 w-4.5 text-white" />
@@ -640,9 +788,25 @@ export default function Home() {
             </Button>
           </div>
 
-          {/* View Switcher */}
+          {/* View Switcher with animated sliding indicator */}
           <div className="px-4 py-3 border-b shrink-0">
-            <div className="flex gap-1 p-1 rounded-lg bg-muted/80">
+            <div className="relative flex gap-1 p-1 rounded-lg bg-muted/80">
+              {/* Animated sliding background indicator */}
+              <motion.div
+                layoutId="viewSwitcher"
+                className={cn(
+                  "absolute top-1 bottom-1 rounded-md shadow-sm",
+                  currentView === 'admin'
+                    ? 'bg-gradient-to-r from-rose-500/10 to-rose-500/5 border border-rose-200/50'
+                    : 'bg-background border border-primary/10'
+                )}
+                initial={false}
+                transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                style={{
+                  left: currentView === 'dashboard' ? '4px' : '50%',
+                  width: 'calc(50% - 4px)',
+                }}
+              />
               {[
                 { view: 'dashboard' as const, label: 'Dashboard', icon: <LayoutDashboard className="h-3.5 w-3.5" /> },
                 { view: 'admin' as const, label: 'Admin', icon: <Shield className="h-3.5 w-3.5" /> },
@@ -651,9 +815,9 @@ export default function Home() {
                   key={item.view}
                   onClick={() => setCurrentView(item.view)}
                   className={cn(
-                    'flex-1 text-xs font-medium py-1.5 px-2 rounded-md transition-all flex items-center justify-center gap-1.5',
+                    'relative z-10 flex-1 text-xs font-medium py-1.5 px-2 rounded-md transition-colors duration-200 flex items-center justify-center gap-1.5',
                     currentView === item.view
-                      ? 'bg-background shadow-sm text-foreground'
+                      ? 'text-foreground'
                       : 'text-muted-foreground hover:text-foreground'
                   )}
                 >
@@ -669,12 +833,19 @@ export default function Home() {
             <nav className="p-3 space-y-0.5">
               {groupedNav.map((entry, i) => {
                 if (entry.type === 'header') {
+                  const headerStyle = groupHeaderColors[entry.label]
                   return (
-                    <p key={`header-${i}`} className="px-3 pt-3 pb-1.5 text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-widest">
-                      {entry.label}
-                    </p>
+                    <div key={`header-${i}`} className="px-3 pt-3 pb-1.5 flex items-center gap-2">
+                      {headerStyle && (
+                        <div className={cn("h-1.5 w-1.5 rounded-full", headerStyle.dot)} />
+                      )}
+                      <p className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-widest">
+                        {entry.label}
+                      </p>
+                    </div>
                   )
                 }
+                const isActive = activePage === entry.page
                 return (
                   <Tooltip key={entry.page}>
                     <TooltipTrigger asChild>
@@ -684,21 +855,40 @@ export default function Home() {
                           if (window.innerWidth < 1024) setSidebarOpen(false)
                         }}
                         className={cn(
-                          'flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm transition-all duration-150',
-                          activePage === entry.page
-                            ? 'bg-primary/10 text-primary font-medium shadow-sm'
-                            : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground'
+                          'group relative flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm transition-all duration-200',
+                          isActive
+                            ? 'text-primary font-medium'
+                            : 'text-muted-foreground hover:text-foreground'
                         )}
                       >
+                        {/* Left border accent for active item */}
+                        {isActive && (
+                          <motion.div
+                            layoutId="activeNavBorder"
+                            className="absolute left-0 top-1 bottom-1 w-[3px] rounded-full bg-gradient-to-b from-primary to-primary/60"
+                            transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                          />
+                        )}
+                        {/* Gradient background for active item */}
+                        <div className={cn(
+                          "absolute inset-0 rounded-lg transition-all duration-200",
+                          isActive
+                            ? 'bg-gradient-to-r from-primary/10 via-primary/5 to-transparent'
+                            : 'group-hover:bg-muted/60'
+                        )} />
+                        {/* Hover left border indicator */}
+                        {!isActive && (
+                          <div className="absolute left-0 top-1/2 -translate-y-1/2 h-0 w-[3px] rounded-full bg-primary/40 transition-all duration-200 group-hover:h-4 group-hover:bg-primary/60" />
+                        )}
                         <span className={cn(
-                          'transition-colors',
-                          activePage === entry.page ? 'text-primary' : ''
+                          'relative transition-all duration-200',
+                          isActive ? 'text-primary' : 'group-hover:scale-110'
                         )}>
                           {entry.icon}
                         </span>
-                        {entry.label}
+                        <span className="relative">{entry.label}</span>
                         {entry.page === 'ai-assistant' && (
-                          <Badge className="ml-auto bg-gradient-to-r from-violet-500 to-purple-500 text-white text-[9px] px-1.5 py-0 h-4 border-0">
+                          <Badge className="relative ml-auto bg-gradient-to-r from-violet-500 to-purple-500 text-white text-[9px] px-1.5 py-0 h-4 border-0">
                             AI
                           </Badge>
                         )}
@@ -713,33 +903,48 @@ export default function Home() {
 
               <Separator className="my-3" />
 
-              {/* View Storefront */}
-              <button
+              {/* View Storefront - prominent emerald gradient */}
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
                 onClick={() => {
                   setCurrentView('storefront')
                   setStorefrontPage('home')
                 }}
-                className="flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm transition-all text-emerald-600 hover:bg-emerald-50 font-medium"
+                className="group relative flex items-center gap-3 w-full rounded-lg px-3 py-2.5 text-sm transition-all duration-300 font-medium overflow-hidden"
               >
-                <ExternalLink className="h-4 w-4" />
-                View Storefront
-              </button>
+                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent group-hover:from-emerald-500/15 group-hover:via-emerald-500/8 transition-all duration-300" />
+                {/* Left accent bar */}
+                <div className="absolute left-0 top-1 bottom-1 w-[3px] rounded-full bg-gradient-to-b from-emerald-500 to-emerald-400 opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
+                <span className="relative text-emerald-600 group-hover:scale-110 transition-transform duration-200">
+                  <ExternalLink className="h-4 w-4" />
+                </span>
+                <span className="relative text-emerald-600">View Storefront</span>
+                <ArrowRight className="relative ml-auto h-3.5 w-3.5 text-emerald-500 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
+              </motion.button>
             </nav>
           </ScrollArea>
 
-          {/* Sidebar Footer */}
-          <div className="border-t p-3 shrink-0">
-            <div className="flex items-center gap-2 px-2 py-1.5">
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
-                <User className="h-4 w-4 text-primary" />
+          {/* Sidebar Footer with gradient separator and gradient ring avatar */}
+          <div className="shrink-0">
+            {/* Gradient separator line */}
+            <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+            <div className="p-3">
+              <div className="flex items-center gap-2 px-2 py-1.5">
+                {/* Avatar with gradient ring */}
+                <div className="relative h-8 w-8 rounded-full p-[2px] bg-gradient-to-br from-primary via-primary/60 to-emerald-500">
+                  <div className="h-full w-full rounded-full bg-card flex items-center justify-center">
+                    <User className="h-4 w-4 text-primary" />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{currentUser?.name || 'User'}</p>
+                  <p className="text-[11px] text-muted-foreground truncate">{currentUser?.email || ''}</p>
+                </div>
+                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 hover:text-destructive transition-colors" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4" />
+                </Button>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{currentUser?.name || 'User'}</p>
-                <p className="text-[11px] text-muted-foreground truncate">{currentUser?.email || ''}</p>
-              </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={handleLogout}>
-                <LogOut className="h-4 w-4" />
-              </Button>
             </div>
           </div>
         </aside>
