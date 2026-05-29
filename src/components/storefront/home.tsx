@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight, Truck, Headphones, RotateCcw, Shield, ChevronRight, Star, Quote, X, ShoppingCart, Eye } from 'lucide-react'
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
+import { ArrowRight, Truck, Headphones, RotateCcw, Shield, ChevronRight, Star, Quote, X, ShoppingCart, Eye, Clock, Flame, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -101,22 +101,6 @@ const testimonials = [
     avatar: 'ER',
     gradient: 'from-emerald-500 to-teal-400',
   },
-  {
-    name: 'David Park',
-    role: 'Repeat Customer',
-    quote: 'Great value for money! The return process was hassle-free when I needed a different size. Highly recommend this store to everyone.',
-    rating: 5,
-    avatar: 'DP',
-    gradient: 'from-amber-500 to-orange-400',
-  },
-  {
-    name: 'Lisa Thompson',
-    role: 'Premium Member',
-    quote: 'The quality is consistently outstanding. I appreciate the attention to detail in every product. This is my go-to online store now.',
-    rating: 5,
-    avatar: 'LT',
-    gradient: 'from-sky-500 to-cyan-400',
-  },
 ]
 
 // Reusable section header component
@@ -150,6 +134,48 @@ function SectionHeader({
   )
 }
 
+// Countdown Timer Hook
+function useCountdown(hours: number) {
+  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 })
+
+  useEffect(() => {
+    const endTime = new Date()
+    endTime.setHours(endTime.getHours() + hours)
+
+    const timer = setInterval(() => {
+      const now = new Date()
+      const diff = endTime.getTime() - now.getTime()
+      if (diff <= 0) {
+        clearInterval(timer)
+        setTimeLeft({ hours: 0, minutes: 0, seconds: 0 })
+        return
+      }
+      setTimeLeft({
+        hours: Math.floor(diff / (1000 * 60 * 60)),
+        minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((diff % (1000 * 60)) / 1000),
+      })
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [hours])
+
+  return timeLeft
+}
+
+// Flash Sale Countdown Display
+function CountdownDigit({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="flex flex-col items-center">
+      <div className="bg-white/20 backdrop-blur-sm rounded-lg w-14 h-14 flex items-center justify-center border border-white/20 shadow-lg">
+        <span className="text-2xl font-bold text-white tabular-nums">
+          {String(value).padStart(2, '0')}
+        </span>
+      </div>
+      <span className="text-[10px] uppercase tracking-wider text-white/70 mt-1.5 font-medium">{label}</span>
+    </div>
+  )
+}
+
 export function StorefrontHome() {
   const { setStorefrontPage, selectedStoreId, setSelectedProductId } = useAppStore()
   const [products, setProducts] = useState<Product[]>([])
@@ -158,8 +184,16 @@ export function StorefrontHome() {
   const [loading, setLoading] = useState(true)
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null)
   const [quickViewOpen, setQuickViewOpen] = useState(false)
-  const [testimonialIndex, setTestimonialIndex] = useState(0)
-  const testimonialRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const [productTab, setProductTab] = useState<'new' | 'best'>('new')
+
+  // Parallax scroll for hero
+  const heroRef = useRef<HTMLElement>(null)
+  const { scrollY } = useScroll()
+  const heroY = useTransform(scrollY, [0, 500], [0, 150])
+  const heroOpacity = useTransform(scrollY, [0, 400], [1, 0.3])
+
+  // Flash sale countdown
+  const countdown = useCountdown(24)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -191,16 +225,6 @@ export function StorefrontHome() {
     }
   }, [])
 
-  // Auto-rotate testimonials
-  useEffect(() => {
-    testimonialRef.current = setInterval(() => {
-      setTestimonialIndex((prev) => (prev + 1) % testimonials.length)
-    }, 5000)
-    return () => {
-      if (testimonialRef.current) clearInterval(testimonialRef.current)
-    }
-  }, [])
-
   const newArrivals = [...products]
     .sort((a, b) => new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime())
     .slice(0, 8)
@@ -208,6 +232,10 @@ export function StorefrontHome() {
   const bestSellers = [...products]
     .sort((a, b) => (b.orderItems?.length || 0) - (a.orderItems?.length || 0))
     .slice(0, 8)
+
+  const trendingProducts = [...products]
+    .sort((a, b) => (b.orderItems?.length || 0) - (a.orderItems?.length || 0))
+    .slice(0, 4)
 
   const handleQuickView = (product: Product) => {
     setQuickViewProduct(product)
@@ -246,9 +274,12 @@ export function StorefrontHome() {
 
   return (
     <div>
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900">
-        <div className="absolute inset-0 opacity-30">
+      {/* Hero Section with Parallax */}
+      <section ref={heroRef} className="relative overflow-hidden bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900">
+        <motion.div
+          className="absolute inset-0 opacity-30"
+          style={{ y: heroY }}
+        >
           <motion.div
             className="absolute top-20 left-10 w-72 h-72 bg-rose-500/20 rounded-full blur-3xl"
             animate={{ y: [0, -20, 0] }}
@@ -264,8 +295,11 @@ export function StorefrontHome() {
             animate={{ y: [0, -12, 0], x: [0, 10, 0] }}
             transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
           />
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24 lg:py-32">
+        </motion.div>
+        <motion.div
+          style={{ opacity: heroOpacity }}
+          className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24 lg:py-32"
+        >
           <div className="max-w-2xl">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -323,7 +357,7 @@ export function StorefrontHome() {
               </Button>
             </motion.div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* Trust Badges Bar */}
@@ -347,6 +381,154 @@ export function StorefrontHome() {
                 </div>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Trending Now - Horizontal Snap Scroll */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+        <SectionHeader
+          title="Trending Now"
+          subtitle="What everyone's talking about"
+          onViewAll={() => setStorefrontPage('category')}
+        />
+        <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent pb-4 -mx-4 px-4">
+          {trendingProducts.length > 0 ? trendingProducts.map((product, i) => (
+            <motion.div
+              key={product.id}
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4, delay: i * 0.1 }}
+              className="snap-center shrink-0 w-72 sm:w-80"
+            >
+              <Card
+                className="overflow-hidden cursor-pointer group border-0 shadow-sm hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+                onClick={() => {
+                  setSelectedProductId(product.id)
+                  setStorefrontPage('product')
+                }}
+              >
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <div className={`absolute inset-0 bg-gradient-to-br ${collectionGradients[i % collectionGradients.length]} transition-transform duration-500 group-hover:scale-110`} />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-white/30 text-4xl font-bold">{product.name.substring(0, 2).toUpperCase()}</span>
+                  </div>
+                  {/* Trending badge */}
+                  <div className="absolute top-3 left-3">
+                    <Badge className="bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 shadow-md">
+                      <Flame className="h-3 w-3 mr-1" />
+                      Trending
+                    </Badge>
+                  </div>
+                  {/* Price overlay */}
+                  <div className="absolute bottom-3 right-3">
+                    <div className="bg-black/60 backdrop-blur-sm rounded-lg px-3 py-1.5 border border-white/10">
+                      <span className="text-white font-bold text-lg">${product.price.toFixed(2)}</span>
+                      {product.comparePrice && product.comparePrice > product.price && (
+                        <span className="text-white/60 text-sm line-through ml-2">${product.comparePrice.toFixed(2)}</span>
+                      )}
+                    </div>
+                  </div>
+                  {/* Quick add overlay */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <Button
+                      size="sm"
+                      className="bg-white text-neutral-900 hover:bg-white/90 shadow-lg"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleAddToCart(product)
+                      }}
+                    >
+                      <ShoppingCart className="h-4 w-4 mr-1.5" />
+                      Quick Add
+                    </Button>
+                  </div>
+                </div>
+                <div className="p-4">
+                  {product.category && (
+                    <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-1">{product.category.name}</p>
+                  )}
+                  <h3 className="font-semibold text-sm line-clamp-1 group-hover:text-rose-500 transition-colors">{product.name}</h3>
+                  <div className="flex items-center gap-1 mt-2">
+                    {Array.from({ length: 5 }).map((_, j) => (
+                      <Star key={j} className={`h-3 w-3 ${j < 4 ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}`} />
+                    ))}
+                    <span className="text-xs text-muted-foreground ml-1">({product.reviews?.length || Math.floor(Math.abs(Math.sin(i * 2.7)) * 50 + 10)})</span>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+          )) : (
+            // Fallback when no products loaded yet
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="snap-center shrink-0 w-72 sm:w-80">
+                <Card className="overflow-hidden border-0 shadow-sm">
+                  <Skeleton className="aspect-[4/3]" />
+                  <div className="p-4 space-y-2">
+                    <Skeleton className="h-3 w-16" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                </Card>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
+
+      {/* Flash Sale Countdown */}
+      <section className="relative bg-gradient-to-r from-rose-600 via-rose-500 to-orange-500 overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage: `repeating-linear-gradient(
+              45deg,
+              transparent,
+              transparent 20px,
+              rgba(255,255,255,0.1) 20px,
+              rgba(255,255,255,0.1) 40px
+            )`,
+          }}
+        />
+        <motion.div
+          className="absolute -top-16 -right-16 w-48 h-48 bg-white/10 rounded-full blur-2xl"
+          animate={{ scale: [1, 1.2, 1] }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="absolute -bottom-16 -left-16 w-36 h-36 bg-white/10 rounded-full blur-2xl"
+          animate={{ scale: [1, 1.15, 1] }}
+          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="text-center md:text-left">
+              <div className="flex items-center gap-2 justify-center md:justify-start mb-2">
+                <Flame className="h-6 w-6 text-white" />
+                <span className="text-white/80 text-sm font-semibold uppercase tracking-wider">Limited Time</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-2">
+                Flash Sale
+              </h2>
+              <p className="text-white/80 text-lg max-w-md">
+                Up to 60% off on selected items. Don&apos;t miss out on these incredible deals!
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <CountdownDigit value={countdown.hours} label="Hours" />
+              <span className="text-white text-2xl font-bold mt-[-16px]">:</span>
+              <CountdownDigit value={countdown.minutes} label="Min" />
+              <span className="text-white text-2xl font-bold mt-[-16px]">:</span>
+              <CountdownDigit value={countdown.seconds} label="Sec" />
+            </div>
+            <Button
+              size="lg"
+              onClick={() => setStorefrontPage('category')}
+              className="bg-white text-rose-600 hover:bg-white/90 shrink-0 shadow-lg hover:shadow-xl transition-all font-bold"
+            >
+              Shop Flash Sale
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
           </div>
         </div>
       </section>
@@ -453,14 +635,64 @@ export function StorefrontHome() {
         </section>
       )}
 
-      {/* New Arrivals with Quick View */}
+      {/* Product Grid with Tab Filters */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
-        <SectionHeader
-          title="New Arrivals"
-          subtitle="Fresh picks just for you"
-          onViewAll={() => setStorefrontPage('category')}
-        />
-        <ProductGridWithQuickView products={newArrivals} loading={loading} onQuickView={handleQuickView} />
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Our Products</h2>
+            <div className="h-1 w-16 rounded-full bg-gradient-to-r from-rose-500 to-orange-400 mt-2" />
+          </div>
+          {/* Tab Filters */}
+          <div className="flex items-center gap-1 bg-neutral-100 rounded-xl p-1">
+            <button
+              onClick={() => setProductTab('new')}
+              className={`px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                productTab === 'new'
+                  ? 'bg-white text-rose-600 shadow-sm'
+                  : 'text-neutral-500 hover:text-neutral-700'
+              }`}
+            >
+              <Sparkles className="h-3.5 w-3.5 inline mr-1.5" />
+              New Arrivals
+            </button>
+            <button
+              onClick={() => setProductTab('best')}
+              className={`px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                productTab === 'best'
+                  ? 'bg-white text-rose-600 shadow-sm'
+                  : 'text-neutral-500 hover:text-neutral-700'
+              }`}
+            >
+              <Flame className="h-3.5 w-3.5 inline mr-1.5" />
+              Best Sellers
+            </button>
+          </div>
+        </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={productTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25 }}
+          >
+            <ProductGridWithQuickView
+              products={productTab === 'new' ? newArrivals : bestSellers}
+              loading={loading}
+              onQuickView={handleQuickView}
+            />
+          </motion.div>
+        </AnimatePresence>
+        <div className="flex justify-center mt-8">
+          <Button
+            variant="outline"
+            onClick={() => setStorefrontPage('category')}
+            className="group"
+          >
+            View All Products
+            <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-1" />
+          </Button>
+        </div>
       </section>
 
       {/* Promotional Banner */}
@@ -509,16 +741,6 @@ export function StorefrontHome() {
         </div>
       </section>
 
-      {/* Best Sellers with Quick View */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
-        <SectionHeader
-          title="Best Sellers"
-          subtitle="Our most popular products"
-          onViewAll={() => setStorefrontPage('category')}
-        />
-        <ProductGridWithQuickView products={bestSellers} loading={loading} onQuickView={handleQuickView} />
-      </section>
-
       {/* Testimonials Section */}
       <section className="relative bg-gradient-to-br from-violet-50 via-rose-50/30 to-amber-50/30 overflow-hidden">
         <motion.div
@@ -544,59 +766,36 @@ export function StorefrontHome() {
               <p className="text-muted-foreground mt-3 max-w-md mx-auto">Real reviews from real customers who love our products</p>
             </div>
 
-            {/* Testimonials Carousel */}
-            <div className="relative">
-              <div className="overflow-hidden">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={testimonialIndex}
-                    initial={{ opacity: 0, x: 50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -50 }}
-                    transition={{ duration: 0.4 }}
-                    className="grid grid-cols-1 md:grid-cols-3 gap-4"
-                  >
-                    {/* Show 3 at a time on desktop, 1 on mobile */}
-                    {[0, 1, 2].map((offset) => {
-                      const idx = (testimonialIndex + offset) % testimonials.length
-                      const t = testimonials[idx]
-                      return (
-                        <Card key={`${idx}-${offset}`} className="p-6 border-0 shadow-sm hover:shadow-md transition-all duration-300 bg-white/80 backdrop-blur-sm">
-                          <div className="flex items-center gap-1 mb-3">
-                            {Array.from({ length: 5 }).map((_, i) => (
-                              <Star key={i} className={`h-4 w-4 ${i < t.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}`} />
-                            ))}
-                          </div>
-                          <Quote className="h-6 w-6 text-rose-300 mb-2" />
-                          <p className="text-sm text-muted-foreground leading-relaxed mb-4">{t.quote}</p>
-                          <div className="flex items-center gap-3 mt-auto pt-3 border-t">
-                            <div className={`h-10 w-10 rounded-full bg-gradient-to-br ${t.gradient} flex items-center justify-center text-white text-sm font-bold`}>
-                              {t.avatar}
-                            </div>
-                            <div>
-                              <p className="text-sm font-semibold">{t.name}</p>
-                              <p className="text-xs text-muted-foreground">{t.role}</p>
-                            </div>
-                          </div>
-                        </Card>
-                      )
-                    })}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-
-              {/* Dots navigation */}
-              <div className="flex items-center justify-center gap-2 mt-6">
-                {testimonials.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setTestimonialIndex(i)}
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      i === testimonialIndex ? 'w-6 bg-rose-500' : 'w-2 bg-gray-300 hover:bg-gray-400'
-                    }`}
-                  />
-                ))}
-              </div>
+            {/* Static 3 Testimonial Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {testimonials.map((t, i) => (
+                <motion.div
+                  key={t.name}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: i * 0.1 }}
+                >
+                  <Card className="p-6 border-0 shadow-sm hover:shadow-md transition-all duration-300 bg-white/80 backdrop-blur-sm h-full flex flex-col">
+                    <div className="flex items-center gap-1 mb-3">
+                      {Array.from({ length: 5 }).map((_, si) => (
+                        <Star key={si} className={`h-4 w-4 ${si < t.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}`} />
+                      ))}
+                    </div>
+                    <Quote className="h-6 w-6 text-rose-300 mb-2" />
+                    <p className="text-sm text-muted-foreground leading-relaxed mb-4 flex-1">{t.quote}</p>
+                    <div className="flex items-center gap-3 pt-3 border-t">
+                      <div className={`h-10 w-10 rounded-full bg-gradient-to-br ${t.gradient} flex items-center justify-center text-white text-sm font-bold`}>
+                        {t.avatar}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold">{t.name}</p>
+                        <p className="text-xs text-muted-foreground">{t.role}</p>
+                      </div>
+                    </div>
+                  </Card>
+                </motion.div>
+              ))}
             </div>
           </motion.div>
         </div>

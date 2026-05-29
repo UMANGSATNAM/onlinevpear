@@ -30,7 +30,11 @@ export type DashboardPage =
   | "gift-cards"
   | "loyalty"
   | "abandoned-carts"
+  | "seo-dashboard"
+  | "social-media"
   | "shipping-settings"
+  | "currency-settings"
+  | "coupon-builder"
 
 export type AdminPage =
   | "overview"
@@ -58,6 +62,7 @@ export type StorefrontPage =
   | "blog"
   | "wishlist"
   | "products"
+  | "compare"
 
 interface AppState {
   // View system

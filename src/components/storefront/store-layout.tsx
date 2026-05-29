@@ -13,6 +13,8 @@ import {
   Truck,
   ArrowLeft,
   LayoutDashboard,
+  ArrowUp,
+  Zap,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -53,10 +55,13 @@ export function StoreLayout({ store, cartItemCount, children }: StoreLayoutProps
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchInput, setSearchInput] = useState('')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [showBackToTop, setShowBackToTop] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10)
+      const scrollY = window.scrollY
+      setIsScrolled(scrollY > 10)
+      setShowBackToTop(scrollY > 400)
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
@@ -79,22 +84,40 @@ export function StoreLayout({ store, cartItemCount, children }: StoreLayoutProps
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      {/* Announcement Bar */}
-      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-center py-2 px-4">
-        <div className="flex items-center justify-center gap-2 text-sm font-medium">
-          <Truck className="h-4 w-4" />
-          <span>Free shipping on orders over $100</span>
-          <span className="hidden sm:inline">|</span>
-          <span className="hidden sm:inline">Limited time offer - Shop now!</span>
+      {/* Announcement Bar - Scrolling Marquee */}
+      <div className="relative bg-gradient-to-r from-rose-600 via-orange-500 to-amber-500 text-white overflow-hidden">
+        <div className="flex items-center h-9">
+          <div className="animate-marquee flex items-center gap-8 whitespace-nowrap text-sm font-medium">
+            <span className="flex items-center gap-1.5"><Truck className="h-3.5 w-3.5 shrink-0" /> Free Shipping on Orders Over $100</span>
+            <span className="text-white/40">|</span>
+            <span className="flex items-center gap-1.5"><Zap className="h-3.5 w-3.5 shrink-0" /> New Arrivals This Week</span>
+            <span className="text-white/40">|</span>
+            <span className="flex items-center gap-1.5"><ArrowLeft className="h-3.5 w-3.5 shrink-0 rotate-180" /> 30-Day Easy Returns</span>
+            <span className="text-white/40">|</span>
+            <span className="flex items-center gap-1.5"><Truck className="h-3.5 w-3.5 shrink-0" /> Free Shipping on Orders Over $100</span>
+            <span className="text-white/40">|</span>
+            <span className="flex items-center gap-1.5"><Zap className="h-3.5 w-3.5 shrink-0" /> New Arrivals This Week</span>
+            <span className="text-white/40">|</span>
+            <span className="flex items-center gap-1.5"><ArrowLeft className="h-3.5 w-3.5 shrink-0 rotate-180" /> 30-Day Easy Returns</span>
+            <span className="text-white/40">|</span>
+            <span className="flex items-center gap-1.5"><Truck className="h-3.5 w-3.5 shrink-0" /> Free Shipping on Orders Over $100</span>
+            <span className="text-white/40">|</span>
+            <span className="flex items-center gap-1.5"><Zap className="h-3.5 w-3.5 shrink-0" /> New Arrivals This Week</span>
+            <span className="text-white/40">|</span>
+            <span className="flex items-center gap-1.5"><ArrowLeft className="h-3.5 w-3.5 shrink-0 rotate-180" /> 30-Day Easy Returns</span>
+          </div>
         </div>
+        {/* Gradient fade edges */}
+        <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-rose-600 to-transparent pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-amber-500 to-transparent pointer-events-none" />
       </div>
 
-      {/* Header */}
+      {/* Header - Frosted Glass on Scroll */}
       <header
-        className={`sticky top-0 z-50 transition-all duration-300 ${
+        className={`sticky top-0 z-50 transition-all duration-300 border-b ${
           isScrolled
-            ? 'bg-white/95 backdrop-blur-md shadow-sm'
-            : 'bg-white'
+            ? 'bg-white/80 backdrop-blur-lg shadow-lg shadow-black/[0.04] border-transparent'
+            : 'bg-white border-neutral-100'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -108,77 +131,114 @@ export function StoreLayout({ store, cartItemCount, children }: StoreLayoutProps
               </SheetTrigger>
               <SheetContent side="left" className="w-80 p-0">
                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-                <div className="flex flex-col h-full">
+                <motion.div
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                  className="flex flex-col h-full relative"
+                >
+                  {/* Gradient Overlay at top */}
+                  <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-rose-50/80 to-transparent pointer-events-none z-0" />
+
                   {/* Mobile Header */}
-                  <div className="flex items-center justify-between p-4 border-b">
-                    <span className="font-bold text-lg">{store?.name || 'ShopForge'}</span>
-                    <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>
+                  <div className="relative z-10 flex items-center justify-between p-4 border-b bg-white/60 backdrop-blur-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-rose-500 to-orange-400 flex items-center justify-center">
+                        <span className="text-white font-bold text-sm">{store?.name?.substring(0, 1) || 'S'}</span>
+                      </div>
+                      <span className="font-bold text-lg">{store?.name || 'ShopForge'}</span>
+                    </div>
+                    <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)} className="rounded-full hover:bg-neutral-100">
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
 
                   {/* Mobile Nav Links */}
-                  <nav className="flex-1 p-4">
+                  <nav className="relative z-10 flex-1 p-4 overflow-y-auto">
                     <ul className="space-y-1">
-                      {navLinks.map((link) => (
-                        <li key={link.page}>
+                      {navLinks.map((link, i) => (
+                        <motion.li
+                          key={link.page}
+                          initial={{ x: -20, opacity: 0 }}
+                          animate={{ x: 0, opacity: 1 }}
+                          transition={{ duration: 0.2, delay: i * 0.05 }}
+                        >
                           <button
                             onClick={() => handleNavClick(link.page)}
-                            className={`flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                            className={`flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
                               storefrontPage === link.page
-                                ? 'bg-primary/10 text-primary'
-                                : 'text-foreground hover:bg-muted'
+                                ? 'bg-rose-50 text-rose-600 shadow-sm'
+                                : 'text-foreground hover:bg-neutral-50 hover:translate-x-1'
                             }`}
                           >
-                            {link.label}
+                            <span className="flex items-center gap-3">
+                              {link.icon}
+                              {link.label}
+                            </span>
                             <ChevronRight className="h-4 w-4 text-muted-foreground" />
                           </button>
-                        </li>
+                        </motion.li>
                       ))}
                     </ul>
 
                     <Separator className="my-4" />
 
                     <ul className="space-y-1">
-                      <li>
+                      <motion.li
+                        initial={{ x: -20, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ duration: 0.2, delay: navLinks.length * 0.05 }}
+                      >
                         <button
                           onClick={() => setCurrentView('dashboard')}
-                          className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors"
+                          className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium text-rose-600 bg-rose-50 hover:bg-rose-100 transition-all duration-200"
                         >
                           <LayoutDashboard className="h-4 w-4" />
                           Back to Dashboard
                         </button>
-                      </li>
-                      <li>
+                      </motion.li>
+                      <motion.li
+                        initial={{ x: -20, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ duration: 0.2, delay: (navLinks.length + 1) * 0.05 }}
+                      >
                         <button
                           onClick={() => handleNavClick('wishlist')}
-                          className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm font-medium text-rose-500 hover:bg-rose-50 transition-colors"
+                          className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium text-rose-500 hover:bg-rose-50 transition-all duration-200"
                         >
                           <Heart className="h-4 w-4" />
                           Wishlist
                         </button>
-                      </li>
-                      <li>
+                      </motion.li>
+                      <motion.li
+                        initial={{ x: -20, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ duration: 0.2, delay: (navLinks.length + 2) * 0.05 }}
+                      >
                         <button
                           onClick={() => handleNavClick('account')}
-                          className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                          className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-neutral-50 transition-all duration-200"
                         >
                           <User className="h-4 w-4" />
                           My Account
                         </button>
-                      </li>
-                      <li>
+                      </motion.li>
+                      <motion.li
+                        initial={{ x: -20, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ duration: 0.2, delay: (navLinks.length + 3) * 0.05 }}
+                      >
                         <button
                           onClick={() => handleNavClick('cart')}
-                          className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                          className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-neutral-50 transition-all duration-200"
                         >
                           <ShoppingCart className="h-4 w-4" />
                           Cart ({cartItemCount})
                         </button>
-                      </li>
+                      </motion.li>
                     </ul>
                   </nav>
-                </div>
+                </motion.div>
               </SheetContent>
             </Sheet>
 
@@ -328,9 +388,25 @@ export function StoreLayout({ store, cartItemCount, children }: StoreLayoutProps
         </AnimatePresence>
       </main>
 
+      {/* Back to Top Button */}
+      <AnimatePresence>
+        {showBackToTop && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.5, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.5, y: 20 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="fixed bottom-6 right-6 z-50 h-11 w-11 rounded-full bg-gradient-to-br from-rose-500 to-orange-400 text-white shadow-lg shadow-rose-500/25 hover:shadow-xl hover:shadow-rose-500/30 hover:scale-110 transition-all duration-200 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-rose-500/30"
+            aria-label="Back to top"
+          >
+            <ArrowUp className="h-5 w-5" />
+          </motion.button>
+        )}
+      </AnimatePresence>
+
       {/* Footer */}
       <StoreFooter />
     </div>
   )
 }
-

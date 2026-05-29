@@ -28,6 +28,10 @@ import { LoyaltyProgram } from '@/components/dashboard/loyalty'
 import { EmailTemplates } from '@/components/dashboard/email-templates'
 import { AbandonedCartRecovery } from '@/components/dashboard/abandoned-carts'
 import { ShippingSettings } from '@/components/dashboard/shipping-settings'
+import { CurrencySettings } from '@/components/dashboard/currency-settings'
+import { CouponBuilder } from '@/components/dashboard/coupon-builder'
+import { SeoDashboard } from '@/components/dashboard/seo-dashboard'
+import { SocialMedia } from '@/components/dashboard/social-media'
 import { CustomerDetail } from '@/components/dashboard/customer-detail'
 import { NotificationsPanel } from '@/components/dashboard/notifications-panel'
 import { OnboardingWizard } from '@/components/dashboard/onboarding-wizard'
@@ -52,6 +56,7 @@ import { BlogPage } from '@/components/storefront/blog'
 import { AccountPage } from '@/components/storefront/account'
 import { WishlistPage } from '@/components/storefront/wishlist'
 import { ProductGridPage } from '@/components/storefront/product-grid-page'
+import { ProductComparison } from '@/components/storefront/product-comparison'
 import {
   LayoutDashboard,
   Package,
@@ -98,6 +103,8 @@ import {
   Mail,
   Truck,
   Trophy,
+  Share2,
+  Command,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -119,19 +126,24 @@ const dashboardNavItems: Array<{ page: DashboardPage; label: string; icon: React
   { page: 'categories', label: 'Categories', icon: <FolderTree className="h-4 w-4" />, group: 'Main' },
   { page: 'analytics', label: 'Analytics', icon: <BarChart3 className="h-4 w-4" />, group: 'Insights' },
   { page: 'discounts', label: 'Discounts', icon: <Tags className="h-4 w-4" />, group: 'Insights' },
+  { page: 'coupon-builder', label: 'Coupon Builder', icon: <Tags className="h-4 w-4" />, group: 'Insights' },
   { page: 'inventory', label: 'Inventory', icon: <Warehouse className="h-4 w-4" />, group: 'Insights' },
   { page: 'marketing', label: 'Marketing', icon: <Megaphone className="h-4 w-4" />, group: 'Insights' },
   { page: 'reviews', label: 'Reviews', icon: <Star className="h-4 w-4" />, group: 'Insights' },
   { page: 'loyalty', label: 'Loyalty', icon: <Trophy className="h-4 w-4" />, group: 'Insights' },
   { page: 'abandoned-carts', label: 'Abandoned Carts', icon: <ShoppingCart className="h-4 w-4" />, group: 'Insights' },
+  { page: 'seo-dashboard', label: 'SEO', icon: <Search className="h-4 w-4" />, group: 'Insights' },
+  { page: 'social-media', label: 'Social Media', icon: <Share2 className="h-4 w-4" />, group: 'Insights' },
   { page: 'themes', label: 'Themes', icon: <Palette className="h-4 w-4" />, group: 'Customize' },
   { page: 'ai-assistant', label: 'AI Assistant', icon: <Bot className="h-4 w-4" />, group: 'Tools' },
   { page: 'workflows', label: 'Workflows', icon: <GitBranch className="h-4 w-4" />, group: 'Tools' },
   { page: 'apps', label: 'Apps', icon: <Grid3X3 className="h-4 w-4" />, group: 'Tools' },
   { page: 'gift-cards', label: 'Gift Cards', icon: <Gift className="h-4 w-4" />, group: 'Tools' },
   { page: 'email-templates', label: 'Email Templates', icon: <Mail className="h-4 w-4" />, group: 'Tools' },
+  { page: 'social-media', label: 'Social Media', icon: <Share2 className="h-4 w-4" />, group: 'Tools' },
   { page: 'data-import', label: 'Data Import', icon: <Import className="h-4 w-4" />, group: 'Settings' },
   { page: 'shipping-settings', label: 'Shipping', icon: <Truck className="h-4 w-4" />, group: 'Settings' },
+  { page: 'currency-settings', label: 'Currency', icon: <DollarSign className="h-4 w-4" />, group: 'Settings' },
   { page: 'staff', label: 'Staff', icon: <UsersRound className="h-4 w-4" />, group: 'Settings' },
   { page: 'billing', label: 'Billing', icon: <CreditCard className="h-4 w-4" />, group: 'Settings' },
   { page: 'store-settings', label: 'Store Settings', icon: <Settings className="h-4 w-4" />, group: 'Settings' },
@@ -540,10 +552,10 @@ function DashboardContent() {
     <AnimatePresence mode="wait">
       <motion.div
         key={dashboardPage}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -8 }}
-        transition={{ duration: 0.2 }}
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.99 }}
+        transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
       >
         {dashboardPage === 'overview' && <OverviewDashboard />}
         {dashboardPage === 'products' && <ProductsManagement />}
@@ -567,7 +579,11 @@ function DashboardContent() {
         {dashboardPage === 'gift-cards' && <GiftCardsManagement />}
         {dashboardPage === 'email-templates' && <EmailTemplates />}
         {dashboardPage === 'abandoned-carts' && <AbandonedCartRecovery />}
+        {dashboardPage === 'seo-dashboard' && <SeoDashboard />}
+        {dashboardPage === 'social-media' && <SocialMedia />}
         {dashboardPage === 'shipping-settings' && <ShippingSettings />}
+        {dashboardPage === 'currency-settings' && <CurrencySettings />}
+        {dashboardPage === 'coupon-builder' && <CouponBuilder />}
       </motion.div>
     </AnimatePresence>
   )
@@ -580,10 +596,10 @@ function AdminContent() {
     <AnimatePresence mode="wait">
       <motion.div
         key={adminPage}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -8 }}
-        transition={{ duration: 0.2 }}
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.99 }}
+        transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
       >
         {adminPage === 'overview' && <AdminOverview />}
         {adminPage === 'merchants' && <MerchantManagement />}
@@ -621,6 +637,7 @@ function StorefrontContent() {
         {storefrontPage === 'account' && <AccountPage />}
         {storefrontPage === 'wishlist' && <WishlistPage />}
         {storefrontPage === 'products' && <ProductGridPage />}
+        {storefrontPage === 'compare' && <ProductComparison />}
       </motion.div>
     </AnimatePresence>
   )
@@ -655,6 +672,7 @@ export default function Home() {
   const [cartItemCount, setCartItemCount] = useState(0)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [onboardingOpen, setOnboardingOpen] = useState(false)
+  const [searchFocused, setSearchFocused] = useState(false)
 
   // Show onboarding wizard for new merchants on first login
   // Only show if merchant hasn't been onboarded yet (check both sessionStorage and localStorage)
@@ -779,10 +797,23 @@ export default function Home() {
         {/* Sidebar */}
         <aside
           className={cn(
-            'fixed inset-y-0 left-0 z-40 w-64 bg-card border-r transform transition-transform duration-200 ease-in-out lg:relative lg:translate-x-0 flex flex-col',
+            'fixed inset-y-0 left-0 z-40 w-64 border-r transform transition-transform duration-200 ease-in-out lg:relative lg:translate-x-0 flex flex-col',
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           )}
+          style={{
+            background: 'linear-gradient(180deg, hsl(var(--muted)/0.3) 0%, hsl(var(--card)) 30%, hsl(var(--card)) 100%)',
+          }}
         >
+          {/* Noise texture overlay */}
+          <div
+            className="absolute inset-0 pointer-events-none opacity-[0.015]"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+              backgroundRepeat: 'repeat',
+              backgroundSize: '128px 128px',
+            }}
+          />
+
           {/* Sidebar Header with gradient background */}
           <div className={cn(
             "relative flex items-center gap-3 px-5 py-4 border-b shrink-0 overflow-hidden",
@@ -828,41 +859,47 @@ export default function Home() {
             </Button>
           </div>
 
-          {/* View Switcher with animated sliding indicator */}
+          {/* View Switcher - 3-way with glass-morphism indicator */}
           <div className="px-4 py-3 border-b shrink-0">
-            <div className="relative flex gap-1 p-1 rounded-lg bg-muted/80">
-              {/* Animated sliding background indicator */}
+            <div className="relative flex gap-1 p-1 rounded-lg bg-muted/60">
+              {/* Glass-morphism sliding indicator */}
               <motion.div
                 layoutId="viewSwitcher"
                 className={cn(
-                  "absolute top-1 bottom-1 rounded-md shadow-sm",
-                  currentView === 'admin'
-                    ? 'bg-gradient-to-r from-rose-500/10 to-rose-500/5 border border-rose-200/50'
-                    : 'bg-background border border-primary/10'
+                  "absolute top-1 bottom-1 rounded-md",
+                  currentView === 'storefront'
+                    ? 'bg-gradient-to-r from-emerald-500/15 to-emerald-500/5 border border-emerald-200/40 shadow-sm shadow-emerald-500/10'
+                    : currentView === 'admin'
+                      ? 'bg-gradient-to-r from-rose-500/15 to-rose-500/5 border border-rose-200/40 shadow-sm shadow-rose-500/10'
+                      : 'bg-background/70 border border-primary/10 shadow-sm backdrop-blur-md'
                 )}
                 initial={false}
-                transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                 style={{
-                  left: currentView === 'dashboard' ? '4px' : '50%',
-                  width: 'calc(50% - 4px)',
+                  left: currentView === 'dashboard' ? '4px' : currentView === 'storefront' ? 'calc(33.33% + 1px)' : 'calc(66.66% + 2px)',
+                  width: 'calc(33.33% - 4px)',
                 }}
               />
               {[
-                { view: 'dashboard' as const, label: 'Dashboard', icon: <LayoutDashboard className="h-3.5 w-3.5" /> },
-                { view: 'admin' as const, label: 'Admin', icon: <Shield className="h-3.5 w-3.5" /> },
+                { view: 'dashboard' as const, label: 'Dashboard', icon: <LayoutDashboard className="h-3 w-3" /> },
+                { view: 'storefront' as const, label: 'Storefront', icon: <Store className="h-3 w-3" /> },
+                { view: 'admin' as const, label: 'Admin', icon: <Shield className="h-3 w-3" /> },
               ].map((item) => (
                 <button
                   key={item.view}
-                  onClick={() => setCurrentView(item.view)}
+                  onClick={() => {
+                    setCurrentView(item.view)
+                    if (item.view === 'storefront') setStorefrontPage('home')
+                  }}
                   className={cn(
-                    'relative z-10 flex-1 text-xs font-medium py-1.5 px-2 rounded-md transition-colors duration-200 flex items-center justify-center gap-1.5',
+                    'relative z-10 flex-1 text-[11px] font-medium py-1.5 px-1 rounded-md transition-colors duration-200 flex items-center justify-center gap-1',
                     currentView === item.view
                       ? 'text-foreground'
                       : 'text-muted-foreground hover:text-foreground'
                   )}
                 >
                   {item.icon}
-                  {item.label}
+                  <span className="hidden sm:inline">{item.label}</span>
                 </button>
               ))}
             </div>
@@ -872,16 +909,30 @@ export default function Home() {
           <ScrollArea className="flex-1">
             <nav className="p-3 space-y-0.5">
               {groupedNav.map((entry, i) => {
+                // Check if next entry is a different group header (to add divider)
+                const nextEntry = groupedNav[i + 1]
+                const isLastInGroup = nextEntry && nextEntry.type === 'header'
+
                 if (entry.type === 'header') {
                   const headerStyle = groupHeaderColors[entry.label]
                   return (
-                    <div key={`header-${i}`} className="px-3 pt-3 pb-1.5 flex items-center gap-2">
+                    <div key={`header-${i}`} className="px-3 pt-3 pb-1.5 flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        {headerStyle && (
+                          <div className={cn("h-1.5 w-1.5 rounded-full shrink-0", headerStyle.dot)} />
+                        )}
+                        <p className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-widest">
+                          {entry.label}
+                        </p>
+                        {/* Colored underline below group name */}
+                        {headerStyle && (
+                          <div className={cn("flex-1 h-[2px] rounded-full opacity-30", headerStyle.dot.replace('bg-', 'bg-'))} />
+                        )}
+                      </div>
+                      {/* Subtle underline accent */}
                       {headerStyle && (
-                        <div className={cn("h-1.5 w-1.5 rounded-full", headerStyle.dot)} />
+                        <div className={cn("h-[2px] w-8 rounded-full ml-5 opacity-40", headerStyle.dot)} />
                       )}
-                      <p className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-widest">
-                        {entry.label}
-                      </p>
                     </div>
                   )
                 }
@@ -895,13 +946,14 @@ export default function Home() {
                           if (window.innerWidth < 1024) setSidebarOpen(false)
                         }}
                         className={cn(
-                          'group relative flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm transition-all duration-200',
+                          'group relative flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm overflow-hidden',
                           isActive
                             ? 'text-primary font-medium'
                             : 'text-muted-foreground hover:text-foreground'
                         )}
+                        style={{ transition: 'color 200ms, font-weight 200ms' }}
                       >
-                        {/* Left border accent for active item */}
+                        {/* Gradient left border for active item */}
                         {isActive && (
                           <motion.div
                             layoutId="activeNavBorder"
@@ -909,28 +961,44 @@ export default function Home() {
                             transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                           />
                         )}
+                        {/* Active dot indicator */}
+                        {isActive && (
+                          <motion.div
+                            layoutId="activeDot"
+                            className="absolute left-1.5 top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-primary"
+                            initial={{ scale: 0 }}
+                            animate={{ scale: [1, 1.3, 1] }}
+                            transition={{ scale: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' }, layout: { type: 'spring', stiffness: 500, damping: 35 } }}
+                          />
+                        )}
                         {/* Gradient background for active item */}
                         <div className={cn(
-                          "absolute inset-0 rounded-lg transition-all duration-200",
+                          "absolute inset-0 rounded-lg",
                           isActive
-                            ? 'bg-gradient-to-r from-primary/10 via-primary/5 to-transparent'
-                            : 'group-hover:bg-muted/60'
-                        )} />
+                            ? 'bg-gradient-to-r from-primary/8 via-primary/4 to-transparent'
+                            : 'origin-left scale-x-0 group-hover:scale-x-100 bg-muted/50'
+                        )} style={{ transition: isActive ? 'none' : 'transform 200ms ease-out' }} />
                         {/* Hover left border indicator */}
                         {!isActive && (
                           <div className="absolute left-0 top-1/2 -translate-y-1/2 h-0 w-[3px] rounded-full bg-primary/40 transition-all duration-200 group-hover:h-4 group-hover:bg-primary/60" />
                         )}
                         <span className={cn(
-                          'relative transition-all duration-200',
-                          isActive ? 'text-primary' : 'group-hover:scale-110'
-                        )}>
-                          {entry.icon}
+                          'relative',
+                          isActive ? 'text-primary' : ''
+                        )} style={{ transition: 'transform 200ms, color 200ms', transform: isActive ? 'none' : undefined }}>
+                          <span className="block group-hover:scale-110" style={{ transition: 'transform 200ms' }}>
+                            {entry.icon}
+                          </span>
                         </span>
                         <span className="relative">{entry.label}</span>
                         {entry.page === 'ai-assistant' && (
                           <Badge className="relative ml-auto bg-gradient-to-r from-violet-500 to-purple-500 text-white text-[9px] px-1.5 py-0 h-4 border-0">
                             AI
                           </Badge>
+                        )}
+                        {/* Divider after group */}
+                        {isLastInGroup && (
+                          <div className="absolute -bottom-0 left-6 right-3 h-px bg-border/50" />
                         )}
                       </button>
                     </TooltipTrigger>
@@ -965,25 +1033,41 @@ export default function Home() {
             </nav>
           </ScrollArea>
 
-          {/* Sidebar Footer with gradient separator and gradient ring avatar */}
+          {/* Sidebar Footer - User Profile Card with frosted glass */}
           <div className="shrink-0">
-            {/* Gradient separator line */}
             <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
             <div className="p-3">
-              <div className="flex items-center gap-2 px-2 py-1.5">
-                {/* Avatar with gradient ring */}
-                <div className="relative h-8 w-8 rounded-full p-[2px] bg-gradient-to-br from-primary via-primary/60 to-emerald-500">
-                  <div className="h-full w-full rounded-full bg-card flex items-center justify-center">
-                    <User className="h-4 w-4 text-primary" />
+              <div className="relative rounded-lg bg-background/60 backdrop-blur-md border border-border/50 p-3 shadow-sm">
+                <div className="flex items-center gap-2.5">
+                  {/* Avatar with gradient background and initials */}
+                  <div className="relative h-9 w-9 rounded-full shrink-0 bg-gradient-to-br from-primary via-primary/80 to-violet-500 flex items-center justify-center shadow-md shadow-primary/20">
+                    <span className="text-xs font-bold text-primary-foreground">
+                      {(currentUser?.name || 'U').split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-medium truncate">{currentUser?.name || 'User'}</p>
+                      <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5 bg-primary/10 text-primary shrink-0">
+                        {isAdmin ? 'Admin' : 'Merchant'}
+                      </Badge>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground truncate">{currentUser?.email || ''}</p>
                   </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{currentUser?.name || 'User'}</p>
-                  <p className="text-[11px] text-muted-foreground truncate">{currentUser?.email || ''}</p>
+                {/* Quick Actions Row */}
+                <div className="flex items-center gap-1 mt-2.5 pt-2.5 border-t border-border/40">
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted/80" onClick={() => { setCurrentView('dashboard'); setDashboardPage('store-settings') }}>
+                    <Settings className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted/80 relative" onClick={() => setNotificationsOpen(true)}>
+                    <Bell className="h-3.5 w-3.5" />
+                    <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-rose-500" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 ml-auto" onClick={handleLogout}>
+                    <LogOut className="h-3.5 w-3.5" />
+                  </Button>
                 </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 hover:text-destructive transition-colors" onClick={handleLogout}>
-                  <LogOut className="h-4 w-4" />
-                </Button>
               </div>
             </div>
           </div>
@@ -1016,23 +1100,51 @@ export default function Home() {
               </div>
 
               <div className="ml-auto flex items-center gap-2">
-                {/* Search */}
-                <div className="relative hidden md:block">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                {/* Search with gradient border on focus + ⌘K hint */}
+                <div className={cn(
+                  "relative hidden md:block rounded-lg transition-all duration-300",
+                  searchFocused
+                    ? 'ring-2 ring-primary/30 shadow-sm shadow-primary/10'
+                    : ''
+                )}
+                  style={searchFocused ? {
+                    background: 'linear-gradient(white, white) padding-box, linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary)/0.5), hsl(var(--primary))) border-box',
+                    border: '1.5px solid transparent',
+                  } : {}}
+                >
+                  <Search className={cn(
+                    "absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-all duration-300",
+                    searchFocused && 'text-primary scale-110'
+                  )} />
                   <Input
                     placeholder="Search..."
                     value={globalSearchQuery}
                     onChange={(e) => setGlobalSearchQuery(e.target.value)}
-                    className="pl-9 h-9 w-56 bg-muted/50 border-0 focus-visible:ring-1"
+                    onFocus={() => setSearchFocused(true)}
+                    onBlur={() => setSearchFocused(false)}
+                    className="pl-9 h-9 w-56 bg-muted/50 border-0 focus-visible:ring-0 focus-visible:outline-none"
                   />
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5 pointer-events-none">
+                    <kbd className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground/50 bg-muted/60 rounded border border-border/50">
+                      <Command className="h-2.5 w-2.5" />K
+                    </kbd>
+                  </div>
                 </div>
 
-                {/* Notifications */}
+                {/* Notifications with pulse badge */}
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-9 w-9 relative" onClick={() => setNotificationsOpen(true)}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-9 w-9 relative transition-all duration-200 hover:scale-105 hover:shadow-sm"
+                      onClick={() => setNotificationsOpen(true)}
+                    >
                       <Bell className="h-4 w-4" />
-                      <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500" />
+                      <span className="absolute top-1 right-1 flex h-2.5 w-2.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500" />
+                      </span>
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Notifications</TooltipContent>
@@ -1046,18 +1158,22 @@ export default function Home() {
                     setCurrentView('storefront')
                     setStorefrontPage('home')
                   }}
-                  className="hidden sm:flex text-emerald-600 border-emerald-200 hover:bg-emerald-50 h-9"
+                  className="hidden sm:flex text-emerald-600 border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300 hover:shadow-sm h-9 transition-all duration-200 hover:scale-[1.02]"
                 >
                   <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
                   Storefront
                 </Button>
 
-                {/* User Dropdown */}
+                {/* User Dropdown with gradient avatar border */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-9 gap-2 pl-2 pr-1.5">
-                      <div className="h-6 w-6 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
-                        <User className="h-3.5 w-3.5 text-primary" />
+                    <Button variant="ghost" className="h-9 gap-2 pl-1.5 pr-2 hover:scale-[1.02] transition-all duration-200">
+                      <div className="h-7 w-7 rounded-full p-[1.5px] bg-gradient-to-br from-primary via-primary/60 to-violet-500">
+                        <div className="h-full w-full rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                          <span className="text-[9px] font-bold text-primary">
+                            {(currentUser?.name || 'U').split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
+                          </span>
+                        </div>
                       </div>
                       <ChevronDown className="h-3 w-3 text-muted-foreground" />
                     </Button>

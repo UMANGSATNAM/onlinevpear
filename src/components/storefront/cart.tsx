@@ -18,6 +18,11 @@ import {
   AlertTriangle,
   Sparkles,
   Check,
+  Bookmark,
+  BookmarkCheck,
+  MessageSquare,
+  ArrowRight,
+  Star,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -26,6 +31,7 @@ import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+import { Textarea } from '@/components/ui/textarea'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -80,23 +86,28 @@ const itemGradients = [
 
 // Sample suggestions for "You might also like"
 const sampleSuggestions = [
-  { name: 'Premium Cleaning Kit', price: 24.99, gradient: 'from-emerald-400 to-teal-300' },
-  { name: 'Extended Protection Plan', price: 39.99, gradient: 'from-violet-400 to-purple-300' },
-  { name: 'Gift Wrapping Service', price: 5.99, gradient: 'from-amber-400 to-yellow-300' },
-  { name: 'Express Delivery Upgrade', price: 9.99, gradient: 'from-sky-400 to-cyan-300' },
+  { name: 'Premium Cleaning Kit', price: 24.99, originalPrice: 34.99, gradient: 'from-emerald-400 to-teal-300', rating: 4.5 },
+  { name: 'Extended Protection Plan', price: 39.99, originalPrice: null, gradient: 'from-violet-400 to-purple-300', rating: 4.8 },
+  { name: 'Gift Wrapping Service', price: 5.99, originalPrice: null, gradient: 'from-amber-400 to-yellow-300', rating: 4.2 },
+  { name: 'Express Delivery Upgrade', price: 9.99, originalPrice: 14.99, gradient: 'from-sky-400 to-cyan-300', rating: 4.6 },
+  { name: 'Luxury Carry Case', price: 29.99, originalPrice: 39.99, gradient: 'from-rose-400 to-pink-300', rating: 4.7 },
+  { name: 'Accessory Bundle Pack', price: 19.99, originalPrice: 29.99, gradient: 'from-indigo-400 to-blue-300', rating: 4.3 },
 ]
 
 const FREE_SHIPPING_THRESHOLD = 100
+const TAX_RATE = 0.08
 
 export function ShoppingCartPage() {
   const { setStorefrontPage, selectedStoreId } = useAppStore()
   const [cart, setCart] = useState<CartData | null>(null)
   const [cartItems, setCartItems] = useState<CartItem[]>([])
+  const [savedItems, setSavedItems] = useState<CartItem[]>([])
   const [loading, setLoading] = useState(true)
   const [couponCode, setCouponCode] = useState('')
   const [applyingCoupon, setApplyingCoupon] = useState(false)
   const [removeItem, setRemoveItem] = useState<CartItem | null>(null)
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set())
+  const [orderNotes, setOrderNotes] = useState('')
 
   const sessionId = typeof window !== 'undefined' ? sessionStorage.getItem('shopforge_session_id') : null
   const storeId = typeof window !== 'undefined' ? sessionStorage.getItem('shopforge_store_id') : null
@@ -214,6 +225,54 @@ export function ShoppingCartPage() {
     setRemoveItem(null)
   }
 
+  // Save for Later
+  const saveForLater = (item: CartItem) => {
+    setSavedItems((prev) => [...prev, item])
+    removeCartItem(item)
+    toast.success('Item saved for later')
+  }
+
+  const moveToCart = async (item: CartItem) => {
+    setSavedItems((prev) => prev.filter((si) => !(si.productId === item.productId && si.variantId === item.variantId)))
+    try {
+      const sid = sessionStorage.getItem('shopforge_session_id') || `sess_${Date.now()}`
+      sessionStorage.setItem('shopforge_session_id', sid)
+      const sId = sessionStorage.getItem('shopforge_store_id')
+      if (!sId) return
+
+      const allItems = [...cartItems, item].map((ci) => ({
+        productId: ci.productId,
+        variantId: ci.variantId,
+        quantity: ci.quantity,
+        price: ci.price,
+      }))
+
+      const res = await fetch('/api/storefront/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          storeId: sId,
+          sessionId: sid,
+          items: allItems,
+          couponCode: cart?.couponCode || undefined,
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setCart(data.cart)
+        await fetchCart()
+        toast.success('Item moved to cart')
+      }
+    } catch {
+      toast.error('Failed to move item to cart')
+    }
+  }
+
+  const removeSavedItem = (item: CartItem) => {
+    setSavedItems((prev) => prev.filter((si) => !(si.productId === item.productId && si.variantId === item.variantId)))
+    toast.success('Item removed from saved list')
+  }
+
   const applyCoupon = async () => {
     if (!couponCode.trim()) return
     try {
@@ -258,6 +317,10 @@ export function ShoppingCartPage() {
   const shippingProgress = Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100)
   const amountUntilFreeShipping = Math.max(FREE_SHIPPING_THRESHOLD - subtotal, 0)
 
+  // Estimated tax calculation
+  const estimatedTax = subtotal * TAX_RATE
+  const displayedTax = cart?.taxTotal || estimatedTax
+
   // Estimated delivery date
   const estimatedDelivery = new Date()
   estimatedDelivery.setDate(estimatedDelivery.getDate() + 5)
@@ -280,7 +343,7 @@ export function ShoppingCartPage() {
 
   const isEmpty = !cartItems || cartItems.length === 0
 
-  if (isEmpty) {
+  if (isEmpty && savedItems.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16">
         <div className="text-center max-w-md mx-auto">
@@ -449,16 +512,28 @@ export function ShoppingCartPage() {
                             {formatPrice(item.price)} each
                           </span>
 
-                          {/* Remove Button */}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setRemoveItem(item)}
-                            className="text-red-400 hover:text-red-500 hover:bg-red-50"
-                          >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Remove
-                          </Button>
+                          {/* Action Buttons */}
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => saveForLater(item)}
+                              className="text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                              title="Save for Later"
+                            >
+                              <Bookmark className="h-4 w-4 mr-1" />
+                              <span className="hidden sm:inline">Save</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setRemoveItem(item)}
+                              className="text-red-400 hover:text-red-500 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Remove
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -467,6 +542,69 @@ export function ShoppingCartPage() {
               )
             })}
           </AnimatePresence>
+
+          {/* Saved for Later Section */}
+          {savedItems.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-8"
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <BookmarkCheck className="h-5 w-5 text-amber-500" />
+                <h2 className="text-lg font-bold">Saved for Later</h2>
+                <Badge variant="secondary" className="text-xs">{savedItems.length} items</Badge>
+              </div>
+              <div className="space-y-3">
+                {savedItems.map((item, index) => {
+                  const gradient = itemGradients[(index + 2) % itemGradients.length]
+                  const itemKey = `saved-${item.productId}-${item.variantId}`
+                  return (
+                    <motion.div
+                      key={itemKey}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Card className="p-4 border-dashed border-2 border-neutral-200 bg-neutral-50/50 hover:shadow-sm transition-shadow">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-16 h-16 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center shrink-0`}>
+                            <span className="text-white/40 text-xs font-bold">
+                              {item.product?.name?.substring(0, 2).toUpperCase() || 'P'}
+                            </span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-medium text-sm line-clamp-1">{item.product?.name || 'Product'}</h3>
+                            <p className="text-sm font-bold mt-0.5">{formatPrice(item.price)}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => moveToCart(item)}
+                              className="text-xs h-8 border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                            >
+                              <ArrowLeft className="h-3 w-3 mr-1 rotate-180" />
+                              Move to Cart
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeSavedItem(item)}
+                              className="text-xs h-8 text-red-400 hover:text-red-500 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    </motion.div>
+                  )
+                })}
+              </div>
+            </motion.div>
+          )}
 
           {/* Continue Shopping */}
           <Button
@@ -499,9 +637,12 @@ export function ShoppingCartPage() {
                   )}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Estimated Tax</span>
-                <span className="font-medium">{formatPrice(cart?.taxTotal || 0)}</span>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground flex items-center gap-1">
+                  Estimated Tax
+                  <span className="text-[10px] text-muted-foreground/60">({(TAX_RATE * 100).toFixed(0)}%)</span>
+                </span>
+                <span className="font-medium">{formatPrice(displayedTax)}</span>
               </div>
               {(cart?.discountTotal || 0) > 0 && (
                 <div className="flex justify-between text-emerald-600">
@@ -518,7 +659,7 @@ export function ShoppingCartPage() {
 
             <div className="flex justify-between text-lg font-bold mb-4">
               <span>Total</span>
-              <span>{formatPrice(cart?.total || 0)}</span>
+              <span>{formatPrice(cart?.total || (subtotal + displayedTax))}</span>
             </div>
 
             {/* Promo Code Input */}
@@ -556,6 +697,21 @@ export function ShoppingCartPage() {
                   <Check className="h-3 w-3 text-emerald-500" />
                 </div>
               )}
+            </div>
+
+            {/* Order Notes */}
+            <div className="mb-4">
+              <label className="text-sm font-medium flex items-center gap-1.5 mb-2">
+                <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
+                Order Notes
+              </label>
+              <Textarea
+                placeholder="Special delivery instructions, gift messages, etc."
+                value={orderNotes}
+                onChange={(e) => setOrderNotes(e.target.value)}
+                className="min-h-[80px] text-sm resize-none bg-neutral-50/50 focus:bg-white transition-colors"
+                rows={3}
+              />
             </div>
 
             {/* Checkout Button */}
@@ -596,28 +752,87 @@ export function ShoppingCartPage() {
         </div>
       </div>
 
-      {/* You Might Also Like */}
+      {/* You Might Also Like - Enhanced Horizontal Scroll */}
       <section className="mt-12">
-        <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-rose-500" />
-          You Might Also Like
-        </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-rose-500" />
+            You Might Also Like
+          </h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="group text-sm text-muted-foreground hover:text-foreground"
+            onClick={() => setStorefrontPage('category')}
+          >
+            View All
+            <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-1" />
+          </Button>
+        </div>
+        <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent pb-4 -mx-4 px-4">
           {sampleSuggestions.map((item, i) => (
-            <Card
+            <motion.div
               key={i}
-              className="p-4 cursor-pointer hover:shadow-md transition-all hover:scale-[1.02] group border-0 shadow-sm"
-              onClick={() => {
-                toast.success(`${item.name} — browse products to add!`)
-                setStorefrontPage('category')
-              }}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: i * 0.08 }}
+              className="snap-start shrink-0 w-52 sm:w-60"
             >
-              <div className={`w-full aspect-square rounded-lg bg-gradient-to-br ${item.gradient} flex items-center justify-center mb-3 transition-transform group-hover:scale-105`}>
-                <ShoppingBag className="h-6 w-6 text-white/40" />
-              </div>
-              <h3 className="text-sm font-medium line-clamp-1 group-hover:text-rose-500 transition-colors">{item.name}</h3>
-              <p className="text-sm font-bold mt-1">{formatPrice(item.price)}</p>
-            </Card>
+              <Card
+                className="overflow-hidden cursor-pointer group border-0 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
+                onClick={() => {
+                  toast.success(`${item.name} — browse products to add!`)
+                  setStorefrontPage('category')
+                }}
+              >
+                <div className="relative aspect-square overflow-hidden">
+                  <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} transition-transform duration-500 group-hover:scale-110`} />
+                  {/* Price overlay */}
+                  <div className="absolute bottom-2 right-2 z-10">
+                    <div className="bg-black/60 backdrop-blur-sm rounded-lg px-2.5 py-1 border border-white/10">
+                      <span className="text-white font-bold text-sm">{formatPrice(item.price)}</span>
+                      {item.originalPrice && (
+                        <span className="text-white/60 text-xs line-through ml-1.5">{formatPrice(item.originalPrice)}</span>
+                      )}
+                    </div>
+                  </div>
+                  {/* Discount badge */}
+                  {item.originalPrice && (
+                    <Badge className="absolute top-2 left-2 bg-gradient-to-r from-red-500 to-rose-500 text-white text-[10px] border-0 font-semibold">
+                      -{Math.round(((item.originalPrice - item.price) / item.originalPrice) * 100)}% OFF
+                    </Badge>
+                  )}
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <Button
+                      size="sm"
+                      className="bg-white text-neutral-900 hover:bg-white/90 shadow-lg"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        toast.success(`${item.name} — browse products to add!`)
+                        setStorefrontPage('category')
+                      }}
+                    >
+                      <ShoppingBag className="h-3.5 w-3.5 mr-1.5" />
+                      Add to Cart
+                    </Button>
+                  </div>
+                  {/* Placeholder icon */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <ShoppingBag className="h-8 w-8 text-white/25" />
+                  </div>
+                </div>
+                <div className="p-3">
+                  <h3 className="text-sm font-medium line-clamp-1 group-hover:text-rose-500 transition-colors">{item.name}</h3>
+                  <div className="flex items-center gap-1 mt-1.5">
+                    {Array.from({ length: 5 }).map((_, j) => (
+                      <Star key={j} className={`h-3 w-3 ${j < Math.floor(item.rating) ? 'fill-amber-400 text-amber-400' : j < item.rating ? 'fill-amber-400/50 text-amber-400' : 'text-gray-200'}`} />
+                    ))}
+                    <span className="text-[11px] text-muted-foreground ml-0.5">{item.rating}</span>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
           ))}
         </div>
       </section>
