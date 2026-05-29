@@ -140,7 +140,6 @@ const dashboardNavItems: Array<{ page: DashboardPage; label: string; icon: React
   { page: 'apps', label: 'Apps', icon: <Grid3X3 className="h-4 w-4" />, group: 'Tools' },
   { page: 'gift-cards', label: 'Gift Cards', icon: <Gift className="h-4 w-4" />, group: 'Tools' },
   { page: 'email-templates', label: 'Email Templates', icon: <Mail className="h-4 w-4" />, group: 'Tools' },
-  { page: 'social-media', label: 'Social Media', icon: <Share2 className="h-4 w-4" />, group: 'Tools' },
   { page: 'data-import', label: 'Data Import', icon: <Import className="h-4 w-4" />, group: 'Settings' },
   { page: 'shipping-settings', label: 'Shipping', icon: <Truck className="h-4 w-4" />, group: 'Settings' },
   { page: 'currency-settings', label: 'Currency', icon: <DollarSign className="h-4 w-4" />, group: 'Settings' },
