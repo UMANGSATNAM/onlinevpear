@@ -8,4 +8,4 @@ cmds = ["bun install --no-save"]
 cmds = ["bun run db:generate", "bun run build"]
 
 [start]
-cmd = "bun run db:migrate && bun run start"
+cmd = "bun run db:push && bun x prisma db seed && bun run start"
