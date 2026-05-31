@@ -228,7 +228,7 @@ export function SecurityCenter() {
     { id: '5', icon: ShieldAlert, title: 'Brute Force Detected', description: 'Multiple failed login attempts from 198.51.100.0/24', time: '6 hours ago', type: 'danger' as const },
     { id: '6', icon: Scan, title: 'Security Audit Completed', description: 'Automated security scan completed with 0 critical findings', time: '12 hours ago', type: 'success' as const },
     { id: '7', icon: Globe, title: 'Suspicious IP Blocked', description: 'IP 203.0.113.42 auto-blocked after threshold exceeded', time: '18 hours ago', type: 'warning' as const },
-    { id: '8', icon: ShieldCheck, title: 'SSL Certificate Renewed', description: 'Wildcard certificate renewed for *.shopforge.io', time: '1 day ago', type: 'success' as const },
+    { id: '8', icon: ShieldCheck, title: 'SSL Certificate Renewed', description: 'Wildcard certificate renewed for *.vepar.in', time: '1 day ago', type: 'success' as const },
   ]
 
   // Quick actions

@@ -144,7 +144,7 @@ export function WishlistPage() {
   useEffect(() => {
     const loadWishlist = async () => {
       try {
-        const stored = localStorage.getItem('shopforge_wishlist')
+        const stored = localStorage.getItem('vepar_wishlist')
         if (stored) {
           const parsed = JSON.parse(stored)
           if (Array.isArray(parsed) && parsed.length > 0) {
@@ -154,7 +154,7 @@ export function WishlistPage() {
           }
         }
 
-        const storeId = sessionStorage.getItem('shopforge_store_id') || selectedStoreId
+        const storeId = sessionStorage.getItem('vepar_store_id') || selectedStoreId
         if (!storeId) {
           setLoading(false)
           return
@@ -169,7 +169,7 @@ export function WishlistPage() {
             addedToWishlistAt: new Date(Date.now() - i * 86400000 * Math.floor(Math.random() * 14 + 1)).toISOString(),
           }))
           setWishlistItems(wishlistProducts)
-          localStorage.setItem('shopforge_wishlist', JSON.stringify(wishlistProducts))
+          localStorage.setItem('vepar_wishlist', JSON.stringify(wishlistProducts))
         }
       } catch {
         const sampleItems: WishlistProduct[] = Array.from({ length: 8 }, (_, i) => ({
@@ -185,7 +185,7 @@ export function WishlistPage() {
           createdAt: new Date(Date.now() - i * 86400000 * 30).toISOString(),
         }))
         setWishlistItems(sampleItems)
-        localStorage.setItem('shopforge_wishlist', JSON.stringify(sampleItems))
+        localStorage.setItem('vepar_wishlist', JSON.stringify(sampleItems))
       } finally {
         setLoading(false)
       }
@@ -196,9 +196,9 @@ export function WishlistPage() {
   // Save wishlist to localStorage on change
   useEffect(() => {
     if (wishlistItems.length > 0) {
-      localStorage.setItem('shopforge_wishlist', JSON.stringify(wishlistItems))
+      localStorage.setItem('vepar_wishlist', JSON.stringify(wishlistItems))
     } else {
-      localStorage.removeItem('shopforge_wishlist')
+      localStorage.removeItem('vepar_wishlist')
     }
   }, [wishlistItems])
 
@@ -261,9 +261,9 @@ export function WishlistPage() {
   const handleAddToCart = useCallback(async (product: WishlistProduct) => {
     setAddingToCart(product.id)
     try {
-      const sessionId = sessionStorage.getItem('shopforge_session_id') || `sess_${Date.now()}`
-      sessionStorage.setItem('shopforge_session_id', sessionId)
-      const storeId = sessionStorage.getItem('shopforge_store_id')
+      const sessionId = sessionStorage.getItem('vepar_session_id') || `sess_${Date.now()}`
+      sessionStorage.setItem('vepar_session_id', sessionId)
+      const storeId = sessionStorage.getItem('vepar_store_id')
       if (!storeId) {
         toast.error('Store not found')
         return
@@ -295,9 +295,9 @@ export function WishlistPage() {
     if (itemsToAdd.length === 0) return
 
     try {
-      const sessionId = sessionStorage.getItem('shopforge_session_id') || `sess_${Date.now()}`
-      sessionStorage.setItem('shopforge_session_id', sessionId)
-      const storeId = sessionStorage.getItem('shopforge_store_id')
+      const sessionId = sessionStorage.getItem('vepar_session_id') || `sess_${Date.now()}`
+      sessionStorage.setItem('vepar_session_id', sessionId)
+      const storeId = sessionStorage.getItem('vepar_store_id')
       if (!storeId) {
         toast.error('Store not found')
         return
@@ -335,9 +335,9 @@ export function WishlistPage() {
     }
 
     try {
-      const sessionId = sessionStorage.getItem('shopforge_session_id') || `sess_${Date.now()}`
-      sessionStorage.setItem('shopforge_session_id', sessionId)
-      const storeId = sessionStorage.getItem('shopforge_store_id')
+      const sessionId = sessionStorage.getItem('vepar_session_id') || `sess_${Date.now()}`
+      sessionStorage.setItem('vepar_session_id', sessionId)
+      const storeId = sessionStorage.getItem('vepar_store_id')
       if (!storeId) {
         toast.error('Store not found')
         return

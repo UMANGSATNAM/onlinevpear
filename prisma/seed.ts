@@ -55,7 +55,7 @@ async function main() {
   const adminPasswordHash = await bcrypt.hash("admin123", 10)
   const adminUser = await prisma.user.create({
     data: {
-      email: "admin@shopforge.io",
+      email: "admin@vepar.in",
       name: "Platform Admin",
       passwordHash: adminPasswordHash,
       role: "super_admin",
@@ -795,7 +795,7 @@ async function main() {
   console.log("✅ Created audit logs")
   console.log("\n🎉 Seeding complete!")
   console.log("\n📋 Test Accounts:")
-  console.log("  Super Admin: admin@shopforge.io / admin123")
+  console.log("  Super Admin: admin@vepar.in / admin123")
   console.log("  Merchant:    merchant@example.com / merchant123")
   console.log("  Customer:    customer@example.com / customer123")
 }

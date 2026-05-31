@@ -855,7 +855,7 @@ export function GiftCardsManagement() {
                     <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
                       <Gift className="h-4 w-4 text-white" />
                     </div>
-                    <span className="font-bold text-sm">ShopForge Gift Card</span>
+                    <span className="font-bold text-sm">Online Vepar Gift Card</span>
                   </div>
                   <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-[10px]">
                     <span className="inline-block h-1.5 w-1.5 rounded-full mr-1 bg-emerald-500" />
@@ -915,7 +915,7 @@ export function GiftCardsManagement() {
                         <Gift className="h-5 w-5 text-white" />
                       </div>
                       <div>
-                        <span className="font-bold text-sm block">ShopForge Gift Card</span>
+                        <span className="font-bold text-sm block">Online Vepar Gift Card</span>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <span className="font-mono text-xs font-semibold tracking-wider bg-muted/60 px-1.5 py-0.5 rounded">
                             {selectedCard.code}

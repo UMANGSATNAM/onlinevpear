@@ -21,6 +21,7 @@ import {
   RefreshCw,
   MapPin,
   Loader2,
+  Info,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -35,6 +36,12 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
@@ -44,6 +51,7 @@ import {
 } from '@/components/ui/breadcrumb'
 import { useAppStore } from '@/lib/store'
 import { ProductGrid, formatPrice } from '@/components/storefront/product-grid'
+import { PincodeChecker } from '@/components/storefront/pincode-checker'
 import { toast } from 'sonner'
 
 interface Review {
@@ -151,7 +159,7 @@ export function ProductDetail() {
     if (!product) return
     const fetchRelated = async () => {
       try {
-        const storeId = sessionStorage.getItem('shopforge_store_id') || selectedStoreId
+        const storeId = sessionStorage.getItem('vepar_store_id') || selectedStoreId
         if (!storeId) return
         const res = await fetch(`/api/storefront?storeId=${storeId}`)
         if (res.ok) {
@@ -216,9 +224,9 @@ export function ProductDetail() {
   const handleAddToCart = async () => {
     setAddingToCart(true)
     try {
-      const sessionId = sessionStorage.getItem('shopforge_session_id') || `sess_${Date.now()}`
-      sessionStorage.setItem('shopforge_session_id', sessionId)
-      const storeId = sessionStorage.getItem('shopforge_store_id')
+      const sessionId = sessionStorage.getItem('vepar_session_id') || `sess_${Date.now()}`
+      sessionStorage.setItem('vepar_session_id', sessionId)
+      const storeId = sessionStorage.getItem('vepar_store_id')
       if (!storeId) {
         toast.error('Store not found')
         return
@@ -408,15 +416,30 @@ export function ProductDetail() {
             </span>
           </div>
 
-          {/* Price */}
-          <div className="flex items-baseline gap-3">
-            <span className="text-3xl font-bold">{formatPrice(currentPrice)}</span>
-            {hasDiscount && (
-              <>
-                <span className="text-xl text-muted-foreground line-through">{formatPrice(comparePrice!)}</span>
-                <Badge className="bg-gradient-to-r from-red-500 to-rose-500 text-white hover:from-red-600 hover:to-rose-600">-{discountPct}% OFF</Badge>
-              </>
-            )}
+          {/* Price with MRP and GST info */}
+          <div className="space-y-1.5">
+            <div className="flex items-baseline gap-3">
+              <span className="text-3xl font-bold">{formatPrice(currentPrice)}</span>
+              {hasDiscount && (
+                <>
+                  <span className="text-lg text-muted-foreground line-through">MRP: {formatPrice(comparePrice!)}</span>
+                  <Badge className="bg-gradient-to-r from-red-500 to-rose-500 text-white hover:from-red-600 hover:to-rose-600">-{discountPct}% OFF</Badge>
+                </>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5">
+              <p className="text-xs text-muted-foreground">Inclusive of all taxes</p>
+              <TooltipProvider delayDuration={200}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[240px] text-xs">
+                    <p>Price includes applicable GST (Goods & Services Tax). No additional taxes will be charged at checkout.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
           </div>
 
           {/* Short Description */}
@@ -588,16 +611,8 @@ export function ProductDetail() {
             </Button>
           </div>
 
-          {/* Estimated Delivery */}
-          <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg border border-emerald-100">
-            <Truck className="h-5 w-5 text-emerald-600 shrink-0" />
-            <div>
-              <p className="text-sm font-medium text-emerald-800">
-                Estimated delivery by {deliveryStr}
-              </p>
-              <p className="text-xs text-emerald-600">Free shipping on orders over $100</p>
-            </div>
-          </div>
+          {/* Pincode Delivery Checker */}
+          <PincodeChecker />
 
           {/* Delivery & Returns - Expandable */}
           <div className="space-y-2">

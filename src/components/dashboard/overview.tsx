@@ -47,6 +47,7 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { useAppStore } from '@/lib/store'
 import { api } from '@/lib/api-client'
+import { cn } from '@/lib/utils'
 import {
   ChartContainer,
   ChartTooltip,
@@ -255,10 +256,11 @@ export function OverviewDashboard() {
       change: data.stats.revenueGrowth,
       changeLabel: 'vs last period',
       icon: DollarSign,
-      gradient: 'from-emerald-500 to-teal-600',
-      bgGradient: 'from-emerald-50 to-teal-50',
-      iconBg: 'bg-emerald-100',
-      iconColor: 'text-emerald-600',
+      gradient: 'from-indigo-600 to-[#4338CA]',
+      bgGradient: 'from-indigo-50 to-[#4338CA]/5',
+      iconBg: 'bg-indigo-100',
+      iconColor: 'text-[#4338CA]',
+      valueColor: 'text-[#F5A623]',
     },
     {
       title: 'Orders',
@@ -266,10 +268,11 @@ export function OverviewDashboard() {
       change: data.stats.recentOrders,
       changeLabel: 'recent',
       icon: ShoppingCart,
-      gradient: 'from-blue-500 to-indigo-600',
-      bgGradient: 'from-blue-50 to-indigo-50',
-      iconBg: 'bg-blue-100',
-      iconColor: 'text-blue-600',
+      gradient: 'from-[#4338CA] to-violet-600',
+      bgGradient: 'from-violet-50 to-indigo-50',
+      iconBg: 'bg-violet-100',
+      iconColor: 'text-violet-600',
+      valueColor: '',
     },
     {
       title: 'Customers',
@@ -277,10 +280,11 @@ export function OverviewDashboard() {
       change: data.stats.recentCustomers,
       changeLabel: 'new this month',
       icon: Users,
-      gradient: 'from-violet-500 to-purple-600',
-      bgGradient: 'from-violet-50 to-purple-50',
-      iconBg: 'bg-violet-100',
-      iconColor: 'text-violet-600',
+      gradient: 'from-emerald-500 to-teal-600',
+      bgGradient: 'from-emerald-50 to-teal-50',
+      iconBg: 'bg-emerald-100',
+      iconColor: 'text-emerald-600',
+      valueColor: '',
     },
     {
       title: 'Products',
@@ -288,18 +292,19 @@ export function OverviewDashboard() {
       change: data.stats.activeProducts,
       changeLabel: 'active',
       icon: Package,
-      gradient: 'from-orange-500 to-amber-600',
-      bgGradient: 'from-orange-50 to-amber-50',
-      iconBg: 'bg-orange-100',
-      iconColor: 'text-orange-600',
+      gradient: 'from-[#FF6B6B] to-rose-600',
+      bgGradient: 'from-rose-50 to-orange-50',
+      iconBg: 'bg-rose-100',
+      iconColor: 'text-[#FF6B6B]',
+      valueColor: '',
     },
   ]
 
   const quickActions = [
-    { label: 'Add Product', icon: PackagePlus, gradient: 'from-emerald-500 to-teal-600', bg: 'from-emerald-50 to-teal-50/80', action: () => setDashboardPage('product-new') as unknown as void },
-    { label: 'Create Discount', icon: Gift, gradient: 'from-rose-500 to-pink-600', bg: 'from-rose-50 to-pink-50/80', action: () => setDashboardPage('discounts') },
-    { label: 'View Orders', icon: ClipboardList, gradient: 'from-violet-500 to-purple-600', bg: 'from-violet-50 to-purple-50/80', action: () => setDashboardPage('orders') },
-    { label: 'Check Analytics', icon: Activity, gradient: 'from-amber-500 to-orange-600', bg: 'from-amber-50 to-orange-50/80', action: () => setDashboardPage('analytics') },
+    { label: 'Add Product', icon: PackagePlus, gradient: 'from-[#FF6B6B] to-rose-600', bg: 'from-[#FF6B6B]/5 to-rose-50/80', action: () => setDashboardPage('product-new') as unknown as void },
+    { label: 'Create Discount', icon: Gift, gradient: 'from-[#4338CA] to-indigo-600', bg: 'from-indigo-50/80 to-[#4338CA]/5', action: () => setDashboardPage('discounts') },
+    { label: 'View Orders', icon: ClipboardList, gradient: 'from-violet-500 to-purple-600', bg: 'from-violet-50/80 to-purple-50/80', action: () => setDashboardPage('orders') },
+    { label: 'Check Analytics', icon: Activity, gradient: 'from-[#F5A623] to-amber-600', bg: 'from-[#F5A623]/5 to-amber-50/80', action: () => setDashboardPage('analytics') },
   ]
 
   return (
@@ -377,7 +382,7 @@ export function OverviewDashboard() {
                 <div className="flex items-start justify-between">
                   <div className="space-y-2">
                     <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                    <p className="text-2xl sm:text-3xl font-bold tracking-tight">{stat.value}</p>
+                    <p className={cn("text-2xl sm:text-3xl font-bold tracking-tight", stat.valueColor || '')}>{stat.value}</p>
                   </div>
                   <div className={`${stat.iconBg} rounded-xl p-2.5 group-hover:scale-110 transition-transform duration-300`}>
                     <stat.icon className={`h-5 w-5 ${stat.iconColor}`} />

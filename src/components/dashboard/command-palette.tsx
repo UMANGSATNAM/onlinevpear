@@ -62,7 +62,7 @@ interface RecentPage {
 }
 
 const MAX_RECENT = 8
-const STORAGE_KEY = 'shopforge_recent_pages'
+const STORAGE_KEY = 'vepar_recent_pages'
 
 // Navigation commands for dashboard pages
 const dashboardPages: Array<{ page: DashboardPage; label: string; icon: React.ReactNode; group: string }> = [

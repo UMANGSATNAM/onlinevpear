@@ -90,7 +90,7 @@ export function CategoryPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const storeId = sessionStorage.getItem('shopforge_store_id') || selectedStoreId
+        const storeId = sessionStorage.getItem('vepar_store_id') || selectedStoreId
         if (!storeId) return
         const res = await fetch(`/api/storefront?storeId=${storeId}`)
         if (res.ok) {

@@ -99,32 +99,32 @@ const itemVariants = {
 }
 
 const statusColors: Record<string, string> = {
-  active: 'bg-emerald-100 text-emerald-800',
-  trial: 'bg-amber-100 text-amber-800',
-  suspended: 'bg-red-100 text-red-800',
-  cancelled: 'bg-gray-100 text-gray-800',
+  active: 'bg-[#00D4FF]/15 text-[#00D4FF]',
+  trial: 'bg-[#F59E0B]/15 text-[#F59E0B]',
+  suspended: 'bg-red-500/15 text-red-400',
+  cancelled: 'bg-gray-500/15 text-gray-400',
 }
 
 const statusDotColors: Record<string, string> = {
-  active: 'bg-emerald-500',
-  trial: 'bg-amber-500',
+  active: 'bg-[#00D4FF]',
+  trial: 'bg-[#F59E0B]',
   suspended: 'bg-red-500',
   cancelled: 'bg-gray-400',
 }
 
 const planBadgeStyles: Record<string, string> = {
-  starter: 'bg-slate-100 text-slate-700 border-slate-200',
-  professional: 'bg-violet-100 text-violet-700 border-violet-200',
-  enterprise: 'bg-amber-100 text-amber-700 border-amber-200',
+  starter: 'bg-[#00D4FF]/10 text-[#00D4FF] border-[#00D4FF]/20',
+  professional: 'bg-[#A78BFA]/10 text-[#A78BFA] border-[#A78BFA]/20',
+  enterprise: 'bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/20',
 }
 
 const avatarGradients = [
-  'from-rose-500 to-pink-400',
-  'from-violet-500 to-purple-400',
-  'from-emerald-500 to-teal-400',
-  'from-amber-500 to-orange-400',
-  'from-sky-500 to-cyan-400',
-  'from-fuchsia-500 to-pink-400',
+  'from-[#00D4FF] to-[#0891B2]',
+  'from-[#A78BFA] to-[#7C3AED]',
+  'from-[#38BDF8] to-[#0284C7]',
+  'from-[#F59E0B] to-[#D97706]',
+  'from-[#F472B6] to-[#DB2777]',
+  'from-[#34D399] to-[#059669]',
 ]
 
 interface Merchant {
@@ -327,12 +327,12 @@ export function MerchantManagement() {
   ] : []
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       <motion.div {...fadeIn}>
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold">Merchant Management</h2>
-            <p className="text-muted-foreground">Manage all merchants on the platform</p>
+            <h2 className="text-2xl font-bold text-[#F9FAFB]" style={{ fontFamily: "'Syne', sans-serif" }}>Merchant Management</h2>
+            <p className="text-[#94A3B8]">Manage all merchants on the platform</p>
           </div>
           <div className="flex gap-3 w-full sm:w-auto">
             <div className="relative flex-1 sm:flex-initial">
@@ -364,20 +364,20 @@ export function MerchantManagement() {
       {/* Merchant Stats Bar */}
       <motion.div variants={containerVariants} initial="hidden" animate="show" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {[
-          { title: 'Total Merchants', value: stats.total, icon: Store, gradient: 'from-slate-500 to-slate-600', bg: 'from-slate-50 to-slate-100/50' },
-          { title: 'Active', value: stats.active, icon: CheckCircle, gradient: 'from-emerald-500 to-teal-600', bg: 'from-emerald-50 to-teal-50/50' },
-          { title: 'Trial', value: stats.trial, icon: Clock, gradient: 'from-amber-500 to-orange-600', bg: 'from-amber-50 to-orange-50/50' },
-          { title: 'Suspended', value: stats.suspended, icon: AlertCircle, gradient: 'from-red-500 to-rose-600', bg: 'from-red-50 to-rose-50/50' },
-          { title: 'New This Month', value: stats.newThisMonth, icon: TrendingUp, gradient: 'from-violet-500 to-purple-600', bg: 'from-violet-50 to-purple-50/50' },
+          { title: 'Total Merchants', value: stats.total, icon: Store, gradient: 'from-[#00D4FF] to-[#0891B2]', bg: '' },
+          { title: 'Active', value: stats.active, icon: CheckCircle, gradient: 'from-[#00D4FF] to-[#0891B2]', bg: '' },
+          { title: 'Trial', value: stats.trial, icon: Clock, gradient: 'from-[#F59E0B] to-[#D97706]', bg: '' },
+          { title: 'Suspended', value: stats.suspended, icon: AlertCircle, gradient: 'from-red-500 to-rose-600', bg: '' },
+          { title: 'New This Month', value: stats.newThisMonth, icon: TrendingUp, gradient: 'from-[#A78BFA] to-[#7C3AED]', bg: '' },
         ].map((stat) => (
           <motion.div key={stat.title} variants={itemVariants}>
-            <Card className="relative overflow-hidden hover:shadow-lg transition-all duration-300">
+            <Card className="relative overflow-hidden hover:shadow-lg hover:shadow-[#00D4FF]/5 transition-all duration-300 bg-white/5 backdrop-blur-xl border-white/10">
               <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${stat.gradient}`} />
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-muted-foreground font-medium">{stat.title}</p>
-                    <p className="text-2xl font-bold mt-1">{stat.value}</p>
+                    <p className="text-xs text-[#94A3B8] font-medium">{stat.title}</p>
+                    <p className="text-2xl font-bold mt-1 text-[#F9FAFB]">{stat.value}</p>
                   </div>
                   <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform`}>
                     <stat.icon className="h-5 w-5 text-white" />
@@ -396,7 +396,7 @@ export function MerchantManagement() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="flex items-center gap-3 p-3 rounded-lg border bg-muted/50"
+            className="flex items-center gap-3 p-3 rounded-lg border border-white/5 bg-white/5"
           >
             <span className="text-sm font-medium">{selectedIds.size} selected</span>
             <Select value={bulkAction} onValueChange={setBulkAction}>
@@ -421,7 +421,7 @@ export function MerchantManagement() {
       </AnimatePresence>
 
       <motion.div {...fadeIn} transition={{ duration: 0.4, delay: 0.1 }}>
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden bg-white/5 backdrop-blur-xl border-white/10">
           <CardContent className="p-0">
             {loading ? (
               <div className="p-6 space-y-4">
@@ -447,19 +447,19 @@ export function MerchantManagement() {
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-muted/30">
+                    <TableRow className="bg-white/5">
                       <TableHead className="w-[40px]">
                         <Checkbox
                           checked={selectedIds.size === merchants.length && merchants.length > 0}
                           onCheckedChange={toggleSelectAll}
                         />
                       </TableHead>
-                      <TableHead className="uppercase tracking-wider text-xs font-semibold">Business Name</TableHead>
-                      <TableHead className="uppercase tracking-wider text-xs font-semibold">Email</TableHead>
-                      <TableHead className="uppercase tracking-wider text-xs font-semibold">Plan</TableHead>
-                      <TableHead className="uppercase tracking-wider text-xs font-semibold">Status</TableHead>
-                      <TableHead className="uppercase tracking-wider text-xs font-semibold">Stores</TableHead>
-                      <TableHead className="uppercase tracking-wider text-xs font-semibold">Created</TableHead>
+                      <TableHead className="uppercase tracking-wider text-xs font-semibold text-[#94A3B8]">Business Name</TableHead>
+                      <TableHead className="uppercase tracking-wider text-xs font-semibold text-[#94A3B8]">Email</TableHead>
+                      <TableHead className="uppercase tracking-wider text-xs font-semibold text-[#94A3B8]">Plan</TableHead>
+                      <TableHead className="uppercase tracking-wider text-xs font-semibold text-[#94A3B8]">Status</TableHead>
+                      <TableHead className="uppercase tracking-wider text-xs font-semibold text-[#94A3B8]">Stores</TableHead>
+                      <TableHead className="uppercase tracking-wider text-xs font-semibold text-[#94A3B8]">Created</TableHead>
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -467,7 +467,7 @@ export function MerchantManagement() {
                     {merchants.map((merchant) => (
                       <TableRow
                         key={merchant.id}
-                        className="cursor-pointer hover:bg-muted/50 transition-colors group"
+                        className="cursor-pointer hover:bg-white/5 transition-colors group"
                         onClick={() => viewMerchantDetail(merchant.id)}
                       >
                         <TableCell onClick={(e) => e.stopPropagation()}>
@@ -481,10 +481,10 @@ export function MerchantManagement() {
                             <div className={`h-9 w-9 rounded-full bg-gradient-to-br ${getAvatarGradient(merchant.businessName)} flex items-center justify-center text-white text-sm font-bold shadow-sm shrink-0`}>
                               {merchant.businessName[0].toUpperCase()}
                             </div>
-                            <span className="font-medium group-hover:text-primary transition-colors">{merchant.businessName}</span>
+                            <span className="font-medium group-hover:text-[#00D4FF] transition-colors text-[#F9FAFB]">{merchant.businessName}</span>
                           </div>
                         </TableCell>
-                        <TableCell className="text-muted-foreground">{merchant.email}</TableCell>
+                        <TableCell className="text-[#94A3B8]">{merchant.email}</TableCell>
                         <TableCell>
                           <Badge
                             variant="outline"
@@ -502,12 +502,12 @@ export function MerchantManagement() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <span className="flex items-center gap-1">
-                            <Store className="h-3 w-3 text-muted-foreground" />
+                          <span className="flex items-center gap-1 text-[#94A3B8]">
+                            <Store className="h-3 w-3" />
                             {merchant._count.stores}
                           </span>
                         </TableCell>
-                        <TableCell className="text-muted-foreground text-sm">
+                        <TableCell className="text-[#94A3B8] text-sm">
                           {new Date(merchant.createdAt).toLocaleDateString()}
                         </TableCell>
                         <TableCell>
@@ -591,10 +591,10 @@ export function MerchantManagement() {
           ) : selectedMerchant ? (
             <div>
               {/* Header with gradient background */}
-              <div className="relative bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-6 overflow-hidden">
+              <div className="relative bg-gradient-to-r from-[#0A0F1E] via-[#111827] to-[#0A0F1E] p-6 overflow-hidden">
                 <div className="absolute inset-0 opacity-20">
-                  <div className="absolute top-0 right-0 w-48 h-48 bg-rose-500/20 rounded-full blur-3xl" />
-                  <div className="absolute bottom-0 left-0 w-32 h-32 bg-violet-500/20 rounded-full blur-3xl" />
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-[#00D4FF]/20 rounded-full blur-3xl" />
+                  <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#A78BFA]/20 rounded-full blur-3xl" />
                 </div>
                 <div className="relative flex items-start gap-4">
                   {/* Avatar with gradient */}
@@ -618,7 +618,7 @@ export function MerchantManagement() {
                   </div>
                   <div className="flex gap-2 shrink-0">
                     {selectedMerchant.status !== 'active' && (
-                      <Button size="sm" onClick={() => updateMerchantStatus(selectedMerchant.id, 'active')} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                      <Button size="sm" onClick={() => updateMerchantStatus(selectedMerchant.id, 'active')} className="bg-[#00D4FF] hover:bg-[#0891B2] text-[#0A0F1E]">
                         <CheckCircle className="h-4 w-4 mr-1" />Activate
                       </Button>
                     )}
@@ -710,10 +710,10 @@ export function MerchantManagement() {
                       {/* Stats Cards */}
                       <div className="grid grid-cols-4 gap-3">
                         {[
-                          { label: 'Stores', value: selectedMerchant.stores.length, icon: Store, gradient: 'from-emerald-500 to-teal-600' },
-                          { label: 'Products', value: selectedMerchant.stores.reduce((s, st) => s + st._count.products, 0), icon: Package, gradient: 'from-violet-500 to-purple-600' },
-                          { label: 'Orders', value: selectedMerchant.stores.reduce((s, st) => s + st._count.orders, 0), icon: Receipt, gradient: 'from-amber-500 to-orange-600' },
-                          { label: 'Revenue', value: `$${selectedMerchant.subscriptions.reduce((s, sub) => s + sub.plan.price, 0).toLocaleString()}`, icon: CreditCard, gradient: 'from-rose-500 to-pink-600' },
+                          { label: 'Stores', value: selectedMerchant.stores.length, icon: Store, gradient: 'from-[#00D4FF] to-[#0891B2]' },
+                          { label: 'Products', value: selectedMerchant.stores.reduce((s, st) => s + st._count.products, 0), icon: Package, gradient: 'from-[#A78BFA] to-[#7C3AED]' },
+                          { label: 'Orders', value: selectedMerchant.stores.reduce((s, st) => s + st._count.orders, 0), icon: Receipt, gradient: 'from-[#F59E0B] to-[#D97706]' },
+                          { label: 'Revenue', value: `$${selectedMerchant.subscriptions.reduce((s, sub) => s + sub.plan.price, 0).toLocaleString()}`, icon: CreditCard, gradient: 'from-[#F472B6] to-[#DB2777]' },
                         ].map((stat) => (
                           <div key={stat.label} className="relative p-3 rounded-lg border overflow-hidden">
                             <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${stat.gradient}`} />
@@ -722,8 +722,8 @@ export function MerchantManagement() {
                                 <stat.icon className="h-4 w-4 text-white" />
                               </div>
                               <div>
-                                <p className="text-xs text-muted-foreground">{stat.label}</p>
-                                <p className="text-sm font-bold">{stat.value}</p>
+                                <p className="text-xs text-[#94A3B8]">{stat.label}</p>
+                                <p className="text-sm font-bold text-[#F9FAFB]">{stat.value}</p>
                               </div>
                             </div>
                           </div>
@@ -741,11 +741,11 @@ export function MerchantManagement() {
                               <div key={store.id} className="flex items-center justify-between p-3 rounded-lg border">
                                 <div>
                                   <p className="text-sm font-medium">{store.name}</p>
-                                  <p className="text-xs text-muted-foreground">{store.slug}</p>
+                                  <p className="text-xs text-[#94A3B8]">{store.slug}</p>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                  <span className="text-xs text-muted-foreground">{store._count.products} products</span>
-                                  <span className="text-xs text-muted-foreground">{store._count.orders} orders</span>
+                                  <span className="text-xs text-[#94A3B8]">{store._count.products} products</span>
+                                  <span className="text-xs text-[#94A3B8]">{store._count.orders} orders</span>
                                   <Badge variant="secondary" className={statusColors[store.status] || ''}>
                                     {store.status}
                                   </Badge>
@@ -771,7 +771,7 @@ export function MerchantManagement() {
                                   </div>
                                   <div>
                                     <p className="text-sm font-medium">{mu.user.name || mu.user.email}</p>
-                                    <p className="text-xs text-muted-foreground">{mu.user.email}</p>
+                                    <p className="text-xs text-[#94A3B8]">{mu.user.email}</p>
                                   </div>
                                 </div>
                                 <Badge variant="outline" className="capitalize">{mu.role}</Badge>
@@ -791,7 +791,7 @@ export function MerchantManagement() {
                           <Activity className="h-5 w-5 text-muted-foreground" />
                           <div>
                             <p className="text-sm font-medium">Account Status</p>
-                            <p className="text-xs text-muted-foreground">Toggle merchant account status</p>
+                            <p className="text-xs text-[#94A3B8]">Toggle merchant account status</p>
                           </div>
                         </div>
                         <div className="flex gap-2">
@@ -829,7 +829,7 @@ export function MerchantManagement() {
                               </div>
                               <div className="pt-1">
                                 <p className="text-sm font-medium">{item.label}</p>
-                                <p className="text-xs text-muted-foreground">{item.value}</p>
+                                <p className="text-xs text-[#94A3B8]">{item.value}</p>
                               </div>
                             </div>
                           ))}
@@ -847,7 +847,7 @@ export function MerchantManagement() {
                               <div key={sub.id} className="flex items-center justify-between p-3 rounded-lg border">
                                 <div>
                                   <p className="text-sm font-medium">{sub.plan.displayName}</p>
-                                  <p className="text-xs text-muted-foreground">
+                                  <p className="text-xs text-[#94A3B8]">
                                     {new Date(sub.currentPeriodStart).toLocaleDateString()} - {new Date(sub.currentPeriodEnd).toLocaleDateString()}
                                   </p>
                                 </div>

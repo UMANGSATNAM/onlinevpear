@@ -83,23 +83,23 @@ import {
 const chartConfig = {
   revenue: {
     label: 'Revenue',
-    color: 'hsl(var(--chart-1))',
+    color: '#00D4FF',
   },
   merchants: {
     label: 'New Merchants',
-    color: 'hsl(var(--chart-2))',
+    color: '#00D4FF',
   },
   starter: {
     label: 'Starter',
-    color: '#10b981',
+    color: '#00D4FF',
   },
   professional: {
     label: 'Professional',
-    color: '#8b5cf6',
+    color: '#A78BFA',
   },
   enterprise: {
     label: 'Enterprise',
-    color: '#f59e0b',
+    color: '#F59E0B',
   },
 } satisfies ChartConfig
 
@@ -153,23 +153,23 @@ const itemVariants = {
 }
 
 const statusColors: Record<string, string> = {
-  active: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-  trial: 'bg-amber-100 text-amber-800 border-amber-200',
-  suspended: 'bg-red-100 text-red-800 border-red-200',
-  cancelled: 'bg-gray-100 text-gray-800 border-gray-200',
+  active: 'bg-[#00D4FF]/15 text-[#00D4FF] border-[#00D4FF]/20',
+  trial: 'bg-[#F59E0B]/15 text-[#F59E0B] border-[#F59E0B]/20',
+  suspended: 'bg-red-500/15 text-red-400 border-red-500/20',
+  cancelled: 'bg-gray-500/15 text-gray-400 border-gray-500/20',
 }
 
 const statusDotColors: Record<string, string> = {
-  active: 'bg-emerald-500',
-  trial: 'bg-amber-500',
+  active: 'bg-[#00D4FF]',
+  trial: 'bg-[#F59E0B]',
   suspended: 'bg-red-500',
   cancelled: 'bg-gray-400',
 }
 
 const rankGradients = [
-  'from-amber-400 to-yellow-500',
-  'from-slate-300 to-slate-400',
-  'from-orange-400 to-amber-600',
+  'from-[#F59E0B] to-[#FBBF24]',
+  'from-[#94A3B8] to-[#CBD5E1]',
+  'from-[#D97706] to-[#F59E0B]',
 ]
 
 // Animated Counter Component
@@ -214,11 +214,11 @@ function ProgressRing({ value, size = 64, strokeWidth = 5, color = 'emerald' }: 
   const offset = circumference - (value / 100) * circumference
 
   const colorMap: Record<string, string> = {
-    emerald: '#10b981',
-    amber: '#f59e0b',
+    emerald: '#00D4FF',
+    amber: '#F59E0B',
     red: '#ef4444',
-    sky: '#0ea5e9',
-    violet: '#8b5cf6',
+    sky: '#38BDF8',
+    violet: '#A78BFA',
   }
 
   return (
@@ -248,7 +248,7 @@ function ProgressRing({ value, size = 64, strokeWidth = 5, color = 'emerald' }: 
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-xs font-bold">{Math.round(value)}%</span>
+        <span className="text-xs font-bold text-[#F9FAFB]">{Math.round(value)}%</span>
       </div>
     </div>
   )
@@ -269,7 +269,7 @@ interface ActivityEvent {
 const generateMockActivities = (merchants: DashboardData['recentMerchants']): ActivityEvent[] => {
   const events: ActivityEvent[] = [
     {
-      id: '1', type: 'merchant_signup', message: 'New merchant registered', detail: 'TechStyle Apparel registered on the Starter plan. Email verification pending. Store: techstyle.shopforge.io',
+      id: '1', type: 'merchant_signup', message: 'New merchant registered', detail: 'TechStyle Apparel registered on the Starter plan. Email verification pending. Store: techstyle.vepar.in',
       timestamp: new Date(Date.now() - 2 * 60000).toISOString(),
       icon: UserPlus, iconColor: 'text-emerald-600', iconBg: 'bg-emerald-100',
     },
@@ -363,10 +363,10 @@ export function AdminOverview() {
       value: data.stats.totalMerchants.toLocaleString(),
       sub: `${data.stats.activeMerchants} active, ${data.stats.trialMerchants} trial`,
       icon: Store,
-      gradient: 'from-emerald-500 to-teal-600',
-      bgGradient: 'from-emerald-50 to-teal-50',
-      iconBg: 'bg-emerald-100',
-      iconColor: 'text-emerald-600',
+      gradient: 'from-[#00D4FF] to-[#0891B2]',
+      bgGradient: '',
+      iconBg: 'bg-[#00D4FF]/15',
+      iconColor: 'text-[#00D4FF]',
       change: data.growth.merchants,
       changeLabel: 'vs last month',
     },
@@ -376,10 +376,10 @@ export function AdminOverview() {
       value: `$${data.stats.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
       sub: `$${data.stats.recentRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })} last 30d`,
       icon: DollarSign,
-      gradient: 'from-violet-500 to-purple-600',
-      bgGradient: 'from-violet-50 to-purple-50',
-      iconBg: 'bg-violet-100',
-      iconColor: 'text-violet-600',
+      gradient: 'from-[#A78BFA] to-[#7C3AED]',
+      bgGradient: '',
+      iconBg: 'bg-[#A78BFA]/15',
+      iconColor: 'text-[#A78BFA]',
       change: null,
       changeLabel: '',
     },
@@ -389,10 +389,10 @@ export function AdminOverview() {
       value: data.stats.activeProducts.toLocaleString(),
       sub: `${data.stats.totalProducts} total products`,
       icon: ShoppingCart,
-      gradient: 'from-sky-500 to-blue-600',
-      bgGradient: 'from-sky-50 to-blue-50',
-      iconBg: 'bg-sky-100',
-      iconColor: 'text-sky-600',
+      gradient: 'from-[#38BDF8] to-[#0284C7]',
+      bgGradient: '',
+      iconBg: 'bg-[#38BDF8]/15',
+      iconColor: 'text-[#38BDF8]',
       change: data.growth.orders,
       changeLabel: 'vs last month',
     },
@@ -402,10 +402,10 @@ export function AdminOverview() {
       value: `${(data.stats.aiUsage.totalTokens / 1000).toFixed(1)}k`,
       sub: `tokens, $${data.stats.aiUsage.totalCost.toFixed(2)} cost`,
       icon: Bot,
-      gradient: 'from-orange-500 to-amber-600',
-      bgGradient: 'from-orange-50 to-amber-50',
-      iconBg: 'bg-orange-100',
-      iconColor: 'text-orange-600',
+      gradient: 'from-[#F59E0B] to-[#D97706]',
+      bgGradient: '',
+      iconBg: 'bg-[#F59E0B]/15',
+      iconColor: 'text-[#F59E0B]',
       change: null,
       changeLabel: '',
     },
@@ -415,10 +415,10 @@ export function AdminOverview() {
       value: data.stats.recentOrders.toLocaleString(),
       sub: `${data.stats.totalOrders} total orders`,
       icon: Zap,
-      gradient: 'from-rose-500 to-pink-600',
-      bgGradient: 'from-rose-50 to-pink-50',
-      iconBg: 'bg-rose-100',
-      iconColor: 'text-rose-600',
+      gradient: 'from-[#F472B6] to-[#DB2777]',
+      bgGradient: '',
+      iconBg: 'bg-[#F472B6]/15',
+      iconColor: 'text-[#F472B6]',
       change: data.growth.orders,
       changeLabel: 'vs last month',
     },
@@ -436,9 +436,9 @@ export function AdminOverview() {
 
   // Revenue breakdown pie chart data
   const revenueBreakdownData = [
-    { name: 'Starter', value: 20, amount: '$7,800', color: '#10b981' },
-    { name: 'Professional', value: 45, amount: '$17,550', color: '#8b5cf6' },
-    { name: 'Enterprise', value: 35, amount: '$13,650', color: '#f59e0b' },
+    { name: 'Starter', value: 20, amount: '$7,800', color: '#00D4FF' },
+    { name: 'Professional', value: 45, amount: '$17,550', color: '#A78BFA' },
+    { name: 'Enterprise', value: 35, amount: '$13,650', color: '#F59E0B' },
   ]
 
   // Platform health indicators with status logic
@@ -454,12 +454,12 @@ export function AdminOverview() {
 
   // Quick actions - 6 action buttons
   const quickActions = [
-    { id: 'add-merchant', label: 'Add Merchant', icon: UserPlus, gradient: 'from-emerald-500 to-teal-600', hoverBg: 'hover:from-emerald-50 hover:to-teal-50', iconBg: 'bg-emerald-100', iconColor: 'text-emerald-600', description: 'Register a new merchant account' },
-    { id: 'view-reports', label: 'View Reports', icon: FileBarChart, gradient: 'from-violet-500 to-purple-600', hoverBg: 'hover:from-violet-50 hover:to-purple-50', iconBg: 'bg-violet-100', iconColor: 'text-violet-600', description: 'Generate analytics reports' },
-    { id: 'system-config', label: 'System Config', icon: Settings, gradient: 'from-slate-500 to-slate-600', hoverBg: 'hover:from-slate-50 hover:to-slate-100', iconBg: 'bg-slate-100', iconColor: 'text-slate-600', description: 'Configure platform settings' },
-    { id: 'send-notification', label: 'Send Notification', icon: Bell, gradient: 'from-sky-500 to-blue-600', hoverBg: 'hover:from-sky-50 hover:to-blue-50', iconBg: 'bg-sky-100', iconColor: 'text-sky-600', description: 'Broadcast to all merchants' },
-    { id: 'export-data', label: 'Export Data', icon: Download, gradient: 'from-amber-500 to-orange-600', hoverBg: 'hover:from-amber-50 hover:to-orange-50', iconBg: 'bg-amber-100', iconColor: 'text-amber-600', description: 'Export platform data to CSV' },
-    { id: 'run-maintenance', label: 'Run Maintenance', icon: Wrench, gradient: 'from-rose-500 to-pink-600', hoverBg: 'hover:from-rose-50 hover:to-pink-50', iconBg: 'bg-rose-100', iconColor: 'text-rose-600', description: 'Schedule maintenance tasks' },
+    { id: 'add-merchant', label: 'Add Merchant', icon: UserPlus, gradient: 'from-[#00D4FF] to-[#0891B2]', hoverBg: 'hover:from-[#00D4FF]/10 hover:to-[#0891B2]/10', iconBg: 'bg-[#00D4FF]/15', iconColor: 'text-[#00D4FF]', description: 'Register a new merchant account' },
+    { id: 'view-reports', label: 'View Reports', icon: FileBarChart, gradient: 'from-[#A78BFA] to-[#7C3AED]', hoverBg: 'hover:from-[#A78BFA]/10 hover:to-[#7C3AED]/10', iconBg: 'bg-[#A78BFA]/15', iconColor: 'text-[#A78BFA]', description: 'Generate analytics reports' },
+    { id: 'system-config', label: 'System Config', icon: Settings, gradient: 'from-[#94A3B8] to-[#64748B]', hoverBg: 'hover:from-[#94A3B8]/10 hover:to-[#64748B]/10', iconBg: 'bg-[#94A3B8]/15', iconColor: 'text-[#94A3B8]', description: 'Configure platform settings' },
+    { id: 'send-notification', label: 'Send Notification', icon: Bell, gradient: 'from-[#38BDF8] to-[#0284C7]', hoverBg: 'hover:from-[#38BDF8]/10 hover:to-[#0284C7]/10', iconBg: 'bg-[#38BDF8]/15', iconColor: 'text-[#38BDF8]', description: 'Broadcast to all merchants' },
+    { id: 'export-data', label: 'Export Data', icon: Download, gradient: 'from-[#F59E0B] to-[#D97706]', hoverBg: 'hover:from-[#F59E0B]/10 hover:to-[#D97706]/10', iconBg: 'bg-[#F59E0B]/15', iconColor: 'text-[#F59E0B]', description: 'Export platform data to CSV' },
+    { id: 'run-maintenance', label: 'Run Maintenance', icon: Wrench, gradient: 'from-[#F472B6] to-[#DB2777]', hoverBg: 'hover:from-[#F472B6]/10 hover:to-[#DB2777]/10', iconBg: 'bg-[#F472B6]/15', iconColor: 'text-[#F472B6]', description: 'Schedule maintenance tasks' },
   ]
 
   // Platform Alerts
@@ -467,15 +467,15 @@ export function AdminOverview() {
     { id: '1', title: 'High CPU Usage Warning', severity: 'critical' as const, icon: AlertOctagon, message: 'Server node-3 CPU at 89%. Auto-scaling triggered.', timestamp: new Date(Date.now() - 5 * 60000).toISOString() },
     { id: '2', title: 'New Merchant Signup', severity: 'info' as const, icon: UserPlus, message: 'TechStyle Apparel registered on Starter plan.', timestamp: new Date(Date.now() - 12 * 60000).toISOString() },
     { id: '3', title: 'Payment Failure', severity: 'warning' as const, icon: CreditCard, message: 'Subscription renewal failed for Urban Gear. Card declined.', timestamp: new Date(Date.now() - 25 * 60000).toISOString() },
-    { id: '4', title: 'SSL Certificate Expiring', severity: 'warning' as const, icon: Shield, message: 'SSL cert for api.shopforge.io expires in 14 days.', timestamp: new Date(Date.now() - 45 * 60000).toISOString() },
+    { id: '4', title: 'SSL Certificate Expiring', severity: 'warning' as const, icon: Shield, message: 'SSL cert for api.vepar.in expires in 14 days.', timestamp: new Date(Date.now() - 45 * 60000).toISOString() },
     { id: '5', title: 'Database Backup Completed', severity: 'success' as const, icon: CheckCircle2, message: 'Full backup completed. Size: 2.4 GB. Verified.', timestamp: new Date(Date.now() - 60 * 60000).toISOString() },
   ]
 
   const severityStyles: Record<string, { badge: string; bg: string; border: string }> = {
-    critical: { badge: 'bg-red-100 text-red-800 border-red-200', bg: 'bg-red-50/50', border: 'border-red-200/50' },
-    warning: { badge: 'bg-amber-100 text-amber-800 border-amber-200', bg: 'bg-amber-50/50', border: 'border-amber-200/50' },
-    info: { badge: 'bg-sky-100 text-sky-800 border-sky-200', bg: 'bg-sky-50/50', border: 'border-sky-200/50' },
-    success: { badge: 'bg-emerald-100 text-emerald-800 border-emerald-200', bg: 'bg-emerald-50/50', border: 'border-emerald-200/50' },
+    critical: { badge: 'bg-red-500/15 text-red-400 border-red-500/20', bg: 'bg-red-500/5', border: 'border-red-500/20' },
+    warning: { badge: 'bg-[#F59E0B]/15 text-[#F59E0B] border-[#F59E0B]/20', bg: 'bg-[#F59E0B]/5', border: 'border-[#F59E0B]/20' },
+    info: { badge: 'bg-[#00D4FF]/15 text-[#00D4FF] border-[#00D4FF]/20', bg: 'bg-[#00D4FF]/5', border: 'border-[#00D4FF]/20' },
+    success: { badge: 'bg-[#00D4FF]/15 text-[#00D4FF] border-[#00D4FF]/20', bg: 'bg-[#00D4FF]/5', border: 'border-[#00D4FF]/20' },
   }
 
   const handleQuickAction = async (actionId: string) => {
@@ -499,18 +499,19 @@ export function AdminOverview() {
     >
       {/* Page Header with LIVE Badge */}
       <motion.div variants={itemVariants}>
-        <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-6 text-white">
-          <div className="absolute inset-0 opacity-[0.03]" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+        <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-[#0A0F1E] via-[#111827] to-[#0A0F1E] p-6 text-white border border-white/5">
+          <div className="absolute inset-0 opacity-[0.05]" style={{
+            backgroundImage: 'linear-gradient(rgba(0,212,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.1) 1px, transparent 1px)',
+            backgroundSize: '40px 40px',
           }} />
           <div className="relative flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold tracking-tight">Platform Overview</h2>
-              <p className="text-slate-300 mt-1">Monitor your entire platform at a glance</p>
+              <h2 className="text-2xl font-bold tracking-tight text-[#F9FAFB]" style={{ fontFamily: "'Syne', sans-serif" }}>Platform Overview</h2>
+              <p className="text-[#94A3B8] mt-1">Monitor your entire platform at a glance</p>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="border-emerald-400/50 text-emerald-300 bg-emerald-500/10">
-                <span className="mr-1.5 inline-block h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              <Badge variant="outline" className="border-[#00D4FF]/30 text-[#00D4FF] bg-[#00D4FF]/10">
+                <span className="mr-1.5 inline-block h-2 w-2 rounded-full bg-[#00D4FF] animate-pulse" />
                 All Systems Operational
               </Badge>
               <Badge className="bg-red-500/90 text-white border-0 animate-pulse">
@@ -526,13 +527,13 @@ export function AdminOverview() {
       <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-5">
         {statCards.map((stat) => (
           <motion.div key={stat.title} variants={itemVariants}>
-            <Card className={`relative overflow-hidden group hover:shadow-lg transition-all duration-300 bg-gradient-to-br ${stat.bgGradient}`}>
+            <Card className="relative overflow-hidden group hover:shadow-lg hover:shadow-[#00D4FF]/5 transition-all duration-300 bg-white/5 backdrop-blur-xl border-white/10">
               <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${stat.gradient}`} />
               <CardContent className="p-5 pt-6">
                 <div className="flex items-start justify-between">
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                    <p className="text-2xl font-bold tracking-tight">
+                    <p className="text-sm font-medium text-[#94A3B8]">{stat.title}</p>
+                    <p className="text-2xl font-bold tracking-tight text-[#F9FAFB]">
                       {stat.title === 'Total Revenue' ? (
                         <>${<AnimatedCounter value={stat.numericValue} />}.00</>
                       ) : stat.title === 'AI Usage' ? (
@@ -550,24 +551,24 @@ export function AdminOverview() {
                   {stat.change !== null ? (
                     <>
                       {stat.change >= 0 ? (
-                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-50">
-                          <TrendingUp className="h-3 w-3 text-emerald-600" />
-                          <span className="text-xs font-semibold text-emerald-600">{Math.abs(stat.change).toFixed(1)}%</span>
+                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#00D4FF]/10">
+                          <TrendingUp className="h-3 w-3 text-[#00D4FF]" />
+                          <span className="text-xs font-semibold text-[#00D4FF]">{Math.abs(stat.change).toFixed(1)}%</span>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-red-50">
-                          <TrendingDown className="h-3 w-3 text-red-600" />
-                          <span className="text-xs font-semibold text-red-600">{Math.abs(stat.change).toFixed(1)}%</span>
+                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-red-500/10">
+                          <TrendingDown className="h-3 w-3 text-red-400" />
+                          <span className="text-xs font-semibold text-red-400">{Math.abs(stat.change).toFixed(1)}%</span>
                         </div>
                       )}
-                      <span className="text-xs text-muted-foreground">{stat.changeLabel}</span>
+                      <span className="text-xs text-[#94A3B8]">{stat.changeLabel}</span>
                     </>
                   ) : (
-                    <span className="text-xs text-muted-foreground">{stat.sub}</span>
+                    <span className="text-xs text-[#94A3B8]">{stat.sub}</span>
                   )}
                 </div>
                 {stat.change !== null && (
-                  <p className="text-xs text-muted-foreground mt-0.5">{stat.sub}</p>
+                  <p className="text-xs text-[#94A3B8] mt-0.5">{stat.sub}</p>
                 )}
               </CardContent>
             </Card>
@@ -578,18 +579,18 @@ export function AdminOverview() {
       {/* Charts Row */}
       <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
         <motion.div variants={itemVariants}>
-          <Card className="overflow-hidden hover:shadow-lg transition-all duration-300">
+          <Card className="overflow-hidden hover:shadow-lg hover:shadow-[#00D4FF]/5 transition-all duration-300 bg-white/5 backdrop-blur-xl border-white/10">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5 text-chart-1" />
+                  <CardTitle className="text-lg font-semibold flex items-center gap-2 text-[#F9FAFB]" style={{ fontFamily: "'Syne', sans-serif" }}>
+                    <BarChart3 className="h-5 w-5 text-[#00D4FF]" />
                     Revenue Trend
                   </CardTitle>
-                  <CardDescription className="mt-1">Monthly platform revenue over the last 12 months</CardDescription>
+                  <CardDescription className="mt-1 text-[#94A3B8]">Monthly platform revenue over the last 12 months</CardDescription>
                 </div>
-                <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200">
-                  <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <Badge variant="outline" className="text-xs bg-[#00D4FF]/10 text-[#00D4FF] border-[#00D4FF]/20">
+                  <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-[#00D4FF] animate-pulse" />
                   <Eye className="h-3 w-3 mr-1" />
                   Live
                 </Badge>
@@ -600,21 +601,21 @@ export function AdminOverview() {
                 <AreaChart data={data.revenueChart} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#00D4FF" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#00D4FF" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted/50" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-white/5" vertical={false} />
                   <XAxis
                     dataKey="month"
                     className="text-xs"
-                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                    tick={{ fill: '#64748B', fontSize: 12 }}
                     tickLine={false}
                     axisLine={false}
                   />
                   <YAxis
                     className="text-xs"
-                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                    tick={{ fill: '#64748B', fontSize: 12 }}
                     tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
                     tickLine={false}
                     axisLine={false}
@@ -623,11 +624,11 @@ export function AdminOverview() {
                   <Area
                     type="monotone"
                     dataKey="revenue"
-                    stroke="hsl(var(--chart-1))"
+                    stroke="#00D4FF"
                     strokeWidth={2.5}
                     fill="url(#revenueGradient)"
-                    dot={{ fill: 'hsl(var(--chart-1))', r: 3, strokeWidth: 0 }}
-                    activeDot={{ r: 5, strokeWidth: 2, stroke: 'white' }}
+                    dot={{ fill: '#00D4FF', r: 3, strokeWidth: 0 }}
+                    activeDot={{ r: 5, strokeWidth: 2, stroke: '#0A0F1E' }}
                   />
                 </AreaChart>
               </ChartContainer>
@@ -636,17 +637,17 @@ export function AdminOverview() {
         </motion.div>
 
         <motion.div variants={itemVariants}>
-          <Card className="overflow-hidden hover:shadow-lg transition-all duration-300">
+          <Card className="overflow-hidden hover:shadow-lg hover:shadow-[#00D4FF]/5 transition-all duration-300 bg-white/5 backdrop-blur-xl border-white/10">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Globe className="h-5 w-5 text-chart-2" />
+                  <CardTitle className="text-lg font-semibold flex items-center gap-2 text-[#F9FAFB]" style={{ fontFamily: "'Syne', sans-serif" }}>
+                    <Globe className="h-5 w-5 text-[#00D4FF]" />
                     Merchant Growth
                   </CardTitle>
-                  <CardDescription className="mt-1">Monthly new merchant signups</CardDescription>
+                  <CardDescription className="mt-1 text-[#94A3B8]">Monthly new merchant signups</CardDescription>
                 </div>
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" className="text-xs bg-[#00D4FF]/10 text-[#00D4FF] border-[#00D4FF]/20">
                   <ArrowUpRight className="h-3 w-3 mr-1" />
                   Growing
                 </Badge>
@@ -657,21 +658,21 @@ export function AdminOverview() {
                 <BarChart data={merchantGrowthData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="merchantBarGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="hsl(var(--chart-2))" stopOpacity={1} />
-                      <stop offset="100%" stopColor="hsl(var(--chart-2))" stopOpacity={0.6} />
+                      <stop offset="0%" stopColor="#00D4FF" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#00D4FF" stopOpacity={0.6} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted/50" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-white/5" vertical={false} />
                   <XAxis
                     dataKey="month"
                     className="text-xs"
-                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                    tick={{ fill: '#64748B', fontSize: 12 }}
                     tickLine={false}
                     axisLine={false}
                   />
                   <YAxis
                     className="text-xs"
-                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                    tick={{ fill: '#64748B', fontSize: 12 }}
                     tickLine={false}
                     axisLine={false}
                   />
@@ -693,18 +694,18 @@ export function AdminOverview() {
       <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
         {/* Revenue Breakdown Pie Chart */}
         <motion.div variants={itemVariants}>
-          <Card className="relative overflow-hidden h-full">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-violet-500 to-amber-500" />
+          <Card className="relative overflow-hidden h-full bg-white/5 backdrop-blur-xl border-white/10">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#00D4FF] via-[#A78BFA] to-[#F59E0B]" />
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-violet-100">
-                    <DollarSign className="h-4 w-4 text-violet-600" />
+                <CardTitle className="text-lg font-semibold flex items-center gap-2 text-[#F9FAFB]" style={{ fontFamily: "'Syne', sans-serif" }}>
+                  <div className="p-1.5 rounded-lg bg-[#A78BFA]/15">
+                    <DollarSign className="h-4 w-4 text-[#A78BFA]" />
                   </div>
                   Revenue Breakdown
                 </CardTitle>
               </div>
-              <CardDescription>Revenue by subscription plan</CardDescription>
+              <CardDescription className="text-[#94A3B8]">Revenue by subscription plan</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-4">
@@ -733,10 +734,10 @@ export function AdminOverview() {
                       <div className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">{item.name}</span>
-                          <span className="text-sm font-semibold">{item.value}%</span>
+                          <span className="text-sm font-medium text-[#F9FAFB]">{item.name}</span>
+                          <span className="text-sm font-semibold text-[#F9FAFB]">{item.value}%</span>
                         </div>
-                        <span className="text-[11px] text-muted-foreground">{item.amount}</span>
+                        <span className="text-[11px] text-[#94A3B8]">{item.amount}</span>
                       </div>
                     </div>
                   ))}
@@ -748,13 +749,13 @@ export function AdminOverview() {
 
         {/* System Health - SVG Progress Rings */}
         <motion.div variants={itemVariants}>
-          <Card className="relative overflow-hidden h-full">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-500" />
+          <Card className="relative overflow-hidden h-full bg-white/5 backdrop-blur-xl border-white/10">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#00D4FF] via-[#38BDF8] to-[#00D4FF]" />
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-emerald-100">
-                    <Activity className="h-4 w-4 text-emerald-600" />
+                <CardTitle className="text-lg font-semibold flex items-center gap-2 text-[#F9FAFB]" style={{ fontFamily: "'Syne', sans-serif" }}>
+                  <div className="p-1.5 rounded-lg bg-[#00D4FF]/15">
+                    <Activity className="h-4 w-4 text-[#00D4FF]" />
                   </div>
                   System Health
                 </CardTitle>
@@ -763,7 +764,7 @@ export function AdminOverview() {
                   LIVE
                 </Badge>
               </div>
-              <CardDescription>Real-time system monitoring</CardDescription>
+              <CardDescription className="text-[#94A3B8]">Real-time system monitoring</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {healthIndicators.map((indicator) => {
@@ -771,15 +772,15 @@ export function AdminOverview() {
                 const isWarning = indicator.status === 'warning'
 
                 return (
-                  <div key={indicator.name} className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/30 transition-colors">
+                  <div key={indicator.name} className="flex items-center gap-4 p-2 rounded-lg hover:bg-white/5 transition-colors">
                     <ProgressRing value={indicator.ringValue} size={52} strokeWidth={4} color={isWarning ? 'amber' : indicator.color} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <indicator.icon className={`h-3.5 w-3.5 ${isWarning ? 'text-amber-500' : 'text-emerald-500'}`} />
-                          <span className="text-sm font-medium">{indicator.name}</span>
+                          <indicator.icon className={`h-3.5 w-3.5 ${isWarning ? 'text-[#F59E0B]' : 'text-[#00D4FF]'}`} />
+                          <span className="text-sm font-medium text-[#F9FAFB]">{indicator.name}</span>
                         </div>
-                        <span className="text-sm font-semibold">
+                        <span className="text-sm font-semibold text-[#F9FAFB]">
                           {typeof indicator.value === 'number' && indicator.value > 10
                             ? indicator.value.toLocaleString()
                             : indicator.value}
@@ -788,13 +789,13 @@ export function AdminOverview() {
                       </div>
                       <div className="flex items-center gap-1.5 mt-1">
                         {isHealthy ? (
-                          <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0 border border-emerald-200">
-                            <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          <Badge variant="secondary" className="bg-[#00D4FF]/10 text-[#00D4FF] text-[10px] px-1.5 py-0 border border-[#00D4FF]/20">
+                            <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-[#00D4FF] animate-pulse" />
                             Healthy
                           </Badge>
                         ) : (
-                          <Badge variant="secondary" className="bg-amber-100 text-amber-800 text-[10px] px-1.5 py-0 border border-amber-200">
-                            <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                          <Badge variant="secondary" className="bg-[#F59E0B]/10 text-[#F59E0B] text-[10px] px-1.5 py-0 border border-[#F59E0B]/20">
+                            <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-[#F59E0B] animate-pulse" />
                             Warning
                           </Badge>
                         )}
@@ -809,23 +810,23 @@ export function AdminOverview() {
 
         {/* Quick Actions Panel - 6 actions with gradient hover */}
         <motion.div variants={itemVariants}>
-          <Card className="relative overflow-hidden h-full">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 via-orange-400 to-amber-500" />
+          <Card className="relative overflow-hidden h-full bg-white/5 backdrop-blur-xl border-white/10">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#00D4FF] via-[#F59E0B] to-[#F472B6]" />
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                <div className="p-1.5 rounded-lg bg-rose-100">
-                  <Zap className="h-4 w-4 text-rose-600" />
+              <CardTitle className="text-lg font-semibold flex items-center gap-2 text-[#F9FAFB]" style={{ fontFamily: "'Syne', sans-serif" }}>
+                <div className="p-1.5 rounded-lg bg-[#00D4FF]/15">
+                  <Zap className="h-4 w-4 text-[#00D4FF]" />
                 </div>
                 Quick Actions
               </CardTitle>
-              <CardDescription>Common admin operations</CardDescription>
+              <CardDescription className="text-[#94A3B8]">Common admin operations</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-2">
                 {quickActions.map((action, i) => (
                   <motion.button
                     key={action.id}
-                    className={`relative overflow-hidden flex flex-col items-center gap-2 p-3 rounded-xl border transition-all duration-200 text-center group ${action.hoverBg}`}
+                    className={`relative overflow-hidden flex flex-col items-center gap-2 p-3 rounded-xl border border-white/5 bg-white/5 transition-all duration-200 text-center group ${action.hoverBg}`}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => handleQuickAction(action.id)}
@@ -838,14 +839,14 @@ export function AdminOverview() {
                     <div className={`absolute inset-0 bg-gradient-to-br ${action.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-200`} />
                     <div className={`relative p-2 rounded-lg ${action.iconBg} group-hover:scale-110 transition-transform duration-200`}>
                       {quickActionLoading === action.id ? (
-                        <RefreshCw className="h-4 w-4 animate-spin" />
+                        <RefreshCw className="h-4 w-4 animate-spin text-[#F9FAFB]" />
                       ) : (
                         <action.icon className={`h-4 w-4 ${action.iconColor}`} />
                       )}
                     </div>
                     <div className="relative">
-                      <p className="text-xs font-semibold leading-tight">{action.label}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{action.description}</p>
+                      <p className="text-xs font-semibold leading-tight text-[#F9FAFB]">{action.label}</p>
+                      <p className="text-[10px] text-[#94A3B8] mt-0.5 leading-tight">{action.description}</p>
                     </div>
                   </motion.button>
                 ))}
@@ -857,18 +858,18 @@ export function AdminOverview() {
 
       {/* Live Activity Feed */}
       <motion.div variants={itemVariants}>
-        <Card className="relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-500 via-purple-400 to-fuchsia-500" />
+        <Card className="relative overflow-hidden bg-white/5 backdrop-blur-xl border-white/10">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#A78BFA] via-[#00D4FF] to-[#F59E0B]" />
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-violet-100">
-                    <Clock className="h-4 w-4 text-violet-600" />
+                <CardTitle className="text-lg font-semibold flex items-center gap-2 text-[#F9FAFB]" style={{ fontFamily: "'Syne', sans-serif" }}>
+                  <div className="p-1.5 rounded-lg bg-[#A78BFA]/15">
+                    <Clock className="h-4 w-4 text-[#A78BFA]" />
                   </div>
                   Activity Feed
                 </CardTitle>
-                <CardDescription>Real-time platform events</CardDescription>
+                <CardDescription className="text-[#94A3B8]">Real-time platform events</CardDescription>
               </div>
               <Badge className="bg-red-500/90 text-white border-0 text-[10px] px-2 py-0.5 animate-pulse">
                 <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-white" />
@@ -885,20 +886,20 @@ export function AdminOverview() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3, delay: i * 0.08 }}
-                    className="flex items-start gap-3 py-2.5 border-b last:border-b-0 hover:bg-muted/30 transition-colors rounded-md px-1"
+                    className="flex items-start gap-3 py-2.5 border-b border-white/5 last:border-b-0 hover:bg-white/5 transition-colors rounded-md px-1"
                   >
                     <div className={`p-1.5 rounded-lg ${event.iconBg} shrink-0 mt-0.5`}>
                       <event.icon className={`h-3.5 w-3.5 ${event.iconColor}`} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{event.message}</p>
-                      <p className="text-[11px] text-muted-foreground">{formatTimeAgo(event.timestamp)}</p>
+                      <p className="text-sm font-medium truncate text-[#F9FAFB]">{event.message}</p>
+                      <p className="text-[11px] text-[#94A3B8]">{formatTimeAgo(event.timestamp)}</p>
                     </div>
                     {event.type === 'system_alert' && (
-                      <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-1" />
+                      <AlertTriangle className="h-3.5 w-3.5 text-[#F59E0B] shrink-0 mt-1" />
                     )}
                     {event.type === 'payment_received' && (
-                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-1" />
+                      <CheckCircle2 className="h-3.5 w-3.5 text-[#00D4FF] shrink-0 mt-1" />
                     )}
                   </motion.div>
                 ))}
@@ -1044,7 +1045,7 @@ export function AdminOverview() {
                             </div>
                             <div className="rounded-lg bg-background p-2.5 border">
                               <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Store URL</p>
-                              <p className="text-sm font-medium mt-0.5">{merchant.businessName.toLowerCase().replace(/\s+/g, '')}.shopforge.io</p>
+                              <p className="text-sm font-medium mt-0.5">{merchant.businessName.toLowerCase().replace(/\s+/g, '')}.vepar.in</p>
                             </div>
                             <div className="rounded-lg bg-background p-2.5 border">
                               <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Revenue (MTD)</p>

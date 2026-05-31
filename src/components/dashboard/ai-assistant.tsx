@@ -360,7 +360,7 @@ export function AiAssistant() {
                       <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 border-2 border-background" />
                     )}
                   </div>
-                  ShopForge AI
+                  Online Vepar AI
                   {isTyping && (
                     <span className="text-xs font-normal text-muted-foreground flex items-center gap-1">
                       is typing
@@ -499,7 +499,7 @@ export function AiAssistant() {
                               className="h-2 w-2 rounded-full bg-primary/40"
                             />
                           </div>
-                          <span className="text-xs text-muted-foreground">ShopForge AI is thinking...</span>
+                          <span className="text-xs text-muted-foreground">Online Vepar AI is thinking...</span>
                         </div>
                       </div>
                     </motion.div>

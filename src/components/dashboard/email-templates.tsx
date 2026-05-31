@@ -355,26 +355,26 @@ const sampleData: Record<string, string> = {
   order_total: '$149.97',
   order_items: '1x Wireless Headphones - $89.99\n1x Phone Case - $29.99\n1x Charging Cable - $29.99',
   shipping_address: '123 Main Street, Apt 4B\nNew York, NY 10001',
-  store_name: 'ShopForge Store',
+  store_name: 'Online Vepar Store',
   shipping_carrier: 'FedEx',
   tracking_number: '794644790132',
   tracking_url: 'https://track.fedex.com/794644790132',
   estimated_delivery: 'January 18, 2024',
   delivery_date: 'January 18, 2024',
-  review_link: 'https://shopforge.store/review/SF-2024-1234',
+  review_link: 'https://vepar.in/review/SF-2024-1234',
   cart_items: '1x Smart Watch Pro - $199.99\n1x Leather Band - $39.99',
   cart_total: '$239.98',
   discount_offer: '15%',
   discount_code: 'CART15',
-  cart_url: 'https://shopforge.store/cart',
+  cart_url: 'https://vepar.in/cart',
   expiry_hours: '48',
-  store_url: 'https://shopforge.store',
-  reset_url: 'https://shopforge.store/reset-password?token=abc123',
+  store_url: 'https://vepar.in',
+  reset_url: 'https://vepar.in/reset-password?token=abc123',
   expiry_minutes: '30',
   promo_headline: 'Flash Sale: Up to 50% Off Electronics',
   promo_category: 'Electronics',
   promo_end_date: 'January 20, 2024',
-  promo_url: 'https://shopforge.store/sale/electronics',
+  promo_url: 'https://vepar.in/sale/electronics',
   featured_products: '1. Smart Watch Pro - $99.99 (was $199.99)\n2. Wireless Earbuds - $49.99 (was $89.99)\n3. Bluetooth Speaker - $34.99 (was $69.99)',
 }
 
@@ -1210,7 +1210,7 @@ export function EmailTemplates() {
                       </div>
                       <div>
                         <p className="font-bold text-sm">{sampleData.store_name}</p>
-                        <p className="text-[10px] text-muted-foreground">noreply@shopforge.store</p>
+                        <p className="text-[10px] text-muted-foreground">noreply@vepar.in</p>
                       </div>
                     </div>
 

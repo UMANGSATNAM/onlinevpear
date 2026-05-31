@@ -198,7 +198,7 @@ function Camera({ className }: { className?: string }) {
   )
 }
 
-// ─── 10 Pre-built Theme Definitions (fallback if DB empty) ──────────
+// ─── 5 Online Vepar Theme Definitions (fallback if DB empty) ──────────
 
 const BUILT_IN_THEMES: Array<{
   name: string
@@ -212,170 +212,90 @@ const BUILT_IN_THEMES: Array<{
   tags: string[]
 }> = [
   {
-    name: 'Minimal Dawn',
-    description: 'A clean, minimalist theme with lots of whitespace and elegant typography. Perfect for modern brands that want their products to speak for themselves.',
-    category: 'Free',
+    name: 'Lumia',
+    description: 'Luxury jewellery theme with champagne gold accents, editorial photography, and dramatic negative space. Designed for high-end jewellery and premium accessories.',
+    category: 'Premium',
     rating: 4.9,
-    installs: 12400,
-    features: ['Clean Layout', 'White Space Focus', 'Fast Loading', 'Mobile First', 'SEO Optimized'],
+    installs: 8200,
+    features: ['Editorial Carousel', 'Luxury Product Cards', 'Certification Badges', 'Delivery Estimator', 'Crossfade Gallery'],
     config: {
-      primaryColor: '#1a1a2e', accentColor: '#e94560', bgColor: '#ffffff', textColor: '#1a1a2e',
-      fontFamily: 'inter', layoutStyle: 'modern', borderRadius: 'rounded', headerStyle: 'minimal',
-      heroStyle: 'split', productCardStyle: 'clean', buttonStyle: 'rounded',
+      primaryColor: '#0D0D0D', accentColor: '#D4AF37', secondaryAccent: '#F5E6A3', bgColor: '#F8F4EE', textColor: '#0D0D0D',
+      fontFamily: 'playfair', layoutStyle: 'spacious', borderRadius: 'elegant', headerStyle: 'elegant',
+      heroStyle: 'carousel', productCardStyle: 'luxury', buttonStyle: 'outlined',
     },
-    previewGradient: 'from-slate-900 via-slate-800 to-rose-500',
-    tags: ['Minimal', 'Modern', 'Fast'],
+    previewGradient: 'from-gray-950 via-yellow-600 to-amber-300',
+    tags: ['Luxury', 'Jewellery', 'Editorial'],
   },
   {
-    name: 'Bold Commerce',
-    description: 'Make a statement with bold colors and strong visual hierarchy. Ideal for brands that want to stand out and create an impactful first impression.',
+    name: 'Blaze',
+    description: 'Bold D2C fashion/streetwear theme with electric yellow, brutalist typography, and high-energy motion. Built for limited drops and flash sales.',
+    category: 'Free',
+    rating: 4.8,
+    installs: 14500,
+    features: ['Marquee Ticker', 'Real-time Stock Counter', 'Animated Add-to-Cart', 'Urgency Timers', 'Flash Sale Countdown'],
+    config: {
+      primaryColor: '#000000', accentColor: '#FFE600', bgColor: '#FFFFFF', textColor: '#000000',
+      fontFamily: 'montserrat', layoutStyle: 'modern', borderRadius: 'sharp', headerStyle: 'sticky',
+      heroStyle: 'animated', productCardStyle: 'bold', buttonStyle: 'pill',
+    },
+    previewGradient: 'from-black via-yellow-400 to-yellow-200',
+    tags: ['Streetwear', 'Fashion', 'Drops'],
+  },
+  {
+    name: 'Glow',
+    description: 'Beauty & skincare theme with blush rose and sage green tones. Science-backed trust signals, ingredient-forward design, and skin quiz personalization.',
     category: 'Free',
     rating: 4.7,
-    installs: 9800,
-    features: ['Bold Colors', 'Strong CTAs', 'Dynamic Layout', 'Animated Elements', 'High Contrast'],
+    installs: 11800,
+    features: ['Skin Quiz CTA', 'Before/After Slider', 'Ingredient Highlights', 'Dermatologist Quotes', 'Routine Builder'],
     config: {
-      primaryColor: '#ff6b35', accentColor: '#004e89', bgColor: '#ffffff', textColor: '#1a1a1a',
-      fontFamily: 'montserrat', layoutStyle: 'modern', borderRadius: 'sharp', headerStyle: 'fullwidth',
-      heroStyle: 'fullscreen', productCardStyle: 'bold', buttonStyle: 'pill',
+      primaryColor: '#F4B8C1', accentColor: '#A8C5A0', secondaryAccent: '#FFD6DE', bgColor: '#FFF9F5', textColor: '#4A3040',
+      fontFamily: 'playfair', layoutStyle: 'spacious', borderRadius: 'soft', headerStyle: 'centered',
+      heroStyle: 'slider', productCardStyle: 'soft', buttonStyle: 'rounded',
     },
-    previewGradient: 'from-orange-500 via-orange-600 to-blue-800',
-    tags: ['Bold', 'Vibrant', 'Impact'],
+    previewGradient: 'from-pink-300 via-rose-200 to-green-200',
+    tags: ['Beauty', 'Skincare', 'Feminine'],
   },
   {
-    name: 'Elegant Luxe',
-    description: 'A luxurious, premium theme with dark accents and sophisticated color palette. Designed for high-end fashion, jewelry, and luxury brands.',
+    name: 'Bolt',
+    description: 'Electronics & gadgets theme with deep navy, electric blue accents, and spec-sheet data density. Dark, technical, with EMI calculator and comparison features.',
     category: 'Premium',
     rating: 4.8,
-    installs: 7600,
-    features: ['Luxury Feel', 'Dark Mode Ready', 'Parallax Effects', 'Elegant Typography', 'Premium Animations'],
+    installs: 9600,
+    features: ['Spec Comparison', 'EMI Calculator', 'Warranty Info', 'Competitor Compare', 'Review Aggregator'],
     config: {
-      primaryColor: '#2c003e', accentColor: '#c874b2', bgColor: '#faf5ff', textColor: '#2c003e',
-      fontFamily: 'playfair', layoutStyle: 'spacious', borderRadius: 'elegant', headerStyle: 'centered',
-      heroStyle: 'parallax', productCardStyle: 'luxury', buttonStyle: 'outlined',
-    },
-    previewGradient: 'from-purple-900 via-fuchsia-800 to-pink-400',
-    tags: ['Luxury', 'Fashion', 'Sophisticated'],
-  },
-  {
-    name: 'Fresh Garden',
-    description: 'Nature-inspired theme with earthy greens and organic shapes. Great for eco-friendly, sustainable, organic, and wellness brands.',
-    category: 'Free',
-    rating: 4.6,
-    installs: 6200,
-    features: ['Organic Shapes', 'Green Palette', 'Eco Vibe', 'Soft Transitions', 'Nature Icons'],
-    config: {
-      primaryColor: '#2d6a4f', accentColor: '#95d5b2', bgColor: '#f0fdf4', textColor: '#1b4332',
-      fontFamily: 'lora', layoutStyle: 'spacious', borderRadius: 'organic', headerStyle: 'transparent',
-      heroStyle: 'image-first', productCardStyle: 'soft', buttonStyle: 'rounded',
-    },
-    previewGradient: 'from-emerald-800 via-emerald-600 to-green-300',
-    tags: ['Eco', 'Nature', 'Organic'],
-  },
-  {
-    name: 'Sunset Glow',
-    description: 'Warm, inviting theme with amber and sunset-inspired colors. Perfect for lifestyle, home decor, and artisan brands that want a cozy feel.',
-    category: 'Free',
-    rating: 4.5,
-    installs: 8900,
-    features: ['Warm Tones', 'Inviting Layout', 'Storytelling Focus', 'Newsletter Section', 'Instagram Feed'],
-    config: {
-      primaryColor: '#d97706', accentColor: '#ea580c', bgColor: '#fffbeb', textColor: '#78350f',
-      fontFamily: 'poppins', layoutStyle: 'classic', borderRadius: 'soft', headerStyle: 'sticky',
-      heroStyle: 'slider', productCardStyle: 'warm', buttonStyle: 'rounded',
-    },
-    previewGradient: 'from-amber-600 via-orange-500 to-red-400',
-    tags: ['Warm', 'Cozy', 'Lifestyle'],
-  },
-  {
-    name: 'Ocean Breeze',
-    description: 'Cool, calming blues with a fresh oceanic feel. Ideal for swimwear, beachwear, water sports, and coastal lifestyle brands.',
-    category: 'Premium',
-    rating: 4.7,
-    installs: 5400,
-    features: ['Cool Palette', 'Wave Animations', 'Fluid Layout', 'Video Hero', 'Watercolor Effects'],
-    config: {
-      primaryColor: '#0c4a6e', accentColor: '#06b6d4', bgColor: '#f0f9ff', textColor: '#0c4a6e',
-      fontFamily: 'inter', layoutStyle: 'modern', borderRadius: 'fluid', headerStyle: 'floating',
-      heroStyle: 'video', productCardStyle: 'wave', buttonStyle: 'pill',
-    },
-    previewGradient: 'from-sky-900 via-cyan-600 to-cyan-300',
-    tags: ['Ocean', 'Cool', 'Fresh'],
-  },
-  {
-    name: 'Midnight Elite',
-    description: 'Professional dark mode theme with sleek gradients and modern aesthetics. Built for tech, SaaS, and digital product stores.',
-    category: 'Premium',
-    rating: 4.9,
-    installs: 11200,
-    features: ['Dark Mode', 'Sleek Gradients', 'Tech Vibe', 'Glassmorphism', 'Micro-animations'],
-    config: {
-      primaryColor: '#7c3aed', accentColor: '#a78bfa', bgColor: '#0f0f23', textColor: '#e2e8f0',
+      primaryColor: '#0F1629', accentColor: '#0EA5E9', secondaryAccent: '#CBD5E1', bgColor: '#0F1629', textColor: '#E2E8F0',
       fontFamily: 'inter', layoutStyle: 'modern', borderRadius: 'sharp', headerStyle: 'glass',
-      heroStyle: 'gradient', productCardStyle: 'glass', buttonStyle: 'glow',
+      heroStyle: 'gradient', productCardStyle: 'neon', buttonStyle: 'glow',
     },
-    previewGradient: 'from-violet-900 via-purple-700 to-indigo-400',
-    tags: ['Dark', 'Tech', 'Modern'],
+    previewGradient: 'from-slate-950 via-blue-600 to-cyan-400',
+    tags: ['Electronics', 'Tech', 'Gadgets'],
   },
   {
-    name: 'Rose Boutique',
-    description: 'Feminine and elegant with soft rose tones and delicate details. Designed for fashion, beauty, cosmetics, and jewelry stores.',
+    name: 'Bazaar',
+    description: 'Multi-category Indian market theme with saffron and teal, flash-sale ready, COD badges, pincode checker, and regional language support. India-first design.',
     category: 'Free',
-    rating: 4.6,
-    installs: 7100,
-    features: ['Rose Palette', 'Feminine Touch', 'Elegant Details', 'Wishlist Ready', 'Quick View'],
+    rating: 4.9,
+    installs: 22000,
+    features: ['COD Badge', 'Pincode Checker', 'EMI Breakdown', 'Flash Sale Timer', 'Regional Language'],
     config: {
-      primaryColor: '#be185d', accentColor: '#f9a8d4', bgColor: '#fdf2f8', textColor: '#831843',
-      fontFamily: 'playfair', layoutStyle: 'elegant', borderRadius: 'soft', headerStyle: 'elegant',
-      heroStyle: 'carousel', productCardStyle: 'boutique', buttonStyle: 'rounded',
+      primaryColor: '#FF9500', accentColor: '#0D9488', secondaryAccent: '#FCD34D', bgColor: '#FAFAF9', textColor: '#1C1917',
+      fontFamily: 'poppins', layoutStyle: 'classic', borderRadius: 'rounded', headerStyle: 'fullwidth',
+      heroStyle: 'fullscreen', productCardStyle: 'warm', buttonStyle: 'rounded',
     },
-    previewGradient: 'from-pink-800 via-rose-500 to-pink-300',
-    tags: ['Fashion', 'Beauty', 'Feminine'],
-  },
-  {
-    name: 'Rustic Charm',
-    description: 'Earthy, warm theme with handcrafted feel and vintage accents. Perfect for artisan, handmade, craft, and farmhouse-style brands.',
-    category: 'Free',
-    rating: 4.4,
-    installs: 4300,
-    features: ['Vintage Feel', 'Handcrafted Vibe', 'Earthy Tones', 'Story Sections', 'Custom Badges'],
-    config: {
-      primaryColor: '#92400e', accentColor: '#d97706', bgColor: '#fefce8', textColor: '#451a03',
-      fontFamily: 'lora', layoutStyle: 'classic', borderRadius: 'worn', headerStyle: 'banner',
-      heroStyle: 'storytelling', productCardStyle: 'rustic', buttonStyle: 'solid',
-    },
-    previewGradient: 'from-amber-900 via-yellow-800 to-amber-500',
-    tags: ['Vintage', 'Handmade', 'Earthy'],
-  },
-  {
-    name: 'Neon Pulse',
-    description: 'Futuristic, high-energy theme with neon accents and dynamic animations. Built for gaming, streetwear, and youth-culture brands.',
-    category: 'Premium',
-    rating: 4.8,
-    installs: 6800,
-    features: ['Neon Accents', 'Glitch Effects', 'Dynamic Animations', 'Countdown Timers', 'Limited Edition Badges'],
-    config: {
-      primaryColor: '#000000', accentColor: '#22d3ee', secondaryAccent: '#f43f5e', bgColor: '#030712', textColor: '#f1f5f9',
-      fontFamily: 'montserrat', layoutStyle: 'modern', borderRadius: 'sharp', headerStyle: 'fixed',
-      heroStyle: 'animated', productCardStyle: 'neon', buttonStyle: 'outlined-neon',
-    },
-    previewGradient: 'from-gray-950 via-cyan-500 to-rose-500',
-    tags: ['Neon', 'Gaming', 'Streetwear'],
+    previewGradient: 'from-orange-500 via-amber-400 to-teal-500',
+    tags: ['Indian', 'Marketplace', 'Flash Sale'],
   },
 ]
 
 // ─── Theme Key Mapping ───────────────────────────────────────────────
 
 const THEME_KEY_MAP: Record<string, string> = {
-  'Minimal Dawn': 'minimal-dawn',
-  'Bold Commerce': 'bold-commerce',
-  'Elegant Luxe': 'elegant-luxe',
-  'Fresh Garden': 'fresh-garden',
-  'Sunset Glow': 'sunset-glow',
-  'Ocean Breeze': 'ocean-breeze',
-  'Midnight Elite': 'midnight-elite',
-  'Rose Boutique': 'rose-boutique',
-  'Rustic Charm': 'rustic-charm',
-  'Neon Pulse': 'neon-pulse',
+  'Lumia': 'lumia',
+  'Blaze': 'blaze',
+  'Glow': 'glow',
+  'Bolt': 'bolt',
+  'Bazaar': 'bazaar',
 }
 
 // ─── Border Radius Mapping ───────────────────────────────────────────
@@ -405,7 +325,7 @@ function getThemeLayoutConfig(themeName: string): ThemeLayoutConfig | null {
 // ─── Build initial editor state from theme config ────────────────────
 
 function buildEditorState(themeConfig: ThemeConfig, layoutConfig: ThemeLayoutConfig | null): EditorState {
-  const layout = layoutConfig ?? THEME_CONFIGS['minimal-dawn']!
+  const layout = layoutConfig ?? THEME_CONFIGS['bazaar']!
 
   return {
     colors: {
@@ -461,7 +381,7 @@ function ThemeStorefrontPreview({ config, compact = false, editorState }: { conf
             <div className="h-2 w-2 rounded-full bg-green-400" />
           </div>
           <div className="flex-1 bg-white rounded px-2 py-0.5 text-[9px] text-gray-400 mx-2">
-            yourstore.shopforge.io
+            yourstore.vepar.in
           </div>
         </div>
       )}

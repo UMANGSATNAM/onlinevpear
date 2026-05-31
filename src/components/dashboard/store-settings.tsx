@@ -689,7 +689,7 @@ export function StoreSettings() {
                         />
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Point your domain&apos;s CNAME record to shopforge.com to connect it
+                        Point your domain&apos;s CNAME record to vepar.in to connect it
                       </p>
                     </div>
                     <div className="space-y-2">
@@ -701,7 +701,7 @@ export function StoreSettings() {
                           onChange={(e) => setSubdomain(e.target.value)}
                           placeholder="mystore"
                         />
-                        <span className="text-sm text-muted-foreground whitespace-nowrap">.shopforge.com</span>
+                        <span className="text-sm text-muted-foreground whitespace-nowrap">.vepar.in</span>
                       </div>
                     </div>
                   </CardContent>
@@ -1326,14 +1326,14 @@ export function StoreSettings() {
                           <span className="text-[6px] text-white font-bold">S</span>
                         </div>
                         <p className="text-xs text-slate-500 truncate">
-                          {domain || subdomain ? `${subdomain || 'www'}.shopforge.com` : 'www.shopforge.com'}
+                          {domain || subdomain ? `${subdomain || 'www'}.vepar.in` : 'www.vepar.in'}
                         </p>
                       </div>
                       <h3 className="text-xl text-blue-700 hover:underline cursor-pointer line-clamp-1 font-normal">
                         {metaTitle || name || 'My Store - Online Shop'}
                       </h3>
                       <p className="text-sm text-green-700 line-clamp-1 mt-0.5">
-                        {domain ? `https://${domain}` : `https://${subdomain || 'mystore'}.shopforge.com`}
+                        {domain ? `https://${domain}` : `https://${subdomain || 'mystore'}.vepar.in`}
                       </p>
                       <p className="text-sm text-slate-600 line-clamp-2 mt-1">
                         {metaDescription || description || 'Shop amazing products at our online store. Free shipping on orders over $50.'}
@@ -1527,7 +1527,7 @@ export function StoreSettings() {
                     <div className="border rounded-xl overflow-hidden max-w-sm">
                       <div className="h-28 bg-gradient-to-br from-muted to-muted/50" />
                       <div className="p-3 bg-background">
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider">shopforge.com</p>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider">vepar.in</p>
                         <p className="text-sm font-semibold truncate">{ogTitle || metaTitle || name || 'My Store'}</p>
                         <p className="text-xs text-muted-foreground line-clamp-2">{ogDescription || metaDescription || 'Store description'}</p>
                       </div>

@@ -150,7 +150,7 @@ function getEnvTargeting(conditions: string): { production: boolean; staging: bo
 
 // Mock user who last modified
 function getLastModifiedBy(flag: FeatureFlag): string {
-  const users = ['admin@shopforge.io', 'dev@shopforge.io', 'product@shopforge.io']
+  const users = ['admin@vepar.in', 'dev@vepar.in', 'product@vepar.in']
   const idx = flag.id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % users.length
   return users[idx]
 }

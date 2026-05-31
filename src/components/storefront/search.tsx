@@ -213,7 +213,7 @@ function highlightMatch(text: string, query: string) {
 function useRecentSearches() {
   const [recentSearches, setRecentSearches] = useState<string[]>(() => {
     try {
-      const stored = localStorage.getItem('shopforge_recent_searches')
+      const stored = localStorage.getItem('vepar_recent_searches')
       if (stored) return JSON.parse(stored)
     } catch { /* ignore */ }
     return []
@@ -223,7 +223,7 @@ function useRecentSearches() {
     setRecentSearches((prev) => {
       const filtered = prev.filter((t) => t.toLowerCase() !== term.toLowerCase())
       const updated = [term, ...filtered].slice(0, 8)
-      try { localStorage.setItem('shopforge_recent_searches', JSON.stringify(updated)) } catch { /* ignore */ }
+      try { localStorage.setItem('vepar_recent_searches', JSON.stringify(updated)) } catch { /* ignore */ }
       return updated
     })
   }, [])
@@ -231,14 +231,14 @@ function useRecentSearches() {
   const removeSearch = useCallback((term: string) => {
     setRecentSearches((prev) => {
       const updated = prev.filter((t) => t.toLowerCase() !== term.toLowerCase())
-      try { localStorage.setItem('shopforge_recent_searches', JSON.stringify(updated)) } catch { /* ignore */ }
+      try { localStorage.setItem('vepar_recent_searches', JSON.stringify(updated)) } catch { /* ignore */ }
       return updated
     })
   }, [])
 
   const clearSearches = useCallback(() => {
     setRecentSearches([])
-    try { localStorage.removeItem('shopforge_recent_searches') } catch { /* ignore */ }
+    try { localStorage.removeItem('vepar_recent_searches') } catch { /* ignore */ }
   }, [])
 
   return { recentSearches, addSearch, removeSearch, clearSearches }
@@ -269,7 +269,7 @@ export function SearchPage() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const storeId = sessionStorage.getItem('shopforge_store_id') || selectedStoreId
+        const storeId = sessionStorage.getItem('vepar_store_id') || selectedStoreId
         if (!storeId) return
         const res = await fetch(`/api/storefront?storeId=${storeId}`)
         if (res.ok) {
@@ -309,7 +309,7 @@ export function SearchPage() {
     setSearched(true)
     setShowSuggestions(false)
     try {
-      const storeId = sessionStorage.getItem('shopforge_store_id') || selectedStoreId
+      const storeId = sessionStorage.getItem('vepar_store_id') || selectedStoreId
       const params = new URLSearchParams({ q: query.trim(), type: 'products', limit: '50' })
       if (storeId) params.set('storeId', storeId)
 

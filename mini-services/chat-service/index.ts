@@ -59,8 +59,8 @@ function addMessage(conversationId: string, message: {
   }
 }
 
-// System prompt for ShopForge AI
-const SYSTEM_PROMPT = `You are ShopForge AI, an intelligent ecommerce assistant. Help merchants with product management, marketing, analytics, and store optimization. Be concise and actionable. Use markdown formatting when helpful: **bold** for emphasis, bullet points for lists, and \`code\` for technical terms.`
+// System prompt for Online Vepar AI
+const SYSTEM_PROMPT = `You are Online Vepar AI, an intelligent ecommerce assistant. Help merchants with product management, marketing, analytics, and store optimization. Be concise and actionable. Use markdown formatting when helpful: **bold** for emphasis, bullet points for lists, and \`code\` for technical terms.`
 
 // Fallback responses when AI fails
 const FALLBACK_RESPONSES = [

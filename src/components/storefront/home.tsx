@@ -944,7 +944,7 @@ function InstagramFeedSection() {
     <section className="py-12 sm:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
         <h2 className="text-2xl font-bold mb-2">Follow Us on Instagram</h2>
-        <p className="text-muted-foreground text-sm mb-8">@shopforge</p>
+        <p className="text-muted-foreground text-sm mb-8">@vepar</p>
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className={`aspect-square bg-gradient-to-br ${collectionGradients[i % collectionGradients.length]} rounded-lg flex items-center justify-center group cursor-pointer hover:opacity-80 transition-opacity`}>
@@ -1046,7 +1046,7 @@ export function StorefrontHome() {
 
   // Get theme layout config
   const layoutConfig = useThemeLayout()
-  const layout = layoutConfig ?? getThemeConfig('minimal-dawn')
+  const layout = layoutConfig ?? getThemeConfig('bazaar')
 
   // Flash sale countdown
   const countdown = useCountdown(24)
@@ -1055,7 +1055,7 @@ export function StorefrontHome() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const storeId = sessionStorage.getItem('shopforge_store_id') || selectedStoreId
+        const storeId = sessionStorage.getItem('vepar_store_id') || selectedStoreId
         if (!storeId) return
         const res = await fetch(`/api/storefront?storeId=${storeId}`)
         if (res.ok) {
@@ -1085,9 +1085,9 @@ export function StorefrontHome() {
 
   const handleAddToCart = async (product: Product) => {
     try {
-      const sessionId = sessionStorage.getItem('shopforge_session_id') || `sess_${Date.now()}`
-      sessionStorage.setItem('shopforge_session_id', sessionId)
-      const storeId = sessionStorage.getItem('shopforge_store_id')
+      const sessionId = sessionStorage.getItem('vepar_session_id') || `sess_${Date.now()}`
+      sessionStorage.setItem('vepar_session_id', sessionId)
+      const storeId = sessionStorage.getItem('vepar_store_id')
       if (!storeId) { toast.error('Store not found'); return }
       const res = await fetch('/api/storefront/cart', {
         method: 'POST',

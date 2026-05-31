@@ -127,12 +127,12 @@ const platformConfig: Record<string, { gradient: string; bgLight: string; textLi
 
 // Mock data
 const mockPlatforms: SocialPlatform[] = [
-  { id: 'instagram', name: 'Instagram', icon: <Instagram className="h-5 w-5" />, gradient: 'from-pink-500 via-purple-500 to-orange-400', bgLight: 'bg-pink-100', textLight: 'text-pink-600', username: '@shopforge_store', followers: 24500, engagement: 4.8, connected: true },
-  { id: 'facebook', name: 'Facebook', icon: <Facebook className="h-5 w-5" />, gradient: 'from-blue-600 to-blue-700', bgLight: 'bg-blue-100', textLight: 'text-blue-600', username: 'ShopForge Store', followers: 18200, engagement: 3.2, connected: true },
-  { id: 'twitter', name: 'Twitter / X', icon: <Twitter className="h-5 w-5" />, gradient: 'from-sky-400 to-sky-600', bgLight: 'bg-sky-100', textLight: 'text-sky-600', username: '@shopforge', followers: 9800, engagement: 2.9, connected: true },
+  { id: 'instagram', name: 'Instagram', icon: <Instagram className="h-5 w-5" />, gradient: 'from-pink-500 via-purple-500 to-orange-400', bgLight: 'bg-pink-100', textLight: 'text-pink-600', username: '@vepar_store', followers: 24500, engagement: 4.8, connected: true },
+  { id: 'facebook', name: 'Facebook', icon: <Facebook className="h-5 w-5" />, gradient: 'from-blue-600 to-blue-700', bgLight: 'bg-blue-100', textLight: 'text-blue-600', username: 'Online Vepar Store', followers: 18200, engagement: 3.2, connected: true },
+  { id: 'twitter', name: 'Twitter / X', icon: <Twitter className="h-5 w-5" />, gradient: 'from-sky-400 to-sky-600', bgLight: 'bg-sky-100', textLight: 'text-sky-600', username: '@vepar', followers: 9800, engagement: 2.9, connected: true },
   { id: 'tiktok', name: 'TikTok', icon: <Zap className="h-5 w-5" />, gradient: 'from-slate-800 to-slate-900', bgLight: 'bg-slate-100', textLight: 'text-slate-600', username: '', followers: 0, engagement: 0, connected: false },
   { id: 'pinterest', name: 'Pinterest', icon: <Heart className="h-5 w-5" />, gradient: 'from-red-500 to-rose-600', bgLight: 'bg-red-100', textLight: 'text-red-600', username: '', followers: 0, engagement: 0, connected: false },
-  { id: 'youtube', name: 'YouTube', icon: <Youtube className="h-5 w-5" />, gradient: 'from-red-600 to-red-700', bgLight: 'bg-red-100', textLight: 'text-red-600', username: 'ShopForge', followers: 5400, engagement: 6.1, connected: true },
+  { id: 'youtube', name: 'YouTube', icon: <Youtube className="h-5 w-5" />, gradient: 'from-red-600 to-red-700', bgLight: 'bg-red-100', textLight: 'text-red-600', username: 'Online Vepar', followers: 5400, engagement: 6.1, connected: true },
 ]
 
 const mockScheduledPosts: ScheduledPost[] = [
@@ -241,7 +241,7 @@ export function SocialMedia() {
       p.id === platformId ? {
         ...p,
         connected: !p.connected,
-        username: !p.connected ? `@shopforge_${p.id}` : '',
+        username: !p.connected ? `@vepar_${p.id}` : '',
         followers: !p.connected ? Math.floor(Math.sin(platformId.charCodeAt(0) * 3.7) * 5000 + 5000) : 0,
         engagement: !p.connected ? parseFloat((Math.sin(platformId.charCodeAt(0) * 2.3) * 3 + 4).toFixed(1)) : 0,
       } : p

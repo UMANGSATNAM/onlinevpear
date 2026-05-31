@@ -13,7 +13,7 @@ datasource db {
 
 model Platform {
   id            String   @id @default(cuid())
-  name          String   @default("ShopForge")
+  name          String   @default("Online Vepar")
   version       String   @default("1.0.0")
   defaultTheme  String   @default("modern")
   features      String   @default("{}") // JSON feature flags

@@ -77,6 +77,15 @@ export function formatPrice(price: number, currency: string = 'USD') {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(price)
 }
 
+// GST inclusive text component for product cards
+function GSTText({ className = '' }: { className?: string }) {
+  return (
+    <p className={`text-[10px] text-muted-foreground/70 ${className}`}>
+      Inclusive of all taxes
+    </p>
+  )
+}
+
 function isNewProduct(createdAt?: string) {
   if (!createdAt) return false
   const thirtyDaysAgo = new Date()
@@ -182,9 +191,9 @@ function useProductInteractions(product: Product) {
     e.stopPropagation()
     setAddingToCart(true)
     try {
-      const sessionId = sessionStorage.getItem('shopforge_session_id') || `sess_${Date.now()}`
-      sessionStorage.setItem('shopforge_session_id', sessionId)
-      const storeId = sessionStorage.getItem('shopforge_store_id')
+      const sessionId = sessionStorage.getItem('vepar_session_id') || `sess_${Date.now()}`
+      sessionStorage.setItem('vepar_session_id', sessionId)
+      const storeId = sessionStorage.getItem('vepar_store_id')
       if (!storeId) {
         toast.error('Store not found')
         return
@@ -289,6 +298,7 @@ function CleanCard({ product }: { product: Product }) {
               <span className="text-xs text-gray-400 line-through">{formatPrice(product.comparePrice!)}</span>
             )}
           </div>
+          <GSTText className="mt-0.5" />
 
           {/* Color swatches - minimal dots */}
           {ctx.colorSwatches.length > 0 && (
@@ -379,6 +389,7 @@ function BoldCard({ product }: { product: Product }) {
               <span className="text-lg text-red-500 line-through font-bold">{formatPrice(product.comparePrice!)}</span>
             )}
           </div>
+          <GSTText className="mt-0.5" />
 
           <div className="flex items-center justify-between">
             <StarRating rating={ctx.rating} size="sm" />
@@ -604,6 +615,7 @@ function SoftCard({ product }: { product: Product }) {
               <span className="text-sm text-pink-400 line-through">{formatPrice(product.comparePrice!)}</span>
             )}
           </div>
+          <GSTText className="mt-0.5" />
 
           {/* Color swatches - soft circles */}
           {ctx.colorSwatches.length > 0 && (
@@ -699,6 +711,7 @@ function WarmCard({ product }: { product: Product }) {
               <span className="text-sm text-orange-300 line-through">{formatPrice(product.comparePrice!)}</span>
             )}
           </div>
+          <GSTText className="mt-0.5" />
 
           {/* Add to cart - warm */}
           <Button
@@ -817,6 +830,7 @@ function WaveCard({ product }: { product: Product }) {
               <span className="text-sm text-sky-300 line-through">{formatPrice(product.comparePrice!)}</span>
             )}
           </div>
+          <GSTText className="mt-0.5" />
 
           {/* Add to cart */}
           <button

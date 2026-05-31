@@ -24,6 +24,7 @@ import { Separator } from '@/components/ui/separator'
 import { useAppStore, type StorefrontPage } from '@/lib/store'
 import { StorefrontThemeProvider, useStoreTheme } from '@/lib/theme-context'
 import { StoreFooter } from './footer'
+import { WhatsAppButton } from './whatsapp-button'
 
 interface StoreData {
   id: string
@@ -166,7 +167,7 @@ function StoreLayoutInner({ store, cartItemCount, children }: StoreLayoutProps) 
                       <div className="sf-logo-badge h-8 w-8 rounded-lg bg-gradient-to-br from-rose-500 to-orange-400 flex items-center justify-center">
                         <span className="text-white font-bold text-sm">{store?.name?.substring(0, 1) || 'S'}</span>
                       </div>
-                      <span className="font-bold text-lg">{store?.name || 'ShopForge'}</span>
+                      <span className="font-bold text-lg">{store?.name || 'Online Vepar'}</span>
                     </div>
                     <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)} className="rounded-full hover:bg-neutral-100">
                       <X className="h-4 w-4" />
@@ -276,7 +277,7 @@ function StoreLayoutInner({ store, cartItemCount, children }: StoreLayoutProps) 
                   {store?.name?.substring(0, 1) || 'S'}
                 </span>
               </div>
-              <span className={`font-bold text-lg hidden sm:inline ${isDarkTheme ? 'text-[var(--theme-text)]' : ''}`}>{store?.name || 'ShopForge'}</span>
+              <span className={`font-bold text-lg hidden sm:inline ${isDarkTheme ? 'text-[var(--theme-text)]' : ''}`}>{store?.name || 'Online Vepar'}</span>
             </button>
 
             {/* Desktop Nav */}
@@ -432,6 +433,9 @@ function StoreLayoutInner({ store, cartItemCount, children }: StoreLayoutProps) 
           </motion.button>
         )}
       </AnimatePresence>
+
+      {/* WhatsApp Chat Button */}
+      <WhatsAppButton storeName={store?.name || 'Online Vepar'} />
 
       {/* Footer */}
       <StoreFooter />

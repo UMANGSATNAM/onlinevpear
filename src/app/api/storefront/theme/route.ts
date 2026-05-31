@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
       theme: {
         id: 'default',
         name: 'Default',
-        description: 'Default ShopForge theme',
+        description: 'Default Online Vepar theme',
         config: DEFAULT_THEME_CONFIG,
         layout: { category: 'Free', features: [] },
         styles: {},

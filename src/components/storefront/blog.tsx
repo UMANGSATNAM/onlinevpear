@@ -360,7 +360,7 @@ export function BlogPage() {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const storeId = sessionStorage.getItem('shopforge_store_id') || selectedStoreId
+        const storeId = sessionStorage.getItem('vepar_store_id') || selectedStoreId
         if (!storeId) {
           setLoading(false)
           return
@@ -387,7 +387,7 @@ export function BlogPage() {
         try { return JSON.parse(post.tags || '[]') } catch { return [] }
       })()
       const cat = parsedTags[0] || 'Business'
-      const authorName = post.author || 'ShopForge Team'
+      const authorName = post.author || 'Online Vepar Team'
       const initials = authorName.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase()
       return {
         id: post.id,

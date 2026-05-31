@@ -35,6 +35,7 @@ export type DashboardPage =
   | "shipping-settings"
   | "currency-settings"
   | "coupon-builder"
+  | "theme-editor"
 
 export type AdminPage =
   | "overview"

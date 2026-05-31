@@ -109,8 +109,8 @@ export function ShoppingCartPage() {
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set())
   const [orderNotes, setOrderNotes] = useState('')
 
-  const sessionId = typeof window !== 'undefined' ? sessionStorage.getItem('shopforge_session_id') : null
-  const storeId = typeof window !== 'undefined' ? sessionStorage.getItem('shopforge_store_id') : null
+  const sessionId = typeof window !== 'undefined' ? sessionStorage.getItem('vepar_session_id') : null
+  const storeId = typeof window !== 'undefined' ? sessionStorage.getItem('vepar_store_id') : null
 
   const fetchCart = useCallback(async () => {
     try {
@@ -144,9 +144,9 @@ export function ShoppingCartPage() {
     const itemKey = `${item.productId}-${item.variantId}`
     setUpdatingItems((prev) => new Set(prev).add(itemKey))
     try {
-      const sid = sessionStorage.getItem('shopforge_session_id') || `sess_${Date.now()}`
-      sessionStorage.setItem('shopforge_session_id', sid)
-      const sId = sessionStorage.getItem('shopforge_store_id')
+      const sid = sessionStorage.getItem('vepar_session_id') || `sess_${Date.now()}`
+      sessionStorage.setItem('vepar_session_id', sid)
+      const sId = sessionStorage.getItem('vepar_store_id')
       if (!sId) return
 
       const updatedItems = cartItems.map((ci) => {
@@ -189,9 +189,9 @@ export function ShoppingCartPage() {
 
   const removeCartItem = async (item: CartItem) => {
     try {
-      const sid = sessionStorage.getItem('shopforge_session_id') || `sess_${Date.now()}`
-      sessionStorage.setItem('shopforge_session_id', sid)
-      const sId = sessionStorage.getItem('shopforge_store_id')
+      const sid = sessionStorage.getItem('vepar_session_id') || `sess_${Date.now()}`
+      sessionStorage.setItem('vepar_session_id', sid)
+      const sId = sessionStorage.getItem('vepar_store_id')
       if (!sId) return
 
       const updatedItems = cartItems
@@ -235,9 +235,9 @@ export function ShoppingCartPage() {
   const moveToCart = async (item: CartItem) => {
     setSavedItems((prev) => prev.filter((si) => !(si.productId === item.productId && si.variantId === item.variantId)))
     try {
-      const sid = sessionStorage.getItem('shopforge_session_id') || `sess_${Date.now()}`
-      sessionStorage.setItem('shopforge_session_id', sid)
-      const sId = sessionStorage.getItem('shopforge_store_id')
+      const sid = sessionStorage.getItem('vepar_session_id') || `sess_${Date.now()}`
+      sessionStorage.setItem('vepar_session_id', sid)
+      const sId = sessionStorage.getItem('vepar_store_id')
       if (!sId) return
 
       const allItems = [...cartItems, item].map((ci) => ({
@@ -277,9 +277,9 @@ export function ShoppingCartPage() {
     if (!couponCode.trim()) return
     try {
       setApplyingCoupon(true)
-      const sid = sessionStorage.getItem('shopforge_session_id') || `sess_${Date.now()}`
-      sessionStorage.setItem('shopforge_session_id', sid)
-      const sId = sessionStorage.getItem('shopforge_store_id')
+      const sid = sessionStorage.getItem('vepar_session_id') || `sess_${Date.now()}`
+      sessionStorage.setItem('vepar_session_id', sid)
+      const sId = sessionStorage.getItem('vepar_store_id')
       if (!sId) return
 
       const res = await fetch('/api/storefront/cart', {

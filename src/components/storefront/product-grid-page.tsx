@@ -174,7 +174,7 @@ export function ProductGridPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const storeId = sessionStorage.getItem('shopforge_store_id') || selectedStoreId
+        const storeId = sessionStorage.getItem('vepar_store_id') || selectedStoreId
         if (!storeId) {
           setLoading(false)
           return
@@ -203,7 +203,7 @@ export function ProductGridPage() {
   // Load wishlist from localStorage
   useEffect(() => {
     try {
-      const stored = localStorage.getItem('shopforge_wishlist')
+      const stored = localStorage.getItem('vepar_wishlist')
       if (stored) {
         const parsed = JSON.parse(stored)
         if (Array.isArray(parsed)) {
@@ -329,9 +329,9 @@ export function ProductGridPage() {
     e.stopPropagation()
     setAddingToCart(product.id)
     try {
-      const sessionId = sessionStorage.getItem('shopforge_session_id') || `sess_${Date.now()}`
-      sessionStorage.setItem('shopforge_session_id', sessionId)
-      const storeId = sessionStorage.getItem('shopforge_store_id')
+      const sessionId = sessionStorage.getItem('vepar_session_id') || `sess_${Date.now()}`
+      sessionStorage.setItem('vepar_session_id', sessionId)
+      const storeId = sessionStorage.getItem('vepar_store_id')
       if (!storeId) {
         toast.error('Store not found')
         return

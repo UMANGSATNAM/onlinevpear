@@ -296,7 +296,7 @@ function generateMockNotifications(userId: string): Notification[] {
       id: 'n9',
       userId,
       title: 'System update available',
-      message: 'ShopForge v2.4.0 is available with new analytics features and performance improvements.',
+      message: 'Online Vepar v2.4.0 is available with new analytics features and performance improvements.',
       type: 'system',
       isRead: true,
       createdAt: daysAgo(2),

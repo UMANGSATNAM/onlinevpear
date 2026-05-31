@@ -48,7 +48,7 @@ import { formatPrice } from '@/components/storefront/product-grid'
 import { toast } from 'sonner'
 
 type CheckoutStep = 'information' | 'shipping' | 'payment' | 'confirmation'
-type PaymentMethod = 'credit_card' | 'paypal' | 'apple_pay'
+type PaymentMethod = 'upi' | 'cod' | 'credit_card' | 'net_banking' | 'emi'
 
 interface CartItem {
   productId: string
@@ -159,7 +159,11 @@ export function CheckoutPage() {
   const [loading, setLoading] = useState(true)
   const [placingOrder, setPlacingOrder] = useState(false)
   const [orderPlaced, setOrderPlaced] = useState(false)
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>('credit_card')
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>('upi')
+  const [upiId, setUpiId] = useState('')
+  const [emiEnabled, setEmiEnabled] = useState(false)
+  const [selectedBank, setSelectedBank] = useState('')
+  const [selectedEmiPlan, setSelectedEmiPlan] = useState('3')
   const [discountCode, setDiscountCode] = useState('')
   const [applyingDiscount, setApplyingDiscount] = useState(false)
   const [discountApplied, setDiscountApplied] = useState(false)
@@ -203,7 +207,7 @@ export function CheckoutPage() {
   // Generated order number
   const [orderNumber] = useState(() => `SF-${Date.now().toString().slice(-8)}`)
 
-  const sessionId = typeof window !== 'undefined' ? sessionStorage.getItem('shopforge_session_id') : null
+  const sessionId = typeof window !== 'undefined' ? sessionStorage.getItem('vepar_session_id') : null
 
   const fetchCart = useCallback(async () => {
     try {
@@ -232,7 +236,7 @@ export function CheckoutPage() {
 
   const fetchShipping = useCallback(async () => {
     try {
-      const storeId = sessionStorage.getItem('shopforge_store_id')
+      const storeId = sessionStorage.getItem('vepar_store_id')
       if (!storeId) return
       const res = await fetch(`/api/storefront?storeId=${storeId}`)
       if (res.ok) {
@@ -297,6 +301,7 @@ export function CheckoutPage() {
   }
 
   const validatePayment = (): boolean => {
+    if (selectedPaymentMethod === 'upi' || selectedPaymentMethod === 'cod' || selectedPaymentMethod === 'net_banking' || selectedPaymentMethod === 'emi') return true
     if (selectedPaymentMethod !== 'credit_card') return true
     const errors: Record<string, string> = {}
     if (!paymentInfo.cardNumber) errors.cardNumber = 'Card number is required'
@@ -335,7 +340,7 @@ export function CheckoutPage() {
   const handlePlaceOrder = async () => {
     try {
       setPlacingOrder(true)
-      const storeId = sessionStorage.getItem('shopforge_store_id')
+      const storeId = sessionStorage.getItem('vepar_store_id')
       if (!storeId) {
         toast.error('Store not found')
         return
@@ -777,10 +782,62 @@ export function CheckoutPage() {
 
             {currentStep === 'payment' && (
               <motion.div key="payment" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.3 }}>
-                <h2 className="text-xl font-bold mb-6">Payment Method</h2>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold">Payment Method</h2>
+                  <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1 px-3 py-1">
+                    <Lock className="h-3 w-3" />
+                    Secure Payment
+                  </Badge>
+                </div>
 
-                {/* Payment Method Selection */}
+                {/* India-first Payment Method Selection: UPI → COD → Cards → Net Banking → EMI */}
                 <div className="space-y-3 mb-6">
+                  {/* 1. UPI — Most popular in India */}
+                  <Card
+                    className={`p-4 cursor-pointer transition-all ${
+                      selectedPaymentMethod === 'upi' ? 'border-2 border-rose-500 shadow-sm' : 'hover:border-gray-300'
+                    }`}
+                    onClick={() => setSelectedPaymentMethod('upi')}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${
+                        selectedPaymentMethod === 'upi' ? 'border-rose-500' : 'border-gray-300'
+                      }`}>
+                        {selectedPaymentMethod === 'upi' && (
+                          <div className="h-2.5 w-2.5 rounded-full bg-rose-500" />
+                        )}
+                      </div>
+                      <Smartphone className="h-5 w-5 text-violet-600" />
+                      <span className="font-medium text-sm">UPI</span>
+                      <Badge variant="secondary" className="text-[10px] bg-violet-50 text-violet-700 border-violet-200 ml-1">
+                        Most Popular
+                      </Badge>
+                      <span className="ml-auto text-xs text-muted-foreground">Google Pay • PhonePe • Paytm • BHIM</span>
+                    </div>
+                  </Card>
+
+                  {/* 2. Cash on Delivery */}
+                  <Card
+                    className={`p-4 cursor-pointer transition-all ${
+                      selectedPaymentMethod === 'cod' ? 'border-2 border-rose-500 shadow-sm' : 'hover:border-gray-300'
+                    }`}
+                    onClick={() => setSelectedPaymentMethod('cod')}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${
+                        selectedPaymentMethod === 'cod' ? 'border-rose-500' : 'border-gray-300'
+                      }`}>
+                        {selectedPaymentMethod === 'cod' && (
+                          <div className="h-2.5 w-2.5 rounded-full bg-rose-500" />
+                        )}
+                      </div>
+                      <Banknote className="h-5 w-5 text-emerald-600" />
+                      <span className="font-medium text-sm">Cash on Delivery</span>
+                      <span className="ml-auto text-xs text-muted-foreground">Pay when you receive</span>
+                    </div>
+                  </Card>
+
+                  {/* 3. Credit / Debit Card */}
                   <Card
                     className={`p-4 cursor-pointer transition-all ${
                       selectedPaymentMethod === 'credit_card' ? 'border-2 border-rose-500 shadow-sm' : 'hover:border-gray-300'
@@ -805,55 +862,171 @@ export function CheckoutPage() {
                           <span className="text-white text-[8px] font-bold">MC</span>
                         </div>
                         <div className="h-6 w-10 rounded bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center">
-                          <span className="text-white text-[7px] font-bold">AMEX</span>
+                          <span className="text-white text-[7px] font-bold">RUPAY</span>
                         </div>
                       </div>
                     </div>
                   </Card>
 
+                  {/* 4. Net Banking */}
                   <Card
                     className={`p-4 cursor-pointer transition-all ${
-                      selectedPaymentMethod === 'paypal' ? 'border-2 border-rose-500 shadow-sm' : 'hover:border-gray-300'
+                      selectedPaymentMethod === 'net_banking' ? 'border-2 border-rose-500 shadow-sm' : 'hover:border-gray-300'
                     }`}
-                    onClick={() => setSelectedPaymentMethod('paypal')}
+                    onClick={() => setSelectedPaymentMethod('net_banking')}
                   >
                     <div className="flex items-center gap-3">
                       <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${
-                        selectedPaymentMethod === 'paypal' ? 'border-rose-500' : 'border-gray-300'
+                        selectedPaymentMethod === 'net_banking' ? 'border-rose-500' : 'border-gray-300'
                       }`}>
-                        {selectedPaymentMethod === 'paypal' && (
+                        {selectedPaymentMethod === 'net_banking' && (
                           <div className="h-2.5 w-2.5 rounded-full bg-rose-500" />
                         )}
                       </div>
-                      <Wallet className="h-5 w-5 text-blue-500" />
-                      <span className="font-medium text-sm">PayPal</span>
-                      <span className="ml-auto text-xs text-muted-foreground">Pay with your PayPal account</span>
+                      <Wallet className="h-5 w-5 text-sky-600" />
+                      <span className="font-medium text-sm">Net Banking</span>
+                      <span className="ml-auto text-xs text-muted-foreground">All major Indian banks</span>
                     </div>
                   </Card>
 
+                  {/* 5. EMI */}
                   <Card
                     className={`p-4 cursor-pointer transition-all ${
-                      selectedPaymentMethod === 'apple_pay' ? 'border-2 border-rose-500 shadow-sm' : 'hover:border-gray-300'
+                      selectedPaymentMethod === 'emi' ? 'border-2 border-rose-500 shadow-sm' : 'hover:border-gray-300'
                     }`}
-                    onClick={() => setSelectedPaymentMethod('apple_pay')}
+                    onClick={() => setSelectedPaymentMethod('emi')}
                   >
                     <div className="flex items-center gap-3">
                       <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${
-                        selectedPaymentMethod === 'apple_pay' ? 'border-rose-500' : 'border-gray-300'
+                        selectedPaymentMethod === 'emi' ? 'border-rose-500' : 'border-gray-300'
                       }`}>
-                        {selectedPaymentMethod === 'apple_pay' && (
+                        {selectedPaymentMethod === 'emi' && (
                           <div className="h-2.5 w-2.5 rounded-full bg-rose-500" />
                         )}
                       </div>
-                      <Smartphone className="h-5 w-5 text-gray-700" />
-                      <span className="font-medium text-sm">Apple Pay</span>
-                      <span className="ml-auto text-xs text-muted-foreground">Quick & secure</span>
+                      <Calendar className="h-5 w-5 text-amber-600" />
+                      <span className="font-medium text-sm">EMI</span>
+                      <Badge variant="secondary" className="text-[10px] bg-amber-50 text-amber-700 border-amber-200 ml-1">
+                        No Cost EMI
+                      </Badge>
+                      <span className="ml-auto text-xs text-muted-foreground">Easy monthly payments</span>
                     </div>
                   </Card>
                 </div>
 
-                {/* Credit Card Form */}
+                {/* Payment Method Details Forms */}
                 <AnimatePresence mode="wait">
+                  {/* UPI Form */}
+                  {selectedPaymentMethod === 'upi' && (
+                    <motion.div
+                      key="upi-form"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Card className="p-5 border-0 bg-gray-50">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                          <Lock className="h-4 w-4 text-emerald-500" />
+                          All transactions are secure and encrypted
+                        </div>
+
+                        {/* UPI App Shortcuts */}
+                        <div className="mb-5">
+                          <Label className="text-sm mb-3 block">Pay using UPI App</Label>
+                          <div className="grid grid-cols-4 gap-2">
+                            <button
+                              className="flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 border-transparent hover:border-violet-300 hover:bg-violet-50/50 transition-all"
+                              onClick={() => toast.info('Redirecting to PhonePe...')}
+                            >
+                              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center">
+                                <span className="text-white text-xs font-bold">P</span>
+                              </div>
+                              <span className="text-[11px] font-medium text-muted-foreground">PhonePe</span>
+                            </button>
+                            <button
+                              className="flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 border-transparent hover:border-blue-300 hover:bg-blue-50/50 transition-all"
+                              onClick={() => toast.info('Redirecting to Google Pay...')}
+                            >
+                              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center">
+                                <span className="text-white text-xs font-bold">G</span>
+                              </div>
+                              <span className="text-[11px] font-medium text-muted-foreground">Google Pay</span>
+                            </button>
+                            <button
+                              className="flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 border-transparent hover:border-sky-300 hover:bg-sky-50/50 transition-all"
+                              onClick={() => toast.info('Redirecting to Paytm...')}
+                            >
+                              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-sky-500 to-sky-700 flex items-center justify-center">
+                                <span className="text-white text-xs font-bold">₿</span>
+                              </div>
+                              <span className="text-[11px] font-medium text-muted-foreground">Paytm</span>
+                            </button>
+                            <button
+                              className="flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 border-transparent hover:border-orange-300 hover:bg-orange-50/50 transition-all"
+                              onClick={() => toast.info('Redirecting to BHIM...')}
+                            >
+                              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center">
+                                <span className="text-white text-xs font-bold">B</span>
+                              </div>
+                              <span className="text-[11px] font-medium text-muted-foreground">BHIM</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        <Separator className="mb-4" />
+
+                        {/* UPI ID Input */}
+                        <div>
+                          <Label htmlFor="upiId" className="text-sm">Or enter UPI ID</Label>
+                          <div className="relative mt-1.5">
+                            <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                              id="upiId"
+                              placeholder="yourname@upi"
+                              value={upiId}
+                              onChange={(e) => setUpiId(e.target.value)}
+                              className="pl-9"
+                            />
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1.5">
+                            Enter your UPI ID (e.g., name@paytm, name@okicici)
+                          </p>
+                        </div>
+                      </Card>
+                    </motion.div>
+                  )}
+
+                  {/* COD Form */}
+                  {selectedPaymentMethod === 'cod' && (
+                    <motion.div
+                      key="cod-form"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Card className="p-5 border-0 bg-emerald-50/50">
+                        <div className="flex items-start gap-3">
+                          <Banknote className="h-6 w-6 text-emerald-600 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-sm font-medium text-emerald-800">Cash on Delivery</p>
+                            <p className="text-xs text-emerald-600 mt-1">
+                              Pay in cash when your order is delivered at your doorstep. A nominal COD fee of ₹40 may apply.
+                            </p>
+                            <div className="flex items-center gap-2 mt-3">
+                              <Badge variant="secondary" className="text-[10px] bg-emerald-100 text-emerald-700 border-emerald-200">
+                                <Check className="h-3 w-3 mr-0.5" /> COD Available
+                              </Badge>
+                              <span className="text-xs text-emerald-600">Verification call may be required</span>
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    </motion.div>
+                  )}
+
+                  {/* Credit Card Form */}
                   {selectedPaymentMethod === 'credit_card' && (
                     <motion.div
                       key="cc-form"
@@ -868,6 +1041,53 @@ export function CheckoutPage() {
                           All transactions are secure and encrypted
                         </div>
                         <div className="space-y-4">
+                          {/* EMI Toggle */}
+                          <div className="flex items-center justify-between p-3 bg-amber-50 rounded-lg border border-amber-100">
+                            <div>
+                              <p className="text-sm font-medium">Convert to EMI</p>
+                              <p className="text-xs text-muted-foreground">Pay in easy monthly installments</p>
+                            </div>
+                            <Switch checked={emiEnabled} onCheckedChange={setEmiEnabled} />
+                          </div>
+
+                          {emiEnabled && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="space-y-3"
+                            >
+                              <Label className="text-sm">Select EMI Plan</Label>
+                              <div className="grid grid-cols-3 gap-2">
+                                {[
+                                  { months: '3', label: '3 months', extra: '₹0', noCost: false },
+                                  { months: '6', label: '6 months', extra: '₹0', noCost: true },
+                                  { months: '12', label: '12 months', extra: '₹199', noCost: false },
+                                ].map((plan) => (
+                                  <button
+                                    key={plan.months}
+                                    onClick={() => setSelectedEmiPlan(plan.months)}
+                                    className={`p-3 rounded-lg border-2 text-center transition-all ${
+                                      selectedEmiPlan === plan.months
+                                        ? 'border-rose-500 bg-rose-50'
+                                        : 'border-gray-200 hover:border-gray-300'
+                                    }`}
+                                  >
+                                    <p className="text-sm font-semibold">{plan.label}</p>
+                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                      {plan.extra === '₹0' ? 'No extra cost' : `+${plan.extra}`}
+                                    </p>
+                                    {plan.noCost && (
+                                      <Badge className="text-[9px] mt-1 bg-amber-50 text-amber-700 border-amber-200">
+                                        No Cost EMI
+                                      </Badge>
+                                    )}
+                                  </button>
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
+
                           <div>
                             <Label htmlFor="cardNumber">Card number</Label>
                             <div className="relative">
@@ -925,36 +1145,111 @@ export function CheckoutPage() {
                     </motion.div>
                   )}
 
-                  {selectedPaymentMethod === 'paypal' && (
+                  {/* Net Banking Form */}
+                  {selectedPaymentMethod === 'net_banking' && (
                     <motion.div
-                      key="paypal-form"
+                      key="netbanking-form"
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <Card className="p-6 border-0 bg-blue-50 text-center">
-                        <Wallet className="h-8 w-8 text-blue-600 mx-auto mb-3" />
-                        <p className="text-sm text-muted-foreground">
-                          You&apos;ll be redirected to PayPal to complete your purchase securely.
+                      <Card className="p-5 border-0 bg-gray-50">
+                        <Label className="text-sm mb-3 block">Popular Banks</Label>
+                        <div className="grid grid-cols-3 gap-2 mb-4">
+                          {[
+                            { id: 'sbi', name: 'SBI', color: 'from-blue-600 to-blue-800' },
+                            { id: 'hdfc', name: 'HDFC', color: 'from-blue-500 to-red-500' },
+                            { id: 'icici', name: 'ICICI', color: 'from-orange-500 to-orange-700' },
+                            { id: 'axis', name: 'Axis', color: 'from-red-600 to-red-800' },
+                            { id: 'kotak', name: 'Kotak', color: 'from-red-500 to-red-700' },
+                            { id: 'pnb', name: 'PNB', color: 'from-blue-700 to-blue-900' },
+                          ].map((bank) => (
+                            <button
+                              key={bank.id}
+                              onClick={() => setSelectedBank(bank.id)}
+                              className={`p-3 rounded-lg border-2 text-center transition-all ${
+                                selectedBank === bank.id
+                                  ? 'border-rose-500 bg-rose-50'
+                                  : 'border-gray-200 hover:border-gray-300'
+                              }`}
+                            >
+                              <div className={`h-8 w-8 rounded-full bg-gradient-to-br ${bank.color} flex items-center justify-center mx-auto mb-1`}>
+                                <span className="text-white text-[9px] font-bold">{bank.name.substring(0, 2)}</span>
+                              </div>
+                              <span className="text-xs font-medium">{bank.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                        <Separator className="my-3" />
+                        <div>
+                          <Label htmlFor="otherBank" className="text-xs">Other Bank</Label>
+                          <Input
+                            id="otherBank"
+                            placeholder="Search for your bank..."
+                            className="mt-1.5 text-sm"
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-3 flex items-center gap-1">
+                          <Lock className="h-3 w-3 text-emerald-500" />
+                          You will be redirected to your bank&apos;s secure login page
                         </p>
                       </Card>
                     </motion.div>
                   )}
 
-                  {selectedPaymentMethod === 'apple_pay' && (
+                  {/* EMI Form */}
+                  {selectedPaymentMethod === 'emi' && (
                     <motion.div
-                      key="apple-pay-form"
+                      key="emi-form"
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <Card className="p-6 border-0 bg-gray-50 text-center">
-                        <Smartphone className="h-8 w-8 text-gray-700 mx-auto mb-3" />
-                        <p className="text-sm text-muted-foreground">
-                          Confirm your payment with Apple Pay on your device.
-                        </p>
+                      <Card className="p-5 border-0 bg-amber-50/30">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Badge className="bg-amber-100 text-amber-800 border-amber-200">No Cost EMI Available</Badge>
+                          <span className="text-xs text-muted-foreground">on select cards</span>
+                        </div>
+                        <div className="space-y-3">
+                          <Label className="text-sm">Select EMI Plan</Label>
+                          {[
+                            { months: '3', emi: Math.round(cartTotal / 3), total: cartTotal, noCost: true, bank: 'HDFC, ICICI, SBI' },
+                            { months: '6', emi: Math.round(cartTotal / 6), total: cartTotal, noCost: true, bank: 'HDFC, ICICI' },
+                            { months: '9', emi: Math.round((cartTotal * 1.05) / 9), total: Math.round(cartTotal * 1.05), noCost: false, bank: 'All banks' },
+                            { months: '12', emi: Math.round((cartTotal * 1.08) / 12), total: Math.round(cartTotal * 1.08), noCost: false, bank: 'All banks' },
+                          ].map((plan) => (
+                            <button
+                              key={plan.months}
+                              onClick={() => setSelectedEmiPlan(plan.months)}
+                              className={`w-full p-4 rounded-lg border-2 text-left transition-all ${
+                                selectedEmiPlan === plan.months
+                                  ? 'border-rose-500 bg-rose-50'
+                                  : 'border-gray-200 hover:border-gray-300'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium text-sm">{plan.months} months</span>
+                                    {plan.noCost && (
+                                      <Badge className="text-[9px] bg-emerald-50 text-emerald-700 border-emerald-200">
+                                        No Cost EMI
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-muted-foreground mt-0.5">
+                                    {plan.bank} • {plan.noCost ? 'No extra charge' : `Total: ₹${plan.total.toLocaleString('en-IN')}`}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="font-bold text-sm">₹{plan.emi.toLocaleString('en-IN')}/mo</p>
+                                </div>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
                       </Card>
                     </motion.div>
                   )}
@@ -1088,8 +1383,10 @@ export function CheckoutPage() {
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {selectedPaymentMethod === 'credit_card' && `Card ending in ${paymentInfo.cardNumber.slice(-4) || '****'}`}
-                    {selectedPaymentMethod === 'paypal' && 'PayPal'}
-                    {selectedPaymentMethod === 'apple_pay' && 'Apple Pay'}
+                    {selectedPaymentMethod === 'upi' && (upiId ? `UPI: ${upiId}` : 'UPI App')}
+                    {selectedPaymentMethod === 'cod' && 'Cash on Delivery'}
+                    {selectedPaymentMethod === 'net_banking' && (selectedBank ? `Net Banking: ${selectedBank.toUpperCase()}` : 'Net Banking')}
+                    {selectedPaymentMethod === 'emi' && `EMI: ${selectedEmiPlan} months`}
                   </p>
                 </Card>
 

@@ -159,7 +159,7 @@ const PRODUCT_CATEGORIES = [
 
 const STEP_HEADERS: Record<number, { title: string; subtitle: string; icon: typeof Store; gradient: string }> = {
   1: {
-    title: 'Welcome to ShopForge!',
+    title: 'Welcome to Online Vepar!',
     subtitle: "Let's set up your new store. What should we call it?",
     icon: Store,
     gradient: 'from-emerald-500 via-teal-500 to-cyan-500',
@@ -384,7 +384,7 @@ export function OnboardingWizard({ open, onClose, merchantId }: OnboardingWizard
 
       setSubmitted(true)
       toast.success('Store setup complete!', {
-        description: 'Your store is ready. Welcome to ShopForge!',
+        description: 'Your store is ready. Welcome to Online Vepar!',
         duration: 5000,
       })
     } catch {
@@ -638,7 +638,7 @@ function StepOne({ formData, updateField }: { formData: FormData; updateField: <
             <span className="text-primary">
               {formData.storeName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')}
             </span>
-            <span className="text-muted-foreground">.shopforge.io</span>
+            <span className="text-muted-foreground">.vepar.in</span>
           </p>
         </motion.div>
       )}
@@ -755,7 +755,7 @@ function StepTwo({ formData, updateField }: { formData: FormData; updateField: <
               <div className="h-2.5 w-2.5 rounded-full bg-green-400" />
             </div>
             <div className="flex-1 bg-background rounded px-3 py-0.5 text-xs text-muted-foreground">
-              {(formData.subdomain || formData.storeName || 'yourstore').toLowerCase().replace(/\s+/g, '-')}.shopforge.io
+              {(formData.subdomain || formData.storeName || 'yourstore').toLowerCase().replace(/\s+/g, '-')}.vepar.in
             </div>
           </div>
           <div className="h-40 overflow-hidden">
@@ -948,9 +948,9 @@ function StepFour({ formData, updateField }: { formData: FormData; updateField: 
               <Globe className="h-5 w-5" />
             </div>
             <div>
-              <p className="font-semibold text-sm">Use a ShopForge Subdomain</p>
+              <p className="font-semibold text-sm">Use a Online Vepar Subdomain</p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Quick and free &mdash; get online instantly with yourstore.shopforge.io
+                Quick and free &mdash; get online instantly with yourstore.vepar.in
               </p>
             </div>
           </div>
@@ -1006,7 +1006,7 @@ function StepFour({ formData, updateField }: { formData: FormData; updateField: 
               className="h-11 rounded-r-none focus:z-10"
             />
             <div className="flex h-11 items-center rounded-r-md border border-l-0 bg-muted px-3 text-sm text-muted-foreground">
-              .shopforge.io
+              .vepar.in
             </div>
           </div>
           <p className="text-xs text-muted-foreground">Only lowercase letters, numbers, and hyphens</p>
@@ -1029,7 +1029,7 @@ function StepFour({ formData, updateField }: { formData: FormData; updateField: 
             <p className="text-sm font-medium mb-2">DNS Setup Instructions</p>
             <div className="space-y-2 text-xs text-muted-foreground">
               <p>1. Go to your domain registrar&apos;s DNS settings</p>
-              <p>2. Add a CNAME record pointing to <code className="bg-muted px-1.5 py-0.5 rounded text-foreground font-mono">cname.shopforge.io</code></p>
+              <p>2. Add a CNAME record pointing to <code className="bg-muted px-1.5 py-0.5 rounded text-foreground font-mono">cname.vepar.in</code></p>
               <p>3. Wait for DNS propagation (usually 1-48 hours)</p>
             </div>
           </div>
@@ -1045,7 +1045,7 @@ function StepFour({ formData, updateField }: { formData: FormData; updateField: 
         <p className="text-xs text-muted-foreground mb-1">Your store will be accessible at:</p>
         <p className="text-sm font-medium text-primary">
           {formData.domainOption === 'subdomain'
-            ? `https://${formData.subdomain || autoSubdomain}.shopforge.io`
+            ? `https://${formData.subdomain || autoSubdomain}.vepar.in`
             : `https://${formData.customDomain || 'www.yourstore.com'}`
           }
         </p>
@@ -1154,7 +1154,7 @@ function StepFive({
               <span className="text-muted-foreground">Domain</span>
               <span className="font-medium">
                 {formData.domainOption === 'subdomain'
-                  ? `${formData.subdomain || formData.storeName?.toLowerCase().replace(/\s+/g, '-') || 'store'}.shopforge.io`
+                  ? `${formData.subdomain || formData.storeName?.toLowerCase().replace(/\s+/g, '-') || 'store'}.vepar.in`
                   : formData.customDomain || 'Custom domain'}
               </span>
             </div>
