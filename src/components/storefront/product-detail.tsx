@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Star,
@@ -22,6 +22,7 @@ import {
   MapPin,
   Loader2,
   Info,
+  Zap,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -132,7 +133,10 @@ export function ProductDetail() {
   const [deliveryOpen, setDeliveryOpen] = useState(false)
   const [returnsOpen, setReturnsOpen] = useState(false)
   const [boughtTogetherChecked, setBoughtTogetherChecked] = useState<boolean[]>([true, false])
+  const [stickyBarVisible, setStickyBarVisible] = useState(false)
+  const buttonsRef = useRef<HTMLDivElement>(null)
 
+  // Fetch product data
   useEffect(() => {
     if (!selectedProductId) return
     const fetchProduct = async () => {
@@ -175,6 +179,19 @@ export function ProductDetail() {
     }
     fetchRelated()
   }, [product, selectedStoreId])
+
+  // IntersectionObserver for sticky bar - show when main buttons scroll out of view
+  useEffect(() => {
+    if (!buttonsRef.current) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setStickyBarVisible(!entry.isIntersecting)
+      },
+      { threshold: 0, rootMargin: '-80px 0px 0px 0px' }
+    )
+    observer.observe(buttonsRef.current)
+    return () => observer.disconnect()
+  }, [loading])
 
   if (loading) {
     return (
@@ -304,8 +321,13 @@ export function ProductDetail() {
 
   const displayReviews = product.reviews.length > 0 ? product.reviews : sampleReviews
 
+  const handleBuyNow = async () => {
+    await handleAddToCart()
+    setStorefrontPage('cart')
+  }
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8 pb-28 lg:pb-8">
       {/* Breadcrumb Navigation */}
       <Breadcrumb className="mb-6">
         <BreadcrumbList>
@@ -569,46 +591,63 @@ export function ProductDetail() {
             </div>
           </div>
 
-          {/* Add to Cart + Wishlist + Share */}
-          <div className="flex gap-3">
-            <Button
-              size="lg"
-              onClick={handleAddToCart}
-              disabled={!inStock || addingToCart}
-              className="flex-1 h-14 text-base bg-rose-500 hover:bg-rose-600 relative overflow-hidden"
-            >
-              {addingToCart ? (
-                <motion.span
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex items-center gap-2"
-                >
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  Adding...
-                </motion.span>
-              ) : (
+          {/* Add to Cart + Buy Now + Wishlist + Share */}
+          <div ref={buttonsRef} className="space-y-3">
+            <div className="flex gap-3">
+              <Button
+                size="lg"
+                onClick={handleAddToCart}
+                disabled={!inStock || addingToCart}
+                className="flex-1 h-14 text-base bg-rose-500 hover:bg-rose-600 relative overflow-hidden"
+              >
+                {addingToCart ? (
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="flex items-center gap-2"
+                  >
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Adding...
+                  </motion.span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <ShoppingCart className="h-5 w-5" />
+                    {inStock ? 'Add to Cart' : 'Out of Stock'}
+                  </span>
+                )}
+              </Button>
+              <Button
+                size="lg"
+                onClick={handleBuyNow}
+                disabled={!inStock || addingToCart}
+                className="flex-1 h-14 text-base bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white relative overflow-hidden"
+              >
                 <span className="flex items-center gap-2">
-                  <ShoppingCart className="h-5 w-5" />
-                  {inStock ? 'Add to Cart' : 'Out of Stock'}
+                  <Zap className="h-5 w-5" />
+                  Buy Now
                 </span>
-              )}
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="h-14 w-14"
-              onClick={handleToggleWishlist}
-            >
-              <Heart className={`h-5 w-5 transition-all ${isWishlisted ? 'fill-red-500 text-red-500 scale-110' : ''}`} />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="h-14 w-14"
-              onClick={handleShareLink}
-            >
-              {linkCopied ? <Check className="h-5 w-5 text-emerald-500" /> : <Share2 className="h-5 w-5" />}
-            </Button>
+              </Button>
+            </div>
+            <div className="flex gap-3">
+              <Button
+                size="lg"
+                variant="outline"
+                className="flex-1 h-11"
+                onClick={handleToggleWishlist}
+              >
+                <Heart className={`h-4 w-4 transition-all mr-2 ${isWishlisted ? 'fill-red-500 text-red-500 scale-110' : ''}`} />
+                Wishlist
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="flex-1 h-11"
+                onClick={handleShareLink}
+              >
+                {linkCopied ? <Check className="h-4 w-4 text-emerald-500 mr-2" /> : <Share2 className="h-4 w-4 mr-2" />}
+                Share
+              </Button>
+            </div>
           </div>
 
           {/* Pincode Delivery Checker */}
@@ -962,6 +1001,64 @@ export function ProductDetail() {
           <ProductGrid products={relatedProducts} />
         </section>
       )}
+
+      {/* Sticky Bottom Bar - Mobile only, appears when main buttons scroll out of view */}
+      <AnimatePresence>
+        {stickyBarVisible && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="fixed bottom-0 left-0 right-0 z-50 lg:hidden"
+          >
+            <div className="bg-white/95 backdrop-blur-md border-t shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+              <div className="max-w-7xl mx-auto px-4 py-3">
+                <div className="flex items-center gap-3">
+                  {/* Price display */}
+                  <div className="shrink-0 min-w-0">
+                    <div className="text-lg font-bold leading-tight">{formatPrice(currentPrice)}</div>
+                    {hasDiscount && (
+                      <div className="text-xs text-muted-foreground line-through">{formatPrice(comparePrice!)}</div>
+                    )}
+                  </div>
+                  {/* Add to Cart */}
+                  <Button
+                    size="lg"
+                    onClick={handleAddToCart}
+                    disabled={!inStock || addingToCart}
+                    className="flex-1 h-12 text-sm bg-rose-500 hover:bg-rose-600 relative overflow-hidden"
+                  >
+                    {addingToCart ? (
+                      <span className="flex items-center gap-1.5">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Adding...
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1.5">
+                        <ShoppingCart className="h-4 w-4" />
+                        Add to Cart
+                      </span>
+                    )}
+                  </Button>
+                  {/* Buy Now */}
+                  <Button
+                    size="lg"
+                    onClick={handleBuyNow}
+                    disabled={!inStock || addingToCart}
+                    className="flex-1 h-12 text-sm bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white relative overflow-hidden"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Zap className="h-4 w-4" />
+                      Buy Now
+                    </span>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

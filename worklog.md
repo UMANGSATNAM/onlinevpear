@@ -5335,3 +5335,44 @@ Task: Rebrand from ShopForge to Online Vepar, build 5 CRO-optimized storefront t
 6. Performance optimization (lazy loading, code splitting)
 7. Add real-time features (WebSocket order updates)
 8. Implement staff permissions enforcement on API level
+
+---
+
+Task ID: sticky-buttons
+Agent: Main Agent
+Task: Add sticky Add to Cart and Buy Now buttons on product detail page
+
+### Work Completed:
+
+1. **Added "Buy Now" button** - New button with `Zap` icon and orange-to-rose gradient alongside "Add to Cart" button in the main product info section. Buy Now adds to cart then navigates to cart page.
+
+2. **Redesigned button layout** - Changed from single row (Add to Cart + icon-only wishlist/share) to two rows:
+   - Row 1: "Add to Cart" (rose-500) + "Buy Now" (orange→rose gradient) — both full-width h-14
+   - Row 2: "Wishlist" (outline, full-width) + "Share" (outline, full-width) — h-11
+
+3. **Sticky Bottom Bar (Mobile)** - Added a sticky bottom bar using `IntersectionObserver` that:
+   - Appears when the main button section scrolls out of view (threshold: 0, rootMargin: -80px)
+   - Hidden on desktop (lg:hidden) — only shows on mobile/tablet
+   - Features: product price display + "Add to Cart" + "Buy Now" buttons side-by-side
+   - Animated with Framer Motion spring transition (slide up/down)
+   - Frosted glass background (bg-white/95 backdrop-blur-md)
+   - Shadow border at top for depth perception
+   - z-50 to stay above content
+
+4. **Added bottom padding** - Added `pb-28 lg:pb-8` to the main container so content doesn't get hidden behind the sticky bar on mobile.
+
+### Files Modified:
+- **Modified**: `/src/components/storefront/product-detail.tsx` — Added useRef, stickyBarVisible state, IntersectionObserver useEffect, handleBuyNow function, Buy Now button, sticky bottom bar with AnimatePresence
+
+### Technical Details:
+- `useRef<HTMLDivElement>` on the button container for IntersectionObserver
+- `stickyBarVisible` state toggled by IntersectionObserver
+- `handleBuyNow` calls `handleAddToCart` then `setStorefrontPage('cart')`
+- Framer Motion `AnimatePresence` for enter/exit animations
+- Spring animation: stiffness=300, damping=30
+
+### Verification:
+- ✅ ESLint passes with zero errors
+- ✅ Dev server compiles successfully
+- ✅ No React hooks violations (useEffect placed before early returns)
+
