@@ -4046,3 +4046,427 @@ Implemented a complete real-time theme rendering system using:
 6. Add theme-specific layout variations (header styles, product grid layouts)
 7. Add theme export/import functionality
 8. Performance optimization (lazy load Google Fonts, cache theme config)
+
+---
+
+Task ID: 2
+Agent: Theme Config Agent
+Task: Create Enhanced Theme Configuration System
+
+### Work Completed:
+
+1. **Created `/home/z/my-project/src/lib/theme-configs.ts`** — comprehensive theme configuration system with 10 CRO-optimized themes
+
+### Features Implemented:
+
+**Type System (6 union types, 3 interfaces):**
+- `HeroVariant` — 10 variants: split, fullscreen, parallax, image-first, slider, video, gradient, carousel, storytelling, animated
+- `ProductCardVariant` — 10 variants: clean, bold, luxury, soft, warm, wave, glass, boutique, rustic, neon
+- `HeaderVariant` — 10 variants: minimal, fullwidth, centered, transparent, sticky, floating, glass, elegant, banner, fixed
+- `FooterVariant` — 5 variants: minimal, full, compact, social, newsletter-focus
+- `GridLayout` — 5 variants: 2-col, 3-col, 4-col, masonry, mixed
+- `SectionType` — 15 section types: hero, trust-badges, trending, flash-sale, brand-values, collections, categories, products, promo-banner, testimonials, newsletter, social-proof, recently-viewed, instagram-feed, lookbook
+- `SectionConfig` — section visibility + optional props
+- `CROConfig` — 7 CRO feature flags + urgency message, low stock threshold, viewer count range
+- `ThemeLayoutConfig` — complete theme definition combining all variants, sections, CRO config, visual copy, and style preferences
+
+**10 Complete Theme Configurations:**
+
+1. **Minimal Dawn** (`minimal-dawn`): Split hero, clean cards, 4-col grid, minimal chrome, trust badges, low stock warnings. Subtle animations. No urgency tactics.
+
+2. **Bold Commerce** (`bold-commerce`): Fullscreen hero with overlay CTA, bold cards with large prices, 4-col grid, urgency timer, social proof, live viewers (12-47), sticky add-to-cart, recent purchase notifications. Countdown promo. Popup newsletter. All CRO features enabled.
+
+3. **Elegant Luxe** (`elegant-luxe`): Parallax hero, luxury hover-zoom cards, masonry layout, editorial style, quote-wall testimonials, lookbook, Instagram feed. Serif typography. No CRO pressure — just trust badges and low stock warnings.
+
+4. **Fresh Garden** (`fresh-garden`): Image-first hero, soft rounded cards, 3-col grid, organic shapes, eco badges (organic/cruelty-free/sustainable/eco-packaging), botanical icons, nature-styled newsletter. Subtle animations.
+
+5. **Sunset Glow** (`sunset-glow`): Slider hero (4 slides, autoplay), warm gradient cards, 3-col featured layout, storytelling sections, sunset gradients throughout, recent purchase notifications, warm-toasted social proof. Lookbook with story-scroll layout.
+
+6. **Ocean Breeze** (`ocean-breeze`): Video-style hero, wave cards, mixed layout, calming blue tones, fluid shapes, wave hover effects, coastal Instagram feed. Moderate animations.
+
+7. **Midnight Elite** (`midnight-elite`): Gradient hero with particles/glow, glassmorphism cards, 4-col grid, tech vibes, live viewer counts (18-62), recent purchases, sticky add-to-cart, neon-glow social proof, dark mode throughout. High animation intensity.
+
+8. **Rose Boutique** (`rose-boutique`): Carousel hero (fade, dots, arrows, editorial), boutique hover cards, 3-col grid, fashion editorial style, color swatches, editorial quotes, fashion spread lookbook. Recent purchase notifications. Moderate animations.
+
+9. **Rustic Charm** (`rustic-charm`): Storytelling hero with scroll, rustic bordered cards, 2-col+sidebar layout, vintage feel, hand-drawn icons, kraft texture backgrounds, double-border promo banners, scrapbook lookbook. No animations.
+
+10. **Neon Pulse** (`neon-pulse`): Animated hero (glitch-pulse, particles, soundwave), neon glow cards, 4-col grid, countdown timers, live viewers (24-89), recent purchases, sticky add-to-cart, neon-alert social proof, extreme urgency. Extreme animation intensity.
+
+**Exported API:**
+- `THEME_CONFIGS` — Record<string, ThemeLayoutConfig> mapping theme keys to full configs
+- `getThemeConfig(themeName)` — function that returns config with fallback to 'minimal-dawn'
+- `THEME_KEYS` — readonly array of all theme key strings
+- `THEME_NAMES` — readonly array of all theme display names
+- All union types exported for use in component props
+
+**Helper Function:**
+- `makeSections()` — internal helper that generates the full 15-section array with per-section visibility and props overrides, ensuring all themes have consistent section ordering
+
+### CRO Features Per Theme:
+| Theme | Urgency Timer | Live Viewers | Recent Purchases | Low Stock | Trust Badges | Social Proof | Sticky Add-to-Cart |
+|-------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Minimal Dawn | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ❌ |
+| Bold Commerce | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Elegant Luxe | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ |
+| Fresh Garden | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ❌ |
+| Sunset Glow | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Ocean Breeze | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ❌ |
+| Midnight Elite | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Rose Boutique | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Rustic Charm | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ |
+| Neon Pulse | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+### Files Created:
+- **Created**: `/home/z/my-project/src/lib/theme-configs.ts` (~380 lines)
+
+### Verification:
+- ✅ ESLint passes with zero errors
+- ✅ Dev server running without issues
+- ✅ No TypeScript compilation errors
+- ✅ All 10 themes fully configured with unique hero variants, card styles, sections, and CRO features
+
+---
+
+Task ID: 4
+Agent: Product Card Variants Agent
+Task: Build Theme-Aware Product Cards with 10 Different Variants
+
+### Work Completed:
+
+1. **Updated `/home/z/my-project/src/lib/theme-context.tsx`** — Added `useThemeLayout()` hook
+   - Imports `getThemeConfig` from `@/lib/theme-configs`
+   - Returns `ThemeLayoutConfig` based on active theme name (falls back to `minimal-dawn`)
+   - Converts theme name to kebab-case for config lookup
+
+2. **Rewrote `/home/z/my-project/src/components/storefront/product-grid.tsx`** — Complete rewrite with 10 visually distinct card variants and 5 grid layouts (~850 lines)
+
+### 10 Product Card Variants (each visually distinct):
+
+1. **Clean** (`CleanCard`) — Minimal card with thin border, small image (4:3 ratio), no hover effects, tiny monochrome badges, very understated. White bg, border-gray-100, no shadows.
+
+2. **Bold** (`BoldCard`) — Large card with thick 3px black border, bold offset shadow (4px 4px), HUGE price (text-3xl font-black), "SALE" badge in red with font-black, "SOLD OUT" in yellow-400 on black overlay, black "ADD" button. Price is the most prominent element.
+
+3. **Luxury** (`LuxuryCard`) — Gold accent line at top (amber gradient), 3:4 portrait image ratio, hover zoom on image (scale-110), serif font for name (Georgia), subtle shadow (shadow-md), elegant amber badges with backdrop-blur, Crown icon for new items, "Quick View" button with amber border.
+
+4. **Soft** (`SoftCard`) — Extra rounded corners (rounded-2xl), pastel shadow (rgba 0.04), soft hover lift (whileHover y:-4), organic circle initial in image, pink/green pastel badges with Leaf icon, soft pill-shaped "Add to Cart" on hover, white/80 backdrop-blur buttons.
+
+5. **Warm** (`WarmCard`) — Orange border (border-orange-100) that transitions to gradient warm border on hover (amber→orange→rose), warm shadow with orange tint, amber/gold price color (text-amber-600), warm gradient Add to Cart button (from-amber-500 to-orange-500), Sun icon on discount badge.
+
+6. **Wave** (`WaveCard`) — CSS clip-path wavy bottom border (polygon with wave pattern), sky/cyan color scheme, Wave icon on badges, "Quick View" as centered sky pill button on hover, sky-100 Add to Cart button, fluid blue-themed pricing.
+
+7. **Glass** (`GlassCard`) — Glassmorphism with `backdrop-blur-xl`, semi-transparent bg (rgba white 0.15→0.05 gradient), white/30 border, purple/white glow shadow on hover (shadow-purple-500/10), glass-style badges (bg-white/20 backdrop-blur-md border-white/30), Diamond icon for new items, glass Add to Cart button (bg-white/20 backdrop-blur-md).
+
+8. **Boutique** (`BoutiqueCard`) — Fashion-style 3:4 portrait ratio, hover overlay showing size options (clickable size squares), elegant "View Details" button on overlay, rose/amber color scheme, Shirt icon on new badge, fashion serif initial in image, size options extracted from variant data.
+
+9. **Rustic** (`RusticCard`) — Double border effect (outer border-4 amber-800 + inner border-2 amber-700/30), kraft-paper gradient background (amber-50→yellow-200), offset box shadow (4px 4px amber-900), stamp-style badges with rotation (-3deg, rotate-2), TreePine icon for "FRESH" badge, serif font (Georgia), amber-800 "Add to Cart" button.
+
+10. **Neon** (`NeonCard`) — Dark card (bg-gray-950), neon cyan glow border (border-cyan-500/30), glow shadow (0 0 15px cyan), hover intensifies glow (0 0 30px cyan, border-cyan-400/60), cyberpunk price display (text-transparent bg-clip-text gradient from-cyan-400 to-fuchsia-400 with text-shadow), Zap/Bolt neon badges with glow shadows, dual Quick View (cyan) and Add (fuchsia) buttons on hover, "OFFLINE" for out of stock with red glow.
+
+### 5 Grid Layout Support:
+
+- **2-col**: `grid-cols-1 sm:grid-cols-2`
+- **3-col**: `grid-cols-2 sm:grid-cols-3`
+- **4-col**: `grid-cols-2 sm:grid-cols-3 lg:grid-cols-4`
+- **masonry**: CSS `columns-1 sm:columns-2 lg:columns-3 xl:columns-4` with `break-inside-avoid`
+- **mixed**: First product spans `col-span-2 row-span-2`, rest are 1 col
+
+### Architecture:
+
+- **`useProductInteractions` hook**: Shared logic for all card variants (hover state, wishlist toggle, add to cart, gradient, rating, discount calculation, stock check, color/size extraction)
+- **`StarRating` component**: Reusable star rating display with 3 sizes (xs, sm, md)
+- **`ProductCard` router component**: Dispatches to the correct variant based on `ProductCardVariant` type
+- **`ProductGrid` component**: Uses `useThemeLayout()` to get `productCardVariant` and `gridLayout`, renders appropriate grid and card variant
+- **Default fallback**: Uses 'clean' variant when no theme is loaded
+- **`sf-product-*` CSS classes**: Applied for theme integration (sf-product-card, sf-product-price, sf-product-category)
+- **All existing exports preserved**: `ProductGrid`, `ProductCard`, `formatPrice`, `getGradient`, `getAverageRating`
+- **ProductCardSkeleton** preserved for loading state
+
+### Files Modified:
+- **Modified**: `/src/lib/theme-context.tsx` — Added `useThemeLayout()` hook with `getThemeConfig` import
+- **Modified**: `/src/components/storefront/product-grid.tsx` — Complete rewrite (~850 lines) with 10 card variants and 5 grid layouts
+
+### Verification:
+- ✅ ESLint passes with zero errors
+- ✅ Dev server compiles successfully
+- ✅ All existing exports preserved
+- ✅ All existing product interactions preserved (add to cart, wishlist, quick view)
+
+---
+
+Task ID: 3
+Agent: Theme-Aware Storefront Agent
+Task: Build Theme-Aware Storefront Home with Different Layouts per Theme
+
+### Work Completed:
+
+#### 1. Updated `/src/lib/theme-context.tsx`
+- Imported `getThemeConfig` and `ThemeLayoutConfig` from `@/lib/theme-configs`
+- Added `layoutConfig: ThemeLayoutConfig | null` to `StoreTheme` interface
+- Added `layoutConfig: ThemeLayoutConfig | null` to `ThemeContextType`
+- When fetching theme, resolves the layout config by converting theme name to kebab-case (e.g., "Minimal Dawn" → "minimal-dawn") and calling `getThemeConfig(themeName)`
+- Exported `useThemeLayout()` hook that returns just the layout config from context
+- Updated `ThemeContext.Provider` to pass `layoutConfig` derived from `theme?.layoutConfig`
+
+#### 2. Rewrote `/src/components/storefront/home.tsx` — Fully Theme-Aware Storefront
+- **10 Distinct Hero Variants**, each with completely different layouts, typography, and effects:
+  - `split`: Text left + product image right (2-column grid) with floating blobs
+  - `fullscreen`: Full-width centered text with dark gradient overlay, pulsing sale badge
+  - `parallax`: Parallax scrolling hero with serif italic typography, amber/gold accent lines
+  - `image-first`: Large image on top, text below in a floating rounded card, organic shapes
+  - `slider`: Auto-rotating slides with different gradient backgrounds and dot navigation
+  - `video`: Cinematic-style hero with animated gradient background + SVG wave overlay
+  - `gradient`: Dark gradient with animated glow particles and neon borders
+  - `carousel`: Fade-in carousel with editorial-style slides and Playfair Display font
+  - `storytelling`: Scroll-driven narrative hero with textured background and serif font
+  - `animated`: High-energy neon hero with glitch lines, pulsing text, and glow effects
+- Each hero variant uses `heroTitle`, `heroSubtitle`, `heroCtaText`, `heroCtaSecondary` from layout config
+
+- **Theme-Aware Section Rendering**:
+  - Sections rendered dynamically based on the `sections` array from `layoutConfig`
+  - Respects `visible` flag (hidden sections are not rendered)
+  - Respects order (sections appear in the order defined by the theme config)
+  - All 15 section types supported: hero, trust-badges, trending, flash-sale, brand-values, collections, categories, products, promo-banner, testimonials, newsletter, social-proof, recently-viewed, instagram-feed, lookbook
+  - Falls back to `minimal-dawn` config when no theme is loaded (rose-themed default layout)
+
+- **CRO Elements** based on `cro` config:
+  - `CRONotifications` component:
+    - Live viewer count display with animated green dot (from `viewerCountRange`)
+    - Fluctuating viewer count every 8 seconds
+    - Recent purchase notification toast (slides in from bottom-right via framer-motion)
+    - Auto-dismiss after 5 seconds, new notification every 8-15 seconds randomly
+    - Only shows when CRO config flags are enabled
+  - `UrgencyBar` component: Animated urgency message bar at top of page
+  - Low stock warning badge on product cards (amber badge with AlertTriangle icon)
+  - Quick view modal also shows low stock badges using `lowStockThreshold`
+
+#### 3. Technical Details:
+- All hero variants use `framer-motion` for entrance animations, hover effects, and continuous animations
+- Responsive design with `sm:`, `md:`, `lg:` breakpoints
+- `sf-*` CSS classes used throughout for theme CSS variable integration
+- Uses existing shadcn/ui components (Card, Button, Badge, Input, Dialog, Separator, Skeleton)
+- Default rose-themed layout when no theme config is available (uses `getThemeConfig('minimal-dawn')`)
+- Fixed React lint error: Used `useState` initializer function instead of `setState` in effect body
+
+### Files Modified:
+- **Modified**: `/src/lib/theme-context.tsx` — Added layoutConfig support, useThemeLayout hook
+- **Modified**: `/src/components/storefront/home.tsx` — Complete rewrite with 10 hero variants, section rendering, CRO
+
+### Verification:
+- ✅ ESLint passes with zero errors
+- ✅ Dev server compiles and runs without issues
+- ✅ All existing functionality preserved (product browsing, cart, search, etc.)
+- ✅ Each hero variant is visually distinct with different layouts and effects
+- ✅ Section rendering respects theme's section order and visibility flags
+- ✅ CRO notifications only show when enabled by theme config
+
+---
+
+Task ID: 5
+Agent: Theme Editor Agent
+Task: Build Theme Editor with Visual Customization and Live Preview
+
+### Work Completed:
+
+1. **Complete Rewrite of ThemeCustomization Component** (`/src/components/dashboard/themes.tsx`) — comprehensive theme editor with marketplace, visual editor, and live preview
+
+### Features Implemented:
+
+**1. Theme Marketplace Tab (Preserved & Enhanced):**
+- 10 theme cards with preview, publish button, and customize button
+- Search and filter (All/Free/Premium) with icon indicators
+- Active theme indicator with emerald ring and "Published" badge
+- Theme characteristics badges showing hero variant, card variant, and CRO features (e.g., "split hero", "clean cards", "CRO: Urgency", "CRO: Sticky Cart")
+- Enhanced theme card layout with color palettes, star ratings, tags, install counts
+- Hover overlay with Preview button
+- Publish confirmation dialog
+- Staggered framer-motion animations
+
+**2. Theme Editor Tab (NEW — Main Feature):**
+
+**a) Section Manager (Left Panel):**
+- Reorderable list of 15 sections with up/down arrow buttons
+- Each section has: name with icon, visibility toggle (Switch), expand/collapse
+- When expanded, shows section-specific settings:
+  - Hero: alignment (left/center/right), show badge toggle, CTA text inputs (primary & secondary)
+  - Products: grid columns (2/3/4), show quick view toggle, card variant dropdown
+  - Categories: limit slider (2-12), style dropdown (icon-grid, image-overlay, gradient, bordered)
+  - Collections: limit slider (2-8), style dropdown (clean-grid, bold-cards, editorial-spread, overlay)
+  - Flash Sale: countdown style (large, minimal, neon), urgency level (low, medium, high, extreme)
+  - Newsletter: style dropdown (inline, card, fullwidth, minimal), show name toggle
+  - Testimonials: style dropdown (minimal-cards, slider, quote-wall, cards), limit slider
+- "Add Section" dropdown to add hidden sections back (shows count of hidden sections)
+- ScrollArea with max height for long section lists
+- AnimatePresence for smooth expand/collapse animations
+
+**b) Style Customizer (Right Panel — Style Tab):**
+- **Colors**: Primary, Accent, Background, Text color pickers with inline hex input and color swatch
+- **Typography**: Font family dropdown (Inter, Montserrat, Poppins, Playfair Display, Lora)
+- **Layout**: Border radius slider (Sharp → Rounded → Pill) with value display, Grid layout dropdown (2-col, 3-col, 4-col, masonry, mixed)
+- **Button Style**: Dropdown (rounded, pill, outlined, solid, glow) with live button preview showing the current accent color and border radius
+- **Animation Intensity**: Slider (None → Subtle → Moderate → High → Extreme) with labeled stops
+
+**c) CRO Settings (Right Panel — CRO Tab):**
+- Toggle switches with icons for each CRO feature:
+  - Show Urgency Timer (orange timer icon)
+  - Show Live Viewers (sky activity icon)
+  - Show Recent Purchases (emerald cart icon)
+  - Show Low Stock Warnings (amber alert icon)
+  - Show Trust Badges (violet badge icon)
+  - Show Social Proof Count (rose users icon)
+  - Sticky Add to Cart (teal cart icon)
+- Urgency message text input with placeholder
+- Low stock threshold number input
+- Viewer count range (min-max inputs)
+
+**d) Live Preview (Center Panel — Full Width):**
+- Enhanced ThemeStorefrontPreview that renders in real-time based on editor state
+- Shows: hero section with alignment, products grid with column count, flash sale timer, newsletter section, trust badges, urgency timer, live viewers, low stock warnings, social proof count, sticky add to cart
+- Preview device toggle: Desktop / Tablet / Mobile (changes preview width: full, 768px, 375px)
+- Border and shadow on preview container
+- All visual changes update instantly as settings are modified
+
+**3. Save/Publish Flow:**
+- **"Save Draft" button**: Serializes the full config (colors, sections, CRO, button style, border radius, font family, animation) to JSON and saves via PUT `/api/themes/[id]`
+- **"Publish" button**: Saves customizations first, then activates the theme via `/api/themes/publish`
+- **"Reset to Default" button**: Resets all customizations to theme defaults from THEME_CONFIGS
+- Loading spinners on save/publish buttons
+- Toast notifications for all actions
+- Editor header shows theme name and published status
+
+**4. API Integration:**
+- Uses existing `/api/themes/[id]` PUT endpoint to save theme customizations
+- Config field in DB stores: `{ primaryColor, accentColor, bgColor, textColor, fontFamily, borderRadius, buttonStyle, sections: [...], cro: {...} }`
+- When loading themes for editor, parses saved config and merges with built-in defaults from THEME_CONFIGS
+- Publishes via `/api/themes/publish` with themeId and storeId
+- Seeds themes on first load via `/api/themes/seed`
+
+**5. Preview Dialog (from Marketplace):**
+- Full-size preview in a Dialog component
+- Device toggle (Desktop/Tablet/Mobile)
+- Quick actions: Customize button, Publish button
+- Color palette and theme name display
+
+### Technical Details:
+- Uses `THEME_CONFIGS` from `@/lib/theme-configs` as the base configuration for each theme
+- `EditorState` interface manages: colors, typography, layout, buttonStyle, animation, sections (with EditorSection type extending SectionConfig with label/icon), and CRO config
+- `buildEditorState()` function creates initial editor state from ThemeConfig + ThemeLayoutConfig
+- `editorPreviewConfig` useMemo builds a ThemeConfig from current editorState for the live preview
+- Border radius mapping: 0=sharp, 4=elegant, 8=rounded, 12=soft, 16=organic, 24=fluid, 999=pill
+- Animation intensity mapping: 0=none, 1=subtle, 2=moderate, 3=high, 4=extreme
+- Custom Camera SVG component (not available in lucide-react import)
+- All shadcn/ui components used: Switch, Select, Input, Label, Slider, Tabs, Card, Button, Badge, Dialog, ScrollArea, Separator
+- Framer-motion for: staggered marketplace grid, section expand/collapse, section reordering, device preview layout changes, entry animations
+- `SectionManager` component with state management for expanded sections, add dropdown
+- `StyleCustomizer` component with color pickers, typography, layout, button style, animation
+- `CROSettings` component with toggles and text/number inputs
+- TypeScript types throughout with proper typing for SectionType, CROConfig, GridLayout, etc.
+
+### Files Modified:
+- **Rewritten**: `/src/components/dashboard/themes.tsx` (~1200 lines)
+
+### Verification:
+- ✅ ESLint passes with zero errors
+- ✅ Dev server compiles successfully
+- ✅ No TypeScript compilation errors
+- ✅ Export name preserved as `ThemeCustomization`
+
+---
+
+## Phase 5: Real Theme System with Different Designs (Current)
+
+Task ID: 5
+Agent: Main Agent
+Task: Build 10 CRO-optimized themes with different designs, product cards, sections, layouts, and a theme editor
+
+### Work Completed:
+
+#### 1. Theme Configuration System (NEW)
+- Created `/home/z/my-project/src/lib/theme-configs.ts` (~700 lines)
+- 10 complete theme configurations with:
+  - Unique hero variant per theme (split, fullscreen, parallax, image-first, slider, video, gradient, carousel, storytelling, animated)
+  - Unique product card variant per theme (clean, bold, luxury, soft, warm, wave, glass, boutique, rustic, neon)
+  - Section ordering and visibility configuration
+  - CRO feature flags per theme
+  - Header/footer variants, grid layouts, animation intensity
+  - Hero text (title, subtitle, CTA, secondary CTA)
+  - Category/card/testimonial/newsletter/promo style variants
+
+#### 2. Theme-Aware Storefront Home (MAJOR REWRITE)
+- Rewrote `/home/z/my-project/src/components/storefront/home.tsx`
+- 10 distinct hero variants with completely different layouts:
+  - **Split**: 2-column layout with text left, product image right
+  - **Fullscreen**: Full-viewport centered with dark overlay, pulsing sale badge
+  - **Parallax**: Parallax scroll with serif italic typography, gold accents
+  - **Image-first**: Large image top, text in floating rounded card below
+  - **Slider**: Auto-rotating gradient slides with dot navigation
+  - **Video**: Animated gradient + SVG wave overlay, cinematic feel
+  - **Gradient**: Dark gradient with animated glow particles
+  - **Carousel**: Fade-in editorial carousel, Playfair Display font
+  - **Storytelling**: Textured background, serif font, narrative style
+  - **Animated**: Neon borders, glitch lines, pulsing text effects
+- Theme-aware section rendering based on layout config
+- CRO notifications system: live viewer count, recent purchase toasts, urgency bar, low stock badges
+
+#### 3. Theme-Aware Product Cards (MAJOR REWRITE)
+- Rewrote `/home/z/my-project/src/components/storefront/product-grid.tsx` (~850 lines)
+- 10 visually distinct card variants:
+  - **clean**: Thin border, small image, understated
+  - **bold**: 3px black border, HUGE price, "SALE" badge, "ADD" button
+  - **luxury**: Gold accent line, portrait ratio, serif font, hover zoom
+  - **soft**: Rounded, pastel shadow, hover lift, pink/green badges
+  - **warm**: Gradient warm border on hover, amber price
+  - **wave**: CSS clip-path wavy bottom, sky/cyan theme
+  - **glass**: Glassmorphism, backdrop-blur, purple glow shadow
+  - **boutique**: Fashion portrait, hover overlay with size options
+  - **rustic**: Double border, kraft-paper gradient, stamp badges
+  - **neon**: Dark bg, cyan neon glow border, cyberpunk gradient price
+- 5 grid layouts: 2-col, 3-col, 4-col, masonry, mixed
+
+#### 4. Theme Editor (NEW)
+- Rewrote `/home/z/my-project/src/components/dashboard/themes.tsx` with full editor
+- **Marketplace Tab**: 10 theme cards with preview, publish, customize
+- **Editor Tab**: Section Manager (reorder, toggle visibility, section-specific settings)
+  - Style Customizer (colors, font, border radius, grid layout, button style, animation)
+  - CRO Settings (7 toggle switches, urgency message, thresholds)
+  - Live Preview with device toggle (Desktop/Tablet/Mobile)
+- Save/Publish/Reset flow with API integration
+
+#### 5. Bug Fixes from Testing
+- **Double-encoding bug in POST /api/themes**: Config was JSON.stringify'd when already a string. Fixed with typeof check.
+- **Hardcoded colors in storefront sections**: Added sf-* CSS classes to all sections (trust-badges, brand-values, categories, testimonials, product-tabs, card-surface)
+- **Dark theme detection limited to 2 hex values**: Replaced with luminance calculation (0.299r + 0.587g + 0.114b < 0.15)
+- **Newsletter input dark theme**: Updated to use CSS custom properties for bg/border/text
+
+#### 6. Enhanced Theme CSS Overrides
+- Added CSS overrides in theme-context.tsx for:
+  - `.sf-trust-badges-section` - dark/light backgrounds
+  - `.sf-brand-values-section` - dark/light backgrounds
+  - `.sf-categories-section` - dark/light gradients
+  - `.sf-testimonials-section` - dark/light gradients
+  - `.sf-product-tabs-bg` / `.sf-product-tab-active` / `.sf-product-tab-inactive` - dark mode tab styling
+  - `.sf-card-surface` - dark mode card backgrounds
+  - `.sf-flash-sale-section` / `.sf-promo-banner-section` - theme-aware gradients
+
+### Verification:
+- ✅ ESLint passes with zero errors
+- ✅ Dev server compiles and runs
+- ✅ Theme marketplace loads with 10 themes
+- ✅ Theme publishing works (Bold Commerce, Midnight Elite tested)
+- ✅ Storefront visually changes when switching themes (colors, layout, cards)
+- ✅ CRO notifications appear for themes with CRO enabled
+- ✅ Theme editor loads with section manager, style customizer, live preview
+
+### Unresolved Issues:
+1. Some sections still have hardcoded Tailwind colors that don't respond to dark theme (e.g., trust badge icons still use from-emerald-500)
+2. Product detail page not yet theme-aware
+3. Cart/checkout pages not yet theme-aware
+4. Theme context doesn't auto-refresh after publishing (need to navigate away and back)
+5. Mobile responsiveness needs testing for all 10 theme variants
+
+### Priority Recommendations for Next Phase:
+1. Make product detail, cart, and checkout pages theme-aware
+2. Fix remaining hardcoded colors in all storefront components
+3. Add theme context auto-refresh when theme is published
+4. Test all 10 themes on mobile devices
+5. Add more CRO features (exit-intent popup, recently viewed section)
+6. Performance optimization (lazy load theme components)

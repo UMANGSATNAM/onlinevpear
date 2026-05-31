@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react'
+import { getThemeConfig, ThemeLayoutConfig } from '@/lib/theme-configs'
 
 export interface ThemeConfig {
   primaryColor: string
@@ -25,22 +26,30 @@ export interface StoreTheme {
   layout: { category: string; features: string[] }
   styles: Record<string, string>
   isActive: boolean
+  layoutConfig: ThemeLayoutConfig | null
 }
 
 interface ThemeContextType {
   theme: StoreTheme | null
   loading: boolean
   refetch: () => void
+  layoutConfig: ThemeLayoutConfig | null
 }
 
 const ThemeContext = createContext<ThemeContextType>({
   theme: null,
   loading: true,
   refetch: () => {},
+  layoutConfig: null,
 })
 
 export function useStoreTheme() {
   return useContext(ThemeContext)
+}
+
+export function useThemeLayout() {
+  const { layoutConfig } = useContext(ThemeContext)
+  return layoutConfig
 }
 
 // Convert hex to RGB for CSS variable usage
@@ -368,6 +377,56 @@ function injectThemeCSS(config: ThemeConfig, themeName: string) {
         color: ${config.accentColor} !important;
       }
 
+      /* Trust badges section */
+      .sf-trust-badges-section {
+        background: ${isDark ? `rgba(var(--theme-bg-rgb), 1)` : 'linear-gradient(to right, rgba(var(--theme-accent-rgb), 0.05), white, rgba(var(--theme-accent-rgb), 0.05))'} !important;
+        border-color: ${isDark ? 'rgba(var(--theme-accent-rgb), 0.1)' : '#e5e7eb'} !important;
+      }
+
+      /* Brand values section */
+      .sf-brand-values-section {
+        background: ${isDark ? 'rgba(var(--theme-bg-rgb), 1)' : 'white'} !important;
+        border-color: ${isDark ? 'rgba(var(--theme-accent-rgb), 0.1)' : '#e5e7eb'} !important;
+      }
+
+      /* Categories section */
+      .sf-categories-section {
+        background: ${isDark ? 'rgba(var(--theme-bg-rgb), 1)' : `linear-gradient(to bottom, rgba(var(--theme-accent-rgb), 0.03), white)`} !important;
+      }
+
+      /* Testimonials section */
+      .sf-testimonials-section {
+        background: ${isDark ? 'rgba(var(--theme-bg-rgb), 1)' : `linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.03), rgba(var(--theme-primary-rgb), 0.02), rgba(var(--theme-secondary-accent-rgb), 0.03))`} !important;
+      }
+
+      /* Product tabs section */
+      .sf-product-tabs-bg {
+        background: ${isDark ? 'rgba(var(--theme-bg-rgb), 1)' : 'white'} !important;
+      }
+      .sf-product-tab-active {
+        background: ${isDark ? 'rgba(var(--theme-accent-rgb), 0.15)' : 'white'} !important;
+        color: ${config.accentColor} !important;
+      }
+      .sf-product-tab-inactive {
+        color: ${isDark ? 'rgba(var(--theme-text-rgb), 0.5)' : '#737373'} !important;
+      }
+
+      /* Card backgrounds for dark mode */
+      .sf-card-surface {
+        background: ${isDark ? 'rgba(var(--theme-surface-elevated), 1)' : 'rgba(255,255,255,0.8)'} !important;
+        border-color: ${isDark ? 'rgba(var(--theme-accent-rgb), 0.1)' : 'transparent'} !important;
+      }
+
+      /* Flash sale section */
+      .sf-flash-sale-section {
+        background: linear-gradient(135deg, ${config.accentColor}, ${config.primaryColor}80) !important;
+      }
+
+      /* Promo banner section */
+      .sf-promo-banner-section {
+        background: linear-gradient(135deg, ${config.accentColor}, ${config.primaryColor}80) !important;
+      }
+
       /* Font family */
       font-family: var(--theme-font-family) !important;
     }
@@ -395,7 +454,11 @@ export function StorefrontThemeProvider({ storeId, children }: ThemeProviderProp
       const res = await fetch(`/api/storefront/theme?storeId=${storeId}`)
       if (res.ok) {
         const data = await res.json()
-        setTheme(data.theme)
+        const themeName = data.theme?.name
+          ? data.theme.name.toLowerCase().replace(/\s+/g, '-')
+          : null
+        const layoutConfig = themeName ? getThemeConfig(themeName) : null
+        setTheme({ ...data.theme, layoutConfig })
       }
     } catch (err) {
       console.error('Failed to fetch theme:', err)
@@ -454,7 +517,7 @@ export function StorefrontThemeProvider({ storeId, children }: ThemeProviderProp
   }, [theme])
 
   return (
-    <ThemeContext.Provider value={{ theme, loading, refetch: fetchTheme }}>
+    <ThemeContext.Provider value={{ theme, loading, refetch: fetchTheme, layoutConfig: theme?.layoutConfig ?? null }}>
       {children}
     </ThemeContext.Provider>
   )

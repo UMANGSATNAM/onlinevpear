@@ -46,15 +46,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Handle config/styles/layout that may already be JSON strings
+    const configStr = config ? (typeof config === 'string' ? config : JSON.stringify(config)) : '{}'
+    const stylesStr = styles ? (typeof styles === 'string' ? styles : JSON.stringify(styles)) : '{}'
+    const layoutStr = layout ? (typeof layout === 'string' ? layout : JSON.stringify(layout)) : '{}'
+
     const theme = await db.theme.create({
       data: {
         name,
         description: description || null,
         preview: preview || null,
         thumbnail: thumbnail || null,
-        config: config ? JSON.stringify(config) : '{}',
-        styles: styles ? JSON.stringify(styles) : '{}',
-        layout: layout ? JSON.stringify(layout) : '{}',
+        config: configStr,
+        styles: stylesStr,
+        layout: layoutStr,
         isSystem: isSystem || false,
         isActive: isActive !== undefined ? isActive : true,
       },
