@@ -117,7 +117,7 @@ function SectionHeader({
     <div className="flex items-end justify-between mb-8">
       <div>
         <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{title}</h2>
-        <div className="h-1 w-16 rounded-full bg-gradient-to-r from-rose-500 to-orange-400 mt-2" />
+        <div className="sf-section-accent-line h-1 w-16 rounded-full bg-gradient-to-r from-rose-500 to-orange-400 mt-2" />
         <p className="text-muted-foreground text-sm mt-2">{subtitle}</p>
       </div>
       {onViewAll && (
@@ -275,18 +275,18 @@ export function StorefrontHome() {
   return (
     <div>
       {/* Hero Section with Parallax */}
-      <section ref={heroRef} className="relative overflow-hidden bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900">
+      <section ref={heroRef} className="sf-hero relative overflow-hidden bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900">
         <motion.div
           className="absolute inset-0 opacity-30"
           style={{ y: heroY }}
         >
           <motion.div
-            className="absolute top-20 left-10 w-72 h-72 bg-rose-500/20 rounded-full blur-3xl"
+            className="sf-hero-blob-1 absolute top-20 left-10 w-72 h-72 bg-rose-500/20 rounded-full blur-3xl"
             animate={{ y: [0, -20, 0] }}
             transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
           />
           <motion.div
-            className="absolute bottom-10 right-10 w-96 h-96 bg-amber-500/20 rounded-full blur-3xl"
+            className="sf-hero-blob-2 absolute bottom-10 right-10 w-96 h-96 bg-amber-500/20 rounded-full blur-3xl"
             animate={{ y: [0, 15, 0] }}
             transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
           />
@@ -306,7 +306,7 @@ export function StorefrontHome() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm text-white/80 text-sm font-medium mb-6 border border-white/10">
+              <span className="sf-hero-badge inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm text-white/80 text-sm font-medium mb-6 border border-white/10">
                 New Collection Available
                 <ArrowRight className="h-3 w-3" />
               </span>
@@ -319,7 +319,7 @@ export function StorefrontHome() {
             >
               Discover Your
               <br />
-              <span className="bg-gradient-to-r from-rose-400 via-orange-400 to-amber-400 bg-clip-text text-transparent drop-shadow-lg">
+              <span className="sf-hero-title-accent bg-gradient-to-r from-rose-400 via-orange-400 to-amber-400 bg-clip-text text-transparent drop-shadow-lg">
                 Perfect Style
               </span>
             </motion.h1>
@@ -340,7 +340,7 @@ export function StorefrontHome() {
               <Button
                 size="lg"
                 onClick={() => setStorefrontPage('category')}
-                className="bg-rose-500 hover:bg-rose-600 text-white relative overflow-hidden group"
+                className="sf-hero-cta bg-rose-500 hover:bg-rose-600 text-white relative overflow-hidden group"
               >
                 <span className="absolute inset-0 rounded-md bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                 Shop Now
@@ -351,7 +351,7 @@ export function StorefrontHome() {
                 size="lg"
                 variant="outline"
                 onClick={() => setStorefrontPage('category')}
-                className="border-white/20 text-white hover:bg-white/10 hover:border-white/30 transition-all focus:ring-2 focus:ring-white/20"
+                className="sf-hero-cta-outline border-white/20 text-white hover:bg-white/10 hover:border-white/30 transition-all focus:ring-2 focus:ring-white/20"
               >
                 View Collections
               </Button>
@@ -372,7 +372,7 @@ export function StorefrontHome() {
                 transition={{ duration: 0.3, delay: i * 0.1 }}
                 className="flex items-center gap-3 justify-center sm:justify-start"
               >
-                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shrink-0 shadow-sm">
+                <div className="sf-trust-badge-icon h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shrink-0 shadow-sm">
                   <badge.icon className="h-5 w-5 text-white" />
                 </div>
                 <div>
@@ -477,7 +477,7 @@ export function StorefrontHome() {
       </section>
 
       {/* Flash Sale Countdown */}
-      <section className="relative bg-gradient-to-r from-rose-600 via-rose-500 to-orange-500 overflow-hidden">
+      <section className="sf-flash-sale relative bg-gradient-to-r from-rose-600 via-rose-500 to-orange-500 overflow-hidden">
         <div
           className="absolute inset-0 opacity-10"
           style={{
@@ -524,7 +524,7 @@ export function StorefrontHome() {
             <Button
               size="lg"
               onClick={() => setStorefrontPage('category')}
-              className="bg-white text-rose-600 hover:bg-white/90 shrink-0 shadow-lg hover:shadow-xl transition-all font-bold"
+              className="sf-btn-primary bg-white text-rose-600 hover:bg-white/90 shrink-0 shadow-lg hover:shadow-xl transition-all font-bold"
             >
               Shop Flash Sale
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -545,7 +545,7 @@ export function StorefrontHome() {
                 transition={{ duration: 0.3, delay: i * 0.1 }}
                 className="flex flex-col sm:flex-row items-center gap-3 text-center sm:text-left cursor-default hover:scale-105 transition-transform duration-200"
               >
-                <div className={`h-11 w-11 rounded-full bg-gradient-to-br ${value.gradient} flex items-center justify-center shrink-0 shadow-sm`}>
+                <div className={`sf-brand-value-icon h-11 w-11 rounded-full bg-gradient-to-br ${value.gradient} flex items-center justify-center shrink-0 shadow-sm`}>
                   <value.icon className="h-5 w-5 text-white" />
                 </div>
                 <div>
@@ -579,7 +579,7 @@ export function StorefrontHome() {
                   className="w-52 sm:w-64 overflow-hidden cursor-pointer group border-0 shadow-sm hover:shadow-lg transition-all duration-300"
                   onClick={() => setStorefrontPage('category')}
                 >
-                  <div className={`h-36 sm:h-44 bg-gradient-to-br ${collectionGradients[i % collectionGradients.length]} relative`}>
+                  <div className={`sf-collection-card-gradient h-36 sm:h-44 bg-gradient-to-br ${collectionGradients[i % collectionGradients.length]} relative`}>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <span className="text-white/40 text-3xl font-bold">{collection.name.substring(0, 2).toUpperCase()}</span>
                     </div>
@@ -618,7 +618,7 @@ export function StorefrontHome() {
                     className="overflow-hidden cursor-pointer group border-0 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
                     onClick={() => setStorefrontPage('category')}
                   >
-                    <div className={`h-24 sm:h-32 bg-gradient-to-br ${collectionGradients[i % collectionGradients.length]} flex items-center justify-center relative`}>
+                    <div className={`sf-category-card-gradient h-24 sm:h-32 bg-gradient-to-br ${collectionGradients[i % collectionGradients.length]} flex items-center justify-center relative`}>
                       <span className="text-white/40 text-4xl font-bold">{cat.name.substring(0, 1).toUpperCase()}</span>
                     </div>
                     <div className="p-3 text-center">
@@ -640,7 +640,7 @@ export function StorefrontHome() {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Our Products</h2>
-            <div className="h-1 w-16 rounded-full bg-gradient-to-r from-rose-500 to-orange-400 mt-2" />
+            <div className="sf-section-accent-line h-1 w-16 rounded-full bg-gradient-to-r from-rose-500 to-orange-400 mt-2" />
           </div>
           {/* Tab Filters */}
           <div className="flex items-center gap-1 bg-neutral-100 rounded-xl p-1">
@@ -696,7 +696,7 @@ export function StorefrontHome() {
       </section>
 
       {/* Promotional Banner */}
-      <section className="relative bg-gradient-to-r from-rose-500 to-orange-400 overflow-hidden">
+      <section className="sf-promo-banner relative bg-gradient-to-r from-rose-500 to-orange-400 overflow-hidden">
         <div
           className="absolute inset-0 opacity-10"
           style={{
@@ -732,7 +732,7 @@ export function StorefrontHome() {
             <Button
               size="lg"
               onClick={() => setStorefrontPage('category')}
-              className="bg-white text-rose-500 hover:bg-white/90 shrink-0 shadow-lg hover:shadow-xl transition-all focus:ring-2 focus:ring-white/30"
+              className="sf-btn-primary bg-white text-rose-500 hover:bg-white/90 shrink-0 shadow-lg hover:shadow-xl transition-all focus:ring-2 focus:ring-white/30"
             >
               Shop the Sale
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -762,7 +762,7 @@ export function StorefrontHome() {
           >
             <div className="text-center mb-10">
               <h2 className="text-2xl sm:text-3xl font-bold">What Our Customers Say</h2>
-              <div className="h-1 w-16 rounded-full bg-gradient-to-r from-violet-500 to-rose-400 mx-auto mt-3" />
+              <div className="sf-testimonial-accent-line h-1 w-16 rounded-full bg-gradient-to-r from-violet-500 to-rose-400 mx-auto mt-3" />
               <p className="text-muted-foreground mt-3 max-w-md mx-auto">Real reviews from real customers who love our products</p>
             </div>
 
@@ -802,7 +802,7 @@ export function StorefrontHome() {
       </section>
 
       {/* Newsletter Section */}
-      <section className="relative bg-gradient-to-br from-neutral-50 via-rose-50/30 to-orange-50/30 overflow-hidden">
+      <section className="sf-newsletter-section relative bg-gradient-to-br from-neutral-50 via-rose-50/30 to-orange-50/30 overflow-hidden">
         <motion.div
           className="absolute top-10 right-10 w-20 h-20 bg-rose-200/30 rounded-full blur-xl"
           animate={{ y: [0, -10, 0], scale: [1, 1.1, 1] }}
@@ -827,7 +827,7 @@ export function StorefrontHome() {
               transition={{ duration: 0.5 }}
             >
               <h2 className="text-2xl sm:text-3xl font-bold mb-3">Stay in the Loop</h2>
-              <div className="h-1 w-12 rounded-full bg-gradient-to-r from-rose-500 to-orange-400 mx-auto mb-4" />
+              <div className="sf-newsletter-accent-line h-1 w-12 rounded-full bg-gradient-to-r from-rose-500 to-orange-400 mx-auto mb-4" />
               <p className="text-muted-foreground mb-8">
                 Subscribe to our newsletter and get 10% off your first order.
               </p>
@@ -844,7 +844,7 @@ export function StorefrontHome() {
                   className="flex-1 bg-white/80 backdrop-blur-sm border-neutral-200 focus:ring-2 focus:ring-rose-500/20 focus:border-rose-300 transition-all"
                   required
                 />
-                <Button type="submit" className="bg-rose-500 hover:bg-rose-600 shrink-0 shadow-sm hover:shadow-md transition-all focus:ring-2 focus:ring-rose-500/30">
+                <Button type="submit" className="sf-newsletter-btn bg-rose-500 hover:bg-rose-600 shrink-0 shadow-sm hover:shadow-md transition-all focus:ring-2 focus:ring-rose-500/30">
                   Subscribe
                 </Button>
               </form>

@@ -72,9 +72,9 @@ export function StoreFooter() {
   }
 
   return (
-    <footer className="relative bg-gradient-to-b from-slate-900 to-slate-950 text-white">
+    <footer className="sf-footer relative bg-gradient-to-b from-slate-900 to-slate-950 text-white">
       {/* Gradient top border line */}
-      <div className="h-[2px] bg-gradient-to-r from-rose-500 via-orange-400 to-rose-500" />
+      <div className="sf-footer-top-line h-[2px] bg-gradient-to-r from-rose-500 via-orange-400 to-rose-500" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Footer Content */}
@@ -89,7 +89,7 @@ export function StoreFooter() {
             className="sm:col-span-2 lg:col-span-1"
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-rose-500 to-orange-400 flex items-center justify-center shadow-lg shadow-rose-500/20">
+              <div className="sf-footer-logo-badge h-10 w-10 rounded-xl bg-gradient-to-br from-rose-500 to-orange-400 flex items-center justify-center shadow-lg shadow-rose-500/20">
                 <span className="text-white font-bold text-lg">T</span>
               </div>
               <span className="font-bold text-xl tracking-tight">TechGear Pro</span>
@@ -195,7 +195,7 @@ export function StoreFooter() {
               </div>
               <Button
                 type="submit"
-                className="w-full h-10 bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 text-white shadow-lg shadow-rose-500/20 transition-all duration-300"
+                className="sf-footer-subscribe-btn w-full h-10 bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 text-white shadow-lg shadow-rose-500/20 transition-all duration-300"
               >
                 <Send className="h-4 w-4 mr-2" />
                 Subscribe
