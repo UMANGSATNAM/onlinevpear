@@ -19,6 +19,7 @@ export default async function middleware(req: NextRequest) {
 
   // Get hostname of request (e.g. demo.vercel.pub, demo.localhost:3000)
   let hostname = req.headers.get("host")!;
+  console.log("MIDDLEWARE HOSTNAME:", hostname, "URL:", req.url);
 
   // Handle local development subdomains
   hostname = hostname.replace(".localhost:3000", "");
@@ -37,13 +38,13 @@ export default async function middleware(req: NextRequest) {
     hostname === `www.${rootDomain}` || 
     hostname.endsWith(".up.railway.app")
   ) {
-    // We rewrite everything to the /(marketing) route
-    return NextResponse.rewrite(new URL(`/(marketing)${path}`, req.url));
+    // Return next() to let Next.js match the root / routes normally
+    return NextResponse.next();
   }
 
   // If the request is for the app/admin dashboard subdomain (e.g., app.onlinevpear.com)
   if (hostname === `app.${rootDomain}`) {
-    return NextResponse.rewrite(new URL(`/(dashboard)${path}`, req.url));
+    return NextResponse.rewrite(new URL(`/admin${path === '/' ? '' : path}`, req.url));
   }
 
   // Rewrite everything else to the `/[domain]` dynamic route for storefronts

@@ -718,17 +718,21 @@ export default function Home() {
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [onboardingOpen, setOnboardingOpen] = useState(false)
   const [searchFocused, setSearchFocused] = useState(false)
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-    if (typeof window === 'undefined') return false
-    try {
-      const saved = localStorage.getItem('merchant_sidebar_collapsed')
-      return saved === 'true'
-    } catch {
-      return false
-    }
-  })
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
   const [isMobile, setIsMobile] = useState(false)
+
+  // Load user preferences after mount to avoid hydration mismatch
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('merchant_sidebar_collapsed')
+      if (saved === 'true') {
+        setSidebarCollapsed(true)
+      }
+    } catch {
+      // ignore
+    }
+  }, [])
 
   // Load Google Fonts for merchant portal
   useEffect(() => {
