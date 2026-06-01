@@ -31,8 +31,12 @@ export default async function middleware(req: NextRequest) {
   // Define the root domain from env, or default to localhost:3000
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || "localhost:3000";
 
-  // If the request is for the main SaaS domain or www
-  if (hostname === rootDomain || hostname === `www.${rootDomain}`) {
+  // If the request is for the main SaaS domain or www, OR it's the Railway deployment URL
+  if (
+    hostname === rootDomain || 
+    hostname === `www.${rootDomain}` || 
+    hostname.endsWith(".up.railway.app")
+  ) {
     // We rewrite everything to the /(marketing) route
     return NextResponse.rewrite(new URL(`/(marketing)${path}`, req.url));
   }
