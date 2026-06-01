@@ -1,5 +1,6 @@
 [phases.setup]
-nixPkgs = ["nodejs_20", "bun", "openssl"]
+nixPkgs = ["nodejs_20", "bun"]
+aptPkgs = ["openssl", "libssl-dev"]
 
 [phases.install]
 cmds = ["bun install --no-save"]
