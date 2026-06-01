@@ -60,8 +60,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const {
+    let {
       storeId,
+      merchantId,
       name,
       slug,
       description,
@@ -83,6 +84,21 @@ export async function POST(request: NextRequest) {
       categoryId,
       meta,
     } = body
+
+    // If we have a merchantId but no storeId, grab their first store (for onboarding)
+    if (!storeId && merchantId) {
+      const merchant = await db.merchant.findUnique({
+        where: { id: merchantId },
+        include: { stores: true }
+      });
+      if (merchant && merchant.stores.length > 0) {
+        storeId = merchant.stores[0].id;
+      }
+    }
+
+    if (!slug && name) {
+      slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    }
 
     if (!storeId || !name || !slug || price === undefined) {
       return NextResponse.json(

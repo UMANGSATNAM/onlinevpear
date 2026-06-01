@@ -28,14 +28,35 @@ export async function POST(req: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
-    const user = await db.user.create({
-      data: {
-        email,
-        name,
-        passwordHash: hashedPassword,
-        role: "user", // Default role
-      },
+    // Create user and merchant in a transaction
+    const { user, merchant } = await db.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          email,
+          name,
+          passwordHash: hashedPassword,
+          role: "owner", // Owner of their merchant
+        },
+      });
+
+      const merchant = await tx.merchant.create({
+        data: {
+          businessName: `${name}'s Store`,
+          email: email,
+        },
+      });
+
+      await tx.merchantUser.create({
+        data: {
+          userId: user.id,
+          merchantId: merchant.id,
+          role: "owner",
+          permissions: JSON.stringify(["all"]),
+          acceptedAt: new Date(),
+        },
+      });
+
+      return { user, merchant };
     });
 
     // Create audit log
@@ -49,7 +70,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(
-      { message: "User registered successfully", userId: user.id },
+      { message: "User registered successfully", userId: user.id, merchantId: merchant.id },
       { status: 201 }
     );
   } catch (error) {

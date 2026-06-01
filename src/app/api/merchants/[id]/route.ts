@@ -89,6 +89,24 @@ export async function PUT(
       },
     })
 
+    // If the merchant has no stores and we received store settings from onboarding, create the store
+    if (merchant.stores.length === 0 && body.storeName && body.settings?.subdomain) {
+      const storeName = body.storeName;
+      const subdomain = body.settings.subdomain;
+      
+      const newStore = await db.store.create({
+        data: {
+          merchantId: merchant.id,
+          name: storeName,
+          slug: subdomain,
+          subdomain: subdomain,
+          settings: JSON.stringify(body.settings || {}),
+        }
+      });
+      
+      merchant.stores.push(newStore);
+    }
+
     return NextResponse.json({ merchant })
   } catch (error) {
     console.error('Merchant PUT error:', error)

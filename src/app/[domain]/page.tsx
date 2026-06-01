@@ -1,12 +1,13 @@
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
+import { ClientStorefront } from "./client-page";
 
 export default async function StorefrontPage({
   params,
 }: {
-  params: { domain: string };
+  params: Promise<{ domain: string }>;
 }) {
-  const { domain } = params;
+  const { domain } = await params;
 
   // We decode the domain (it could be URL encoded)
   const decodedDomain = decodeURIComponent(domain);
@@ -25,10 +26,13 @@ export default async function StorefrontPage({
     return notFound(); // Will trigger 404
   }
 
-  return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-24">
-      <h1 className="text-4xl font-bold">{store.name}</h1>
-      <p className="mt-4 text-xl text-muted-foreground">{store.description || "Welcome to our store!"}</p>
-    </div>
-  );
+  return <ClientStorefront store={{
+    id: store.id,
+    name: store.name,
+    slug: store.slug || store.subdomain || "",
+    description: store.description,
+    logo: store.logo,
+    currency: store.currency,
+    settings: store.settings
+  }} />;
 }
